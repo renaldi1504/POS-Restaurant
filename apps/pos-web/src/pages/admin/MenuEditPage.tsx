@@ -22,7 +22,14 @@ import {
 } from '../../components/common';
 import { api, errorMessage, qk } from '../../lib/api';
 import { useMoney } from '../../lib/data';
-import { LangInputs, cleanLoc, mergeTranslation, useAutoTranslate, type Loc } from './LangFields';
+import {
+  LangInputs,
+  cleanLoc,
+  fillMissing,
+  mergeTranslation,
+  useAutoTranslate,
+  type Loc,
+} from './LangFields';
 import { adminQk, groupRuleShort } from './MenuListPage';
 
 interface Draft {
@@ -99,10 +106,11 @@ export default function MenuEditPage() {
 
   const save = useMutation({
     mutationFn: async () => {
+      const tr = await fillMissing({ name: d.name, desc: d.desc });
       const body: CreateItemRequest = {
         categoryId: d.categoryId!,
-        name: cleanLoc(d.name),
-        description: d.desc.id.trim() ? cleanLoc(d.desc) : {},
+        name: cleanLoc(tr.name),
+        description: d.desc.id.trim() ? cleanLoc(tr.desc) : {},
         aiInfo: d.aiInfo,
         available: d.available,
         bestSeller: d.bestSeller,

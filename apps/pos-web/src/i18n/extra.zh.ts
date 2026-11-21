@@ -269,6 +269,7 @@ export const extraZh: ExtraDict = {
     translated: '已填好翻译，请检查',
     translatedMock: '已填好翻译（测试模式），请检查',
     translateFailed: '自动翻译失败（网络 / 额度）。请手动填写或稍后再试。',
+    autoOnSave: '尚未翻译 — 保存时自动翻译（点按查看）',
     nameRequired: '必须填写印尼语名称',
     description: '简短描述',
     prices: '各渠道价格（{{symbol}}）',

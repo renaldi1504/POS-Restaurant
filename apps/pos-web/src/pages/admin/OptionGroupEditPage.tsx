@@ -19,7 +19,16 @@ import {
 } from '../../components/common';
 import { api, errorMessage, qk } from '../../lib/api';
 import { useMoney } from '../../lib/data';
-import { LangInputs, cleanLoc, mergeTranslation, useAutoTranslate, type Loc } from './LangFields';
+import {
+  LangInputs,
+  cleanLoc,
+  fillMissing,
+  langSummary,
+  mergeTranslation,
+  missingLangs,
+  useAutoTranslate,
+  type Loc,
+} from './LangFields';
 import { adminQk } from './MenuListPage';
 
 interface OptDraft {
@@ -77,17 +86,21 @@ export default function OptionGroupEditPage() {
 
   const save = useMutation({
     mutationFn: async () => {
+      const tr = await fillMissing<string>({
+        __group: name,
+        ...Object.fromEntries(opts.map((o) => [o.key, o.name])),
+      });
       const options = opts
         .filter((o) => o.name.id.trim())
         .map((o, i) => ({
           ...(o.id ? { id: o.id } : {}),
-          name: cleanLoc(o.name),
+          name: cleanLoc(tr[o.key] ?? o.name),
           priceDelta: o.priceDelta,
           available: o.available,
           sort: i + 1,
         }));
       const base = {
-        name: cleanLoc(name),
+        name: cleanLoc(tr.__group ?? name),
         required,
         minSelect: required ? Math.max(1, minSel) : minSel,
         maxSelect: maxSel,
@@ -229,51 +242,64 @@ export default function OptionGroupEditPage() {
             {t('opsi.optionsTitle', { symbol: money.main === 'KHR' ? '៛' : money.main })}
           </b>
           {opts.map((o, i) => (
-            <div
-              key={o.key}
-              className="flex items-center gap-2 border-b border-surface-container-highest py-2"
-            >
-              <input
-                aria-label={t('opsi.optionName', { n: i + 1 })}
-                value={o.name.id}
-                placeholder={t('opsi.optionPh')}
-                onChange={(e) =>
-                  setOpts((xs) =>
-                    xs.map((x) => (x.key === o.key ? { ...x, name: { ...x.name, id: e.target.value } } : x)),
-                  )
-                }
-                className="h-[42px] min-w-0 grow rounded-sm border border-outline-variant px-2 font-medium"
-              />
-              <MoneyInput
-                ariaLabel={t('opsi.priceOf', { name: o.name.id || i + 1 })}
-                className="w-[84px] shrink-0"
-                currency={money.main}
-                value={o.priceDelta}
-                onChange={(v) =>
-                  setOpts((xs) => xs.map((x) => (x.key === o.key ? { ...x, priceDelta: v ?? 0 } : x)))
-                }
-              />
-              <button
-                type="button"
-                aria-pressed={o.available}
-                onClick={() =>
-                  setOpts((xs) => xs.map((x) => (x.key === o.key ? { ...x, available: !x.available } : x)))
-                }
-                className={cn(
-                  'h-9 w-[72px] shrink-0 rounded-full text-label-medium font-medium text-on-primary',
-                  o.available ? 'bg-primary' : 'bg-error',
-                )}
-              >
-                {o.available ? t('common.available') : t('common.soldOut')}
-              </button>
-              <button
-                type="button"
-                aria-label={`${t('common.edit')} ${o.name.id}`}
-                onClick={() => setEditOpt(o.key)}
-                className="size-9 shrink-0 rounded-sm text-on-surface-variant"
-              >
-                ⋯
-              </button>
+            <div key={o.key} className="flex flex-col gap-1 border-b border-surface-container-highest py-2">
+              <div className="flex items-center gap-2">
+                <input
+                  aria-label={t('opsi.optionName', { n: i + 1 })}
+                  value={o.name.id}
+                  placeholder={t('opsi.optionPh')}
+                  onChange={(e) =>
+                    setOpts((xs) =>
+                      xs.map((x) =>
+                        x.key === o.key ? { ...x, name: { ...x.name, id: e.target.value } } : x,
+                      ),
+                    )
+                  }
+                  className="h-[42px] min-w-0 grow rounded-sm border border-outline-variant px-2 font-medium"
+                />
+                <MoneyInput
+                  ariaLabel={t('opsi.priceOf', { name: o.name.id || i + 1 })}
+                  className="w-[84px] shrink-0"
+                  currency={money.main}
+                  value={o.priceDelta}
+                  onChange={(v) =>
+                    setOpts((xs) => xs.map((x) => (x.key === o.key ? { ...x, priceDelta: v ?? 0 } : x)))
+                  }
+                />
+                <button
+                  type="button"
+                  aria-pressed={o.available}
+                  onClick={() =>
+                    setOpts((xs) => xs.map((x) => (x.key === o.key ? { ...x, available: !x.available } : x)))
+                  }
+                  className={cn(
+                    'h-9 w-[72px] shrink-0 rounded-full text-label-medium font-medium text-on-primary',
+                    o.available ? 'bg-primary' : 'bg-error',
+                  )}
+                >
+                  {o.available ? t('common.available') : t('common.soldOut')}
+                </button>
+                <button
+                  type="button"
+                  aria-label={`${t('common.edit')} ${o.name.id}`}
+                  onClick={() => setEditOpt(o.key)}
+                  className="state-layer flex size-10 shrink-0 items-center justify-center rounded-full text-on-surface-variant"
+                >
+                  <Icon name="translate" />
+                </button>
+              </div>
+              {o.name.id.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => setEditOpt(o.key)}
+                  className={cn(
+                    'truncate text-left text-label-medium',
+                    missingLangs(o.name).length ? 'text-warning' : 'text-on-surface-variant',
+                  )}
+                >
+                  {langSummary(o.name) ?? t('menux.autoOnSave')}
+                </button>
+              ) : null}
             </div>
           ))}
           <button
@@ -387,6 +413,27 @@ export default function OptionGroupEditPage() {
       >
         {editing ? (
           <div className="flex flex-col gap-2">
+            <Button
+              variant="tonal"
+              size="md"
+              icon="translate"
+              loading={translate.isPending}
+              disabled={!editing.name.id.trim()}
+              onClick={() =>
+                translate.mutate([{ key: editing.key, text: editing.name }], {
+                  onSuccess: (r) =>
+                    setOpts((xs) =>
+                      xs.map((x) =>
+                        x.key === editing.key
+                          ? { ...x, name: mergeTranslation(x.name, r.map.get(x.key)).text }
+                          : x,
+                      ),
+                    ),
+                })
+              }
+            >
+              {t('admin.translateAuto')}
+            </Button>
             <LangInputs
               idPrefix={`opt-${editing.key}`}
               value={editing.name}

@@ -91,6 +91,40 @@ export function LangInputs({
   );
 }
 
+/** Bahasa yang masih kosong (atau sisa teks uji "[en] …"). */
+export function missingLangs(v: Loc): Lang[] {
+  return LANGS.filter((l) => l !== 'id' && (!v[l]?.trim() || isMockText(v[l])));
+}
+
+/**
+ * Saat menyimpan: terjemahkan otomatis semua teks yang bahasanya masih kosong (satu panggilan).
+ * Gagal / tanpa internet → teks dikembalikan apa adanya (tetap bisa disimpan).
+ */
+export async function fillMissing<K extends string>(texts: Record<K, Loc>): Promise<Record<K, Loc>> {
+  const keys = (Object.keys(texts) as K[]).filter((k) => texts[k].id.trim() && missingLangs(texts[k]).length);
+  if (!keys.length) return texts;
+  const res = await api
+    .call('adminTranslate', {
+      body: { entries: keys.map((k) => ({ key: k, text: { ...texts[k], id: texts[k].id.trim() } })) },
+    })
+    .catch(() => null);
+  if (!res || res.provider === 'none') return texts;
+  const out = { ...texts };
+  for (const e of res.entries) {
+    const k = e.key as K;
+    if (out[k]) out[k] = mergeTranslation(out[k], e.text).text;
+  }
+  return out;
+}
+
+/** Ringkasan satu baris: "EN: Fried egg · ខ្មែរ: … · 中文: …" atau null bila belum ada terjemahan. */
+export function langSummary(v: Loc): string | null {
+  const parts = (['en', 'kh', 'zh'] as const)
+    .filter((l) => v[l]?.trim() && !isMockText(v[l]))
+    .map((l) => `${l === 'en' ? 'EN' : l === 'kh' ? 'ខ្មែរ' : '中文'}: ${v[l]}`);
+  return parts.length ? parts.join(' · ') : null;
+}
+
 export function cleanLoc(v: Loc): LocalizedText {
   const out: LocalizedText = { id: v.id.trim() };
   for (const l of ['en', 'kh', 'zh'] as const) if (v[l]?.trim()) out[l] = v[l]!.trim();

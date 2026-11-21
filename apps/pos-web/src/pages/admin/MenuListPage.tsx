@@ -32,6 +32,7 @@ import {
   LANG_FIELD_LABEL,
   LangInputs,
   cleanLoc,
+  fillMissing as fillMissingTexts,
   mergeTranslation,
   useAutoTranslate,
   type Loc,
@@ -378,14 +379,8 @@ function CategoriesSheet({
     void qc.invalidateQueries({ queryKey: qk.menu });
   };
   /** Terjemahkan bahasa yang masih kosong (Gemini; tanpa key server → mock). */
-  const fillMissing = async (text: Loc): Promise<LocalizedText> => {
-    const clean = cleanLoc(text);
-    if (LANGS.every((l) => clean[l]?.trim())) return clean;
-    const tr = await api
-      .call('adminTranslate', { body: { entries: [{ key: 'c', text: clean }] } })
-      .catch(() => null);
-    return cleanLoc(mergeTranslation(text, tr?.entries[0]?.text).text);
-  };
+  const fillMissing = async (text: Loc): Promise<LocalizedText> =>
+    cleanLoc((await fillMissingTexts({ c: text })).c);
   const create = useMutation({
     mutationFn: async () =>
       api.call('adminCategoryCreate', {
