@@ -135,6 +135,35 @@ describe('session: /api/auth/me & logout', () => {
   });
 });
 
+describe('PATCH /api/auth/me/lang', () => {
+  it('401 without a session', async () => {
+    const res = await call(app, 'authMeLang', { body: { lang: 'kh' } });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('any staff (kitchen, no admin permission) saves their own language', async () => {
+    const cookie = await loginAs(app, 'Dapur');
+    const res = await call(app, 'authMeLang', { cookie, body: { lang: 'zh' } });
+    expect(res.statusCode).toBe(200);
+    expect(MeResponse.parse(res.json()).user).toMatchObject({ name: 'Dapur', lang: 'zh' });
+    // tersimpan di DB → dipakai sesi berikutnya & login berikutnya
+    expect(MeResponse.parse((await call(app, 'authMe', { cookie })).json()).user.lang).toBe('zh');
+    const again = await loginAs(app, 'Dapur');
+    expect(MeResponse.parse((await call(app, 'authMe', { cookie: again })).json()).user.lang).toBe('zh');
+    // hanya user itu sendiri yang berubah
+    const owner = await loginAs(app, 'Owner');
+    expect(MeResponse.parse((await call(app, 'authMe', { cookie: owner })).json()).user.lang).toBe('id');
+    await call(app, 'authMeLang', { cookie, body: { lang: 'id' } });
+  });
+
+  it('rejects an unknown language', async () => {
+    const cookie = await loginAs(app, 'Kasir Pagi');
+    const res = await call(app, 'authMeLang', { cookie, body: { lang: 'fr' } });
+    expect(res.statusCode).toBe(400);
+    expect(ErrorResponse.parse(res.json()).error.code).toBe('VALIDATION_ERROR');
+  });
+});
+
 describe('permission guard', () => {
   it('403 for cashier, 200 for owner', async () => {
     const kasir = await loginAs(app, 'Kasir Pagi');

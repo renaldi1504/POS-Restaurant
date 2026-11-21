@@ -36,6 +36,10 @@ export type PinLoginResponse = z.infer<typeof PinLoginResponse>;
 export const MeResponse = z.object({ user: StaffUser });
 export type MeResponse = z.infer<typeof MeResponse>;
 
+/** `PATCH /auth/me/lang` — staf memilih bahasa tampilannya sendiri. */
+export const MeLangRequest = z.object({ lang: Lang });
+export type MeLangRequest = z.infer<typeof MeLangRequest>;
+
 /** Detail error PIN_INVALID / PIN_LOCKED (di `error.details`). */
 export const PinErrorDetails = z.object({
   remainingAttempts: z.number().int().nonnegative().optional(),

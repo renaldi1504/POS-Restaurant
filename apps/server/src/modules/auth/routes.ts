@@ -1,4 +1,6 @@
+import { eq } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
+import { users } from '../../db/schema';
 import { defineRoute } from '../../lib/route';
 import {
   createStaffSession,
@@ -26,4 +28,10 @@ export default async function authRoutes(app: FastifyInstance) {
   });
 
   defineRoute(app, 'authMe', async ({ staff }) => ({ user: toStaffUser(staff) }));
+
+  // Bahasa tampilan dipilih sendiri oleh staf (lembar Lainnya / layar dapur / driver).
+  defineRoute(app, 'authMeLang', async ({ staff, body }) => {
+    await app.db.update(users).set({ lang: body.lang }).where(eq(users.id, staff.id));
+    return { user: toStaffUser({ ...staff, lang: body.lang }) };
+  });
 }

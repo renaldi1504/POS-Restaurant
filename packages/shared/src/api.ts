@@ -103,6 +103,14 @@ export const endpoints = {
     response: Au.MeResponse,
     description: 'User staf yang sedang login',
   }),
+  authMeLang: def({
+    method: 'PATCH',
+    path: '/api/auth/me/lang',
+    auth: 'staff',
+    body: Au.MeLangRequest,
+    response: Au.MeResponse,
+    description: 'Simpan bahasa tampilan user yang sedang login (semua staf, tanpa izin khusus)',
+  }),
 
   staffSettings: def({
     method: 'GET',
