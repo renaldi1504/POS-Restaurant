@@ -85,8 +85,8 @@ export default function PrinterPage() {
             role="status"
             className={
               status.connected
-                ? 'rounded-xl bg-primary-tint px-3 py-2.5 font-bold text-primary-dark'
-                : 'rounded-xl bg-warn-tint px-3 py-2.5 font-bold text-warn-dark'
+                ? 'rounded-md bg-secondary-container px-3 py-2.5 font-medium text-on-secondary-container'
+                : 'rounded-md bg-warning-container px-3 py-2.5 font-medium text-on-warning-container'
             }
           >
             {status.connected
@@ -94,18 +94,20 @@ export default function PrinterPage() {
               : prefs.printer !== 'none'
                 ? t('print.saved', { name: prefs.printerName ?? '' })
                 : t('printer.disconnected')}
-            {status.error ? <div className="text-sm font-semibold text-danger">{status.error}</div> : null}
+            {status.error ? (
+              <div className="text-label-medium font-medium text-error">{status.error}</div>
+            ) : null}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Button
-              variant="outline"
+              variant="outlined"
               disabled={!supportsSerial() || status.busy}
               onClick={() => void connect('serial')}
             >
               {t('print.serial')}
             </Button>
             <Button
-              variant="outline"
+              variant="outlined"
               disabled={!supportsBluetooth() || status.busy}
               onClick={() => void connect('bluetooth')}
             >
@@ -113,17 +115,12 @@ export default function PrinterPage() {
             </Button>
           </div>
           {!supportsSerial() && !supportsBluetooth() ? (
-            <span className="text-sm text-danger">{t('print.unsupported')}</span>
+            <span className="text-label-medium text-error">{t('print.unsupported')}</span>
           ) : (
-            <span className="text-xs text-muted">{t('print.howTo')}</span>
+            <span className="text-label-medium text-on-surface-variant">{t('print.howTo')}</span>
           )}
           {prefs.printer !== 'none' ? (
-            <Button
-              variant="ghost"
-              size="md"
-              className="text-danger"
-              onClick={() => void disconnectPrinter()}
-            >
+            <Button variant="text" size="md" className="text-error" onClick={() => void disconnectPrinter()}>
               {t('print.forget')}
             </Button>
           ) : null}
@@ -168,7 +165,7 @@ export default function PrinterPage() {
           </Button>
         </Section>
         <Section title={t('printer.preview')}>
-          <div className="flex justify-center bg-[#EEF0F3] py-3">
+          <div className="flex justify-center bg-surface-container-high py-3">
             <ReceiptPreview data={sample} />
           </div>
         </Section>
@@ -179,7 +176,7 @@ export default function PrinterPage() {
             label={t('kitchen.sound')}
             description={prefs.muted ? t('kitchen.soundOff') : t('kitchen.soundOn')}
           />
-          <Button variant="outline" size="md" onClick={() => beep('order', true)}>
+          <Button variant="outlined" size="md" onClick={() => beep('order', true)}>
             {t('print.testSound')}
           </Button>
         </Section>

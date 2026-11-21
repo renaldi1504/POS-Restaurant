@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Sheet } from '../ui';
+import { Button, Chip, Icon, Sheet } from '../ui';
 import { TextField } from './Form';
 
+/** Dialog konfirmasi M3: judul, isi, tombol teks di kanan (destruktif = teks merah). */
 export function ConfirmSheet({
   open,
   title,
@@ -31,13 +32,14 @@ export function ConfirmSheet({
       variant="center"
       closeLabel={t('common.close')}
       footer={
-        <div className="flex gap-2">
-          <Button variant="outline" className="w-28" onClick={onClose}>
+        <div className="flex justify-end gap-2">
+          <Button variant="text" size="md" onClick={onClose}>
             {t('common.cancel')}
           </Button>
           <Button
-            variant={danger ? 'danger' : 'primary'}
-            className="grow"
+            variant={danger ? 'text' : 'filled'}
+            size="md"
+            className={danger ? 'text-error' : undefined}
             loading={loading}
             onClick={onConfirm}
           >
@@ -46,12 +48,12 @@ export function ConfirmSheet({
         </div>
       }
     >
-      {message ? <div className="text-base text-ink">{message}</div> : null}
+      {message ? <div className="text-body-large text-on-surface-variant">{message}</div> : null}
     </Sheet>
   );
 }
 
-/** Minta alasan (tolak / batal), opsional dengan pilihan cepat. */
+/** Minta alasan (tolak / batal), opsional dengan chip pilihan cepat. */
 export function ReasonSheet({
   open,
   title,
@@ -86,11 +88,11 @@ export function ReasonSheet({
       closeLabel={t('common.close')}
       footer={
         <div className="flex gap-2">
-          <Button variant="outline" className="w-28" onClick={onClose}>
+          <Button variant="outlined" className="w-28" onClick={onClose}>
             {t('common.cancel')}
           </Button>
           <Button
-            variant="danger"
+            variant="error"
             className="grow"
             disabled={!reason.trim()}
             loading={loading}
@@ -105,19 +107,9 @@ export function ReasonSheet({
         {quick.length ? (
           <div className="flex flex-wrap gap-2">
             {quick.map((q) => (
-              <button
-                key={q}
-                type="button"
-                aria-pressed={reason === q}
-                onClick={() => setReason(q)}
-                className={
-                  reason === q
-                    ? 'min-h-11 rounded-xl border-2 border-danger bg-danger-tint px-3 font-bold'
-                    : 'min-h-11 rounded-xl border border-line-strong bg-white px-3 font-semibold'
-                }
-              >
+              <Chip key={q} active={reason === q} onClick={() => setReason(q)}>
                 {q}
-              </button>
+              </Chip>
             ))}
           </div>
         ) : null}
@@ -133,25 +125,10 @@ export function PinPad({ value, onChange }: { value: string; onChange: (v: strin
   const { t } = useTranslation();
   const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
   const key =
-    'h-14 rounded-2xl border border-line-strong bg-white text-2xl font-bold shadow-card active:bg-bg';
+    'state-layer flex h-14 items-center justify-center rounded-full bg-surface-container-highest text-headline-small text-on-surface';
   return (
     <div className="flex flex-col items-center gap-3">
-      <div
-        role="status"
-        aria-label={t('auth.pinDots', { count: value.length })}
-        className="flex h-6 items-center gap-4"
-      >
-        {[0, 1, 2, 3].map((i) => (
-          <span
-            key={i}
-            className={
-              i < value.length
-                ? 'size-5 rounded-full bg-ink'
-                : 'size-4 rounded-full border-[1.5px] border-[#98A2B3]'
-            }
-          />
-        ))}
-      </div>
+      <PinDots count={value.length} label={t('auth.pinDots', { count: value.length })} />
       <div className="grid w-full grid-cols-3 gap-2">
         {keys.map((k) => (
           <button
@@ -165,7 +142,7 @@ export function PinPad({ value, onChange }: { value: string; onChange: (v: strin
         ))}
         <button
           type="button"
-          className={`${key} text-base text-danger`}
+          className={`${key} bg-transparent text-label-large text-error`}
           onClick={() => onChange(value.slice(0, -1))}
         >
           {t('auth.clear')}
@@ -175,6 +152,50 @@ export function PinPad({ value, onChange }: { value: string; onChange: (v: strin
         </button>
         <span />
       </div>
+    </div>
+  );
+}
+
+/** Titik PIN (terisi = primary). */
+export function PinDots({ count, label, total = 4 }: { count: number; label: string; total?: number }) {
+  return (
+    <div role="status" aria-label={label} className="flex h-6 items-center gap-4">
+      {Array.from({ length: total }, (_, i) => (
+        <span
+          key={i}
+          className={
+            i < count
+              ? 'size-5 rounded-full bg-primary transition-transform duration-200 ease-standard'
+              : 'size-4 rounded-full border-2 border-outline'
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Banner info/peringatan M3 (wadah berwarna + ikon + teks). */
+export function Banner({
+  tone = 'info',
+  children,
+  action,
+}: {
+  tone?: 'info' | 'warn' | 'error' | 'success';
+  children: ReactNode;
+  action?: ReactNode;
+}) {
+  const cls = {
+    info: 'bg-tertiary-container text-on-tertiary-container',
+    warn: 'bg-warning-container text-on-warning-container',
+    error: 'bg-error-container text-on-error-container',
+    success: 'bg-primary-container text-on-primary-container',
+  }[tone];
+  const icon = ({ info: 'info', warn: 'warning', error: 'error', success: 'check_circle' } as const)[tone];
+  return (
+    <div className={`flex items-start gap-3 rounded-md px-4 py-3 text-body-medium ${cls}`}>
+      <Icon name={icon} className="mt-px" />
+      <div className="min-w-0 grow">{children}</div>
+      {action}
     </div>
   );
 }

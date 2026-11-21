@@ -3,18 +3,20 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router';
 import type { LoginUserCard } from '@pos/shared';
-import { Badge, cn, type BadgeTone } from '../components/ui';
+import { Badge, Icon, cn, type BadgeTone } from '../components/ui';
+import { PinDots } from '../components/common/Dialogs';
 import { api, ApiError, errorMessage, qk } from '../lib/api';
 import { homePathFor, useAuthActions, useMe } from '../lib/auth';
 
 /** Warna kartu per role (mockup Login.dc.html). */
 function roleStyle(roleName: string): { avatar: string; tone: BadgeTone } {
   const n = roleName.toLowerCase();
-  if (n.includes('owner') || n.includes('admin')) return { avatar: 'bg-ink', tone: 'dark' };
-  if (n.includes('kasir')) return { avatar: 'bg-primary', tone: 'primary' };
-  if (n.includes('dapur')) return { avatar: 'bg-[#DC6803]', tone: 'warn' };
-  if (n.includes('driver')) return { avatar: 'bg-info', tone: 'info' };
-  return { avatar: 'bg-muted', tone: 'neutral' };
+  if (n.includes('owner') || n.includes('admin'))
+    return { avatar: 'bg-inverse-surface text-inverse-on-surface', tone: 'dark' };
+  if (n.includes('kasir')) return { avatar: 'bg-primary text-on-primary', tone: 'primary' };
+  if (n.includes('dapur')) return { avatar: 'bg-warning text-on-warning', tone: 'warn' };
+  if (n.includes('driver')) return { avatar: 'bg-tertiary text-on-tertiary', tone: 'info' };
+  return { avatar: 'bg-on-surface-variant text-surface', tone: 'neutral' };
 }
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -78,126 +80,113 @@ export default function LoginPage() {
   const name = settings.data?.name ?? t('common.appName');
   const hours = settings.data?.hours;
 
+  const key =
+    'state-layer flex h-16 items-center justify-center rounded-full bg-surface-container-highest text-headline-medium text-on-surface';
   return (
-    <div className="mx-auto flex min-h-dvh max-w-[480px] flex-col items-center gap-4 px-5 pb-6 pt-7">
-      <div className="flex items-center gap-3 self-stretch">
-        {settings.data?.logoUrl ? (
-          <img src={settings.data.logoUrl} alt="" className="size-14 shrink-0 rounded-[14px] object-cover" />
-        ) : (
-          <div className="flex size-14 shrink-0 items-center justify-center rounded-[14px] border-2 border-dashed border-line-strong bg-[#F2F4F7] text-[11px] font-bold text-muted">
-            LOGO
-          </div>
-        )}
-        <div className="flex flex-col gap-0.5">
-          <b className="text-[21px] leading-tight">{name}</b>
-          {hours ? (
-            <span className="text-sm text-muted">
-              {hours.open === hours.close
-                ? t('auth.open24h')
-                : t('auth.openToday', { open: hours.open, close: hours.close })}
+    <div className="mx-auto flex min-h-dvh max-w-[480px] flex-col gap-4 px-4 pb-6 pt-6 expanded:grid expanded:max-w-[1000px] expanded:grid-cols-2 expanded:content-center expanded:gap-x-12 expanded:px-8">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-4 text-center">
+          {settings.data?.logoUrl ? (
+            <img src={settings.data.logoUrl} alt="" className="size-14 shrink-0 rounded-lg object-cover" />
+          ) : (
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-primary-container text-on-primary-container">
+              <Icon name="storefront" size={32} />
             </span>
-          ) : null}
+          )}
+          <div className="flex min-w-0 flex-col items-start gap-0.5">
+            <b className="text-title-large">{name}</b>
+            {hours ? (
+              <span className="flex items-center gap-1 text-body-medium text-on-surface-variant">
+                <Icon name="schedule" size={18} />
+                {hours.open === hours.close
+                  ? t('auth.open24h')
+                  : t('auth.openToday', { open: hours.open, close: hours.close })}
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        <h1 className="text-title-medium">{t('auth.whoIsLogging')}</h1>
+        <div className="grid w-full grid-cols-2 gap-2">
+          {users.data?.users.map((u) => {
+            const st = roleStyle(u.roleName);
+            const active = selected?.id === u.id;
+            return (
+              <button
+                key={u.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => {
+                  setSelected(u);
+                  setPin('');
+                  setError(null);
+                }}
+                className={cn(
+                  'state-layer flex min-h-[72px] items-center gap-3 rounded-md px-3 text-left',
+                  active
+                    ? 'bg-secondary-container text-on-secondary-container outline-2 outline-primary'
+                    : 'bg-surface-container-low',
+                )}
+              >
+                <span
+                  className={cn(
+                    'flex size-10 shrink-0 items-center justify-center rounded-full text-label-large',
+                    st.avatar,
+                  )}
+                >
+                  {u.initials}
+                </span>
+                <span className="flex min-w-0 flex-col gap-1">
+                  <b className="truncate text-title-medium">{u.name}</b>
+                  <Badge tone={st.tone} className="self-start">
+                    {u.roleName}
+                  </Badge>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <h1 className="self-start text-[17px] font-bold">{t('auth.whoIsLogging')}</h1>
-      <div className="-mt-1.5 grid w-full grid-cols-2 gap-2">
-        {users.data?.users.map((u) => {
-          const st = roleStyle(u.roleName);
-          const active = selected?.id === u.id;
-          return (
-            <button
-              key={u.id}
-              type="button"
-              aria-pressed={active}
-              onClick={() => {
-                setSelected(u);
-                setPin('');
-                setError(null);
-              }}
-              className={cn(
-                'flex h-[68px] items-center gap-2 rounded-[14px] px-2.5 text-left',
-                active ? 'border-2 border-primary bg-primary-tint' : 'border border-line-strong bg-white',
-              )}
-            >
-              <span
-                className={cn(
-                  'flex size-10 shrink-0 items-center justify-center rounded-full text-[15px] font-extrabold text-white',
-                  st.avatar,
-                )}
-              >
-                {u.initials}
-              </span>
-              <span className="flex min-w-0 flex-col gap-0.5">
-                <b className="truncate text-[15px]">{u.name}</b>
-                <Badge tone={st.tone} className="self-start text-[11px]">
-                  {u.roleName}
-                </Badge>
-              </span>
+      <div className="flex flex-col items-center gap-4">
+        <b className="mt-1 text-title-medium">
+          {selected ? t('auth.pinFor', { name: selected.name }) : t('auth.chooseUser')}
+        </b>
+        <PinDots count={pin.length} label={t('auth.pinDots', { count: pin.length })} />
+        {error ? (
+          <p role="alert" className="-my-1 flex items-center gap-1 text-center text-body-medium text-error">
+            <Icon name="error" size={20} />
+            {error}
+          </p>
+        ) : null}
+
+        <div className="grid w-full grid-cols-3 gap-3">
+          {KEYS.map((k) => (
+            <button key={k} type="button" onClick={() => press(k)} className={key}>
+              {k}
             </button>
-          );
-        })}
-      </div>
-
-      <b className="mt-0.5 text-[17px]">
-        {selected ? t('auth.pinFor', { name: selected.name }) : t('auth.chooseUser')}
-      </b>
-      <div
-        aria-label={t('auth.pinDots', { count: pin.length })}
-        role="status"
-        className="flex h-6 items-center gap-4"
-      >
-        {[0, 1, 2, 3].map((i) => (
-          <span
-            key={i}
-            className={cn(
-              'rounded-full',
-              i < pin.length ? 'size-[22px] bg-ink' : 'size-[18px] border-[1.5px] border-[#98A2B3]',
-            )}
-          />
-        ))}
-      </div>
-      {error ? (
-        <p role="alert" className="-my-1 text-center text-base font-bold text-danger">
-          {error}
-        </p>
-      ) : null}
-
-      <div className="grid w-full grid-cols-3 gap-2.5">
-        {KEYS.map((k) => (
+          ))}
           <button
-            key={k}
             type="button"
-            onClick={() => press(k)}
-            className="h-16 rounded-2xl border border-line-strong bg-white text-[28px] font-bold shadow-card active:bg-bg"
+            onClick={() => setPin((p) => p.slice(0, -1))}
+            className="state-layer flex h-16 items-center justify-center rounded-full text-label-large text-error"
           >
-            {k}
+            {t('auth.clear')}
           </button>
-        ))}
-        <button
-          type="button"
-          onClick={() => setPin((p) => p.slice(0, -1))}
-          className="h-16 rounded-2xl border border-line-strong bg-white text-[17px] font-bold text-danger shadow-card"
-        >
-          {t('auth.clear')}
-        </button>
-        <button
-          type="button"
-          onClick={() => press('0')}
-          className="h-16 rounded-2xl border border-line-strong bg-white text-[28px] font-bold shadow-card active:bg-bg"
-        >
-          0
-        </button>
-        <button
-          type="button"
-          onClick={submit}
-          disabled={!selected || pin.length !== 4 || login.isPending}
-          className="h-16 rounded-2xl bg-primary text-lg font-extrabold text-white disabled:bg-line-strong"
-        >
-          {t('auth.login')}
-        </button>
+          <button type="button" onClick={() => press('0')} className={key}>
+            0
+          </button>
+          <button
+            type="button"
+            onClick={submit}
+            disabled={!selected || pin.length !== 4 || login.isPending}
+            className="state-layer flex h-16 items-center justify-center rounded-full bg-primary text-title-medium text-on-primary disabled:bg-on-surface/12 disabled:text-on-surface/38"
+          >
+            {t('auth.login')}
+          </button>
+        </div>
+        <span className="text-center text-body-medium text-on-surface-variant">{t('auth.shiftHint')}</span>
       </div>
-      <span className="text-center text-xs text-muted">{t('auth.shiftHint')}</span>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 import { effectiveMax, tl, type CreateItemRequest, type Lang, type MenuItemDto } from '@pos/shared';
-import { Button, Sheet, useToast } from '../../components/ui';
+import { Button, Icon, Sheet, useToast } from '../../components/ui';
 import {
   ConfirmSheet,
   MENU_PHOTO_ASPECT,
@@ -15,6 +15,7 @@ import {
   Screen,
   ScreenFooter,
   Section,
+  SelectField,
   Switch,
   TextArea,
   TopBar,
@@ -167,28 +168,32 @@ export default function MenuEditPage() {
         back={{ label: t('common.menu'), onClick: () => navigate('/admin/menu') }}
         title={isNew ? t('menux.newMenu') : t('menux.editTitle', { name: tl(d.name, lang) || '…' })}
       />
-      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-3.5 py-3">
+      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-4 py-3">
         <Section className="flex-row items-center gap-3">
-          <div className="flex h-[75px] w-[100px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#EEF1F5] text-[#98A2B3]">
+          <div className="flex aspect-[4/3] w-[112px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-container-highest text-outline">
             {photo ? (
               <img src={photo} alt={t('admin.photo')} className="size-full object-cover" />
             ) : (
-              <span aria-hidden className="text-2xl">
-                🍽
-              </span>
+              <Icon name="add_a_photo" size={32} />
             )}
           </div>
           <div className="flex grow flex-col gap-2">
             {picker.element}
             <div className="flex gap-2">
-              <Button variant="outline" size="md" className="grow" onClick={picker.open}>
+              <Button
+                variant="tonal"
+                size="md"
+                icon="photo_camera"
+                className="grow px-3"
+                onClick={picker.open}
+              >
                 {photo ? t('menux.changePhoto') : t('menux.addPhoto')}
               </Button>
               {item.data?.item.photoUrl && !file ? (
                 <Button
-                  variant="ghost"
+                  variant="text"
                   size="md"
-                  className="text-danger"
+                  className="text-error"
                   loading={removePhoto.isPending}
                   onClick={() => removePhoto.mutate()}
                 >
@@ -196,18 +201,18 @@ export default function MenuEditPage() {
                 </Button>
               ) : null}
             </div>
-            <select
+            <SelectField
+              label={t('admin.category')}
               aria-label={t('admin.category')}
               value={d.categoryId ?? ''}
               onChange={(e) => setD({ ...d, categoryId: Number(e.target.value) })}
-              className="h-11 rounded-xl border border-line-strong bg-white px-2.5 shadow-card"
             >
               {cats.data?.categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {t('admin.category')}: {tl(c.name, lang)}
+                  {tl(c.name, lang)}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </div>
         </Section>
         <Section
@@ -215,7 +220,9 @@ export default function MenuEditPage() {
           right={
             <Button
               size="md"
-              className="min-h-10 bg-info px-3 text-[13px] hover:bg-info-dark"
+              variant="tonal"
+              icon="translate"
+              className="px-4"
               loading={translate.isPending}
               disabled={!d.name.id.trim()}
               onClick={() =>
@@ -239,7 +246,7 @@ export default function MenuEditPage() {
             </Button>
           }
         >
-          <span className="-mt-1 text-xs text-muted">{t('menux.translateHint')}</span>
+          <span className="-mt-1 text-label-medium text-on-surface-variant">{t('menux.translateHint')}</span>
           <LangInputs
             big
             idPrefix="n"
@@ -251,7 +258,7 @@ export default function MenuEditPage() {
             }}
           />
           {showErr && !d.name.id.trim() ? (
-            <span className="text-sm font-bold text-danger">{t('menux.nameRequired')}</span>
+            <span className="text-label-medium font-medium text-error">{t('menux.nameRequired')}</span>
           ) : null}
           <TextArea
             label={t('menux.description')}
@@ -264,12 +271,14 @@ export default function MenuEditPage() {
         <Section title={t('menux.prices', { symbol: money.main === 'KHR' ? '៛' : money.main })}>
           <div className="grid grid-cols-3 gap-2">
             <MoneyInput
+              suffix={false}
               label={t('menux.store')}
               currency={money.main}
               value={d.store}
               onChange={(v) => setD({ ...d, store: v })}
             />
             <MoneyInput
+              suffix={false}
               label="Grab"
               currency={money.main}
               value={d.grab}
@@ -277,6 +286,7 @@ export default function MenuEditPage() {
               placeholder="—"
             />
             <MoneyInput
+              suffix={false}
               label="foodpanda"
               currency={money.main}
               value={d.foodpanda}
@@ -284,21 +294,24 @@ export default function MenuEditPage() {
               placeholder="—"
             />
           </div>
-          <span className="text-xs text-muted">{t('menux.platformEmpty')}</span>
+          <span className="text-label-medium text-on-surface-variant">{t('menux.platformEmpty')}</span>
           {showErr && d.store === null ? (
-            <span className="text-sm font-bold text-danger">{t('menux.priceRequired')}</span>
+            <span className="text-label-medium font-medium text-error">{t('menux.priceRequired')}</span>
           ) : null}
         </Section>
         <Section title={t('menux.groupsTitle')}>
           {attached.map((g, i) => (
-            <div key={g.id} className="flex min-h-12 items-center gap-2 border-b border-[#F2F4F7]">
+            <div
+              key={g.id}
+              className="flex min-h-12 items-center gap-2 border-b border-surface-container-highest"
+            >
               <button
                 type="button"
                 onClick={() => navigate(`/admin/opsi/${g.id}`)}
                 className="flex grow flex-col text-left"
               >
-                <b className="text-[15px]">{tl(g.name, lang)}</b>
-                <span className="text-xs text-muted">
+                <b className="text-body-medium">{tl(g.name, lang)}</b>
+                <span className="text-label-medium text-on-surface-variant">
                   {groupRuleShort(g, t)} · {t('menux.nOptions', { count: g.options.length })}
                 </span>
               </button>
@@ -313,9 +326,9 @@ export default function MenuEditPage() {
                     return { ...x, optionGroupIds: a };
                   })
                 }
-                className="size-10 rounded-lg text-lg disabled:opacity-30"
+                className="state-layer flex size-12 items-center justify-center rounded-full text-on-surface-variant disabled:opacity-38"
               >
-                ↑
+                <Icon name="arrow_back" className="rotate-90" />
               </button>
               <button
                 type="button"
@@ -323,18 +336,19 @@ export default function MenuEditPage() {
                 onClick={() =>
                   setD((x) => ({ ...x, optionGroupIds: x.optionGroupIds.filter((y) => y !== g.id) }))
                 }
-                className="size-10 rounded-lg text-xl font-bold text-danger"
+                className="state-layer flex size-12 items-center justify-center rounded-full text-error"
               >
-                ×
+                <Icon name="close" />
               </button>
             </div>
           ))}
           <button
             type="button"
             onClick={() => setPickOpen(true)}
-            className="h-11 rounded-xl border-[1.5px] border-dashed border-[#98A2B3] text-sm font-bold"
+            className="state-layer flex min-h-12 items-center justify-center gap-2 rounded-full bg-secondary-container text-label-large text-on-secondary-container"
           >
-            + {t('menux.attachGroup')}
+            <Icon name="add" />
+            {t('menux.attachGroup')}
           </button>
         </Section>
         <Section>
@@ -360,8 +374,9 @@ export default function MenuEditPage() {
         </Section>
         {id ? (
           <Button
-            variant="outline"
-            className="border-2 border-[#F04438] text-danger"
+            variant="outlined"
+            icon="delete"
+            className="border-error text-error"
             onClick={() => setDelOpen(true)}
           >
             {t('menux.deleteMenu')}
@@ -370,9 +385,8 @@ export default function MenuEditPage() {
       </main>
       <ScreenFooter>
         <Button
-          size="xl"
+          size="lg"
           block
-          className="h-[60px] text-xl"
           loading={save.isPending}
           onClick={() => {
             if (!valid) {
@@ -399,7 +413,10 @@ export default function MenuEditPage() {
         {groups.data?.optionGroups.map((g) => {
           const on = d.optionGroupIds.includes(g.id);
           return (
-            <label key={g.id} className="flex min-h-[52px] items-center gap-3 border-b border-[#F2F4F7]">
+            <label
+              key={g.id}
+              className="flex min-h-[52px] items-center gap-3 border-b border-surface-container-highest"
+            >
               <input
                 type="checkbox"
                 className="size-6 accent-primary"
@@ -415,7 +432,7 @@ export default function MenuEditPage() {
               />
               <span className="flex flex-col">
                 <b>{tl(g.name, lang)}</b>
-                <span className="text-xs text-muted">
+                <span className="text-label-medium text-on-surface-variant">
                   {g.required ? t('common.required') : t('common.optional')} ·{' '}
                   {effectiveMax(g) === 1
                     ? t('common.chooseOne')

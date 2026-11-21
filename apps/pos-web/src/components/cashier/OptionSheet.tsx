@@ -16,7 +16,8 @@ import {
   type MenuItemDto,
   type OptionGroupDto,
 } from '@pos/shared';
-import { cn } from '../ui';
+import { Badge, Button, Icon, Stepper, cn } from '../ui';
+import { TextField } from '../common/Form';
 
 export interface OptionSheetProps {
   item: MenuItemDto | null;
@@ -83,46 +84,39 @@ export function OptionSheet({ item, groups, basePrice, currency, onClose, onAdd 
   const hasPriced = groups.some((g) => g.options.some((o) => o.priceDelta > 0));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-scrim medium:items-center medium:p-6"
+      onClick={onClose}
+    >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={tl(item.name, lang)}
         onClick={(e) => e.stopPropagation()}
-        className="flex h-[94dvh] w-full max-w-[560px] flex-col overflow-hidden rounded-t-[20px] bg-bg"
+        className="flex h-[94dvh] w-full max-w-[560px] animate-sheet-up flex-col overflow-hidden rounded-t-xl bg-surface-container-low shadow-e3 medium:h-auto medium:max-h-[90dvh] medium:animate-fade-in medium:rounded-xl"
       >
         <main className="flex min-h-0 grow flex-col overflow-y-auto">
-          <div className="relative flex h-[150px] shrink-0 items-center justify-center bg-[#EEF1F5] text-[#98A2B3]">
+          <div className="relative flex h-[160px] shrink-0 items-center justify-center bg-surface-container-high text-outline">
             {item.photoUrl ? (
               <img src={item.photoUrl} alt="" className="size-full object-cover" />
             ) : (
-              <svg
-                width="40"
-                height="40"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                aria-hidden
-              >
-                <path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
-              </svg>
+              <Icon name="restaurant" size={48} />
             )}
             <button
               type="button"
               onClick={onClose}
               aria-label={t('opsi.backToMenu')}
-              className="absolute left-3 top-3 flex size-11 items-center justify-center rounded-full bg-white text-[22px] font-bold text-ink shadow-[0_1px_3px_rgba(16,24,40,0.15)]"
+              className="state-layer absolute left-3 top-3 flex size-12 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface shadow-e1"
             >
-              ‹
+              <Icon name="arrow_back" />
             </button>
           </div>
-          <div className="flex flex-col gap-1 bg-white px-4 py-3.5">
-            <b className="text-[21px]">{tl(item.name, lang)}</b>
+          <div className="flex flex-col gap-1 px-6 pb-2 pt-4">
+            <b className="text-headline-small">{tl(item.name, lang)}</b>
             {tl(item.description, lang) ? (
-              <span className="text-[13px] text-muted">{tl(item.description, lang)}</span>
+              <span className="text-body-medium text-on-surface-variant">{tl(item.description, lang)}</span>
             ) : null}
-            <b className="mt-0.5 text-[17px] text-primary-dark">
+            <b className="mt-0.5 text-title-medium tabular-nums text-primary">
               {hasPriced ? t('opsi.startFrom', { price: fmt(basePrice) }) : fmt(basePrice)}
             </b>
           </div>
@@ -136,29 +130,25 @@ export function OptionSheet({ item, groups, basePrice, currency, onClose, onAdd 
             return (
               <section
                 key={g.id}
-                className="mt-2 flex flex-col bg-white px-4 pb-1.5 pt-3"
+                className="mx-4 mt-3 flex flex-col rounded-md bg-surface-container-lowest px-4 pb-1 pt-3"
                 aria-labelledby={`grp-${g.id}`}
               >
                 <div className="mb-1 flex items-center justify-between gap-2">
                   <div className="flex flex-col gap-0.5">
-                    <b id={`grp-${g.id}`} className="text-base">
+                    <b id={`grp-${g.id}`} className="text-title-medium">
                       {tl(g.name, lang)}
                     </b>
-                    <span className="text-xs text-muted">{groupRuleLabel(g, inGroup.length, t)}</span>
+                    <span className="text-body-medium text-on-surface-variant">
+                      {groupRuleLabel(g, inGroup.length, t)}
+                    </span>
                   </div>
                   {g.required ? (
-                    <span
-                      className={cn(
-                        'shrink-0 rounded-[7px] px-2 py-1 text-xs font-extrabold',
-                        satisfied ? 'bg-primary-tint text-primary-dark' : 'bg-danger-tint text-danger',
-                      )}
-                    >
+                    <Badge tone={satisfied ? 'primary' : 'danger'} className="shrink-0">
+                      <Icon name={satisfied ? 'check' : 'error'} size={16} />
                       {satisfied ? t('opsi.chosen') : t('common.required')}
-                    </span>
+                    </Badge>
                   ) : (
-                    <span className="shrink-0 rounded-[7px] bg-[#F2F4F7] px-2 py-1 text-xs font-extrabold text-[#475467]">
-                      {t('common.optional')}
-                    </span>
+                    <Badge className="shrink-0">{t('common.optional')}</Badge>
                   )}
                 </div>
                 <div role={radio ? 'radiogroup' : 'group'} aria-labelledby={`grp-${g.id}`}>
@@ -175,22 +165,13 @@ export function OptionSheet({ item, groups, basePrice, currency, onClose, onAdd 
                         aria-disabled={off || undefined}
                         onClick={() => !off && setSelected((s) => toggleOption(g, s, o.id))}
                         className={cn(
-                          'flex min-h-[52px] w-full items-center gap-3 border-b border-[#F2F4F7] text-left text-[15px]',
-                          off && 'opacity-45',
+                          'flex min-h-14 w-full items-center gap-4 border-b border-surface-container-highest text-left text-body-large last:border-b-0',
+                          off && 'opacity-38',
                         )}
                       >
-                        <span
-                          className={cn(
-                            'flex size-[22px] shrink-0 items-center justify-center border-2 text-[13px] font-extrabold text-white',
-                            radio ? 'rounded-full' : 'rounded-md',
-                            on ? 'border-primary bg-primary' : 'border-[#98A2B3] bg-white',
-                          )}
-                          aria-hidden
-                        >
-                          {on ? (radio ? '•' : '✓') : ''}
-                        </span>
+                        <SelectMark radio={radio} on={on} />
                         <span className="grow">{tl(o.name, lang)}</span>
-                        <span className="text-muted">
+                        <span className="text-body-medium tabular-nums text-on-surface-variant">
                           {!o.available ? t('common.soldOut') : o.priceDelta ? `+${fmt(o.priceDelta)}` : ''}
                         </span>
                       </button>
@@ -201,63 +182,72 @@ export function OptionSheet({ item, groups, basePrice, currency, onClose, onAdd 
             );
           })}
 
-          <section className="mt-2 flex flex-col gap-1.5 bg-white px-4 pb-4 pt-3">
-            <label htmlFor="opt-note" className="font-bold">
-              {t('order.itemNote')}{' '}
-              <span className="font-medium text-muted">({t('common.optional').toLowerCase()})</span>
-            </label>
-            <input
+          <section className="mx-4 my-3 flex flex-col gap-1.5">
+            <TextField
               id="opt-note"
+              label={t('order.itemNote')}
+              hint={`(${t('common.optional').toLowerCase()})`}
               value={note}
               maxLength={200}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t('opsi.notePlaceholder')}
-              className="h-12 rounded-xl border border-line-strong px-3 text-[15px]"
             />
           </section>
         </main>
-        <footer className="flex shrink-0 flex-col gap-2 border-t border-line bg-white px-3.5 pb-[max(14px,env(safe-area-inset-bottom))] pt-2.5">
+        <footer className="flex shrink-0 flex-col gap-2 bg-surface-container px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 medium:pb-4">
           {firstMissing ? (
-            <span className="text-center text-[13px] font-bold text-danger" role="status">
+            <span
+              className="flex items-center justify-center gap-1 text-center text-label-large text-error"
+              role="status"
+            >
+              <Icon name="error" size={18} />
               {t('opsi.missing', { name: tl(firstMissing.name, lang) })}
             </span>
           ) : null}
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-[54px] items-center gap-1 rounded-[14px] border border-line-strong px-1">
-              <button
-                type="button"
-                aria-label={t('opsi.decQty')}
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="h-11 w-10 text-[22px] font-extrabold"
-              >
-                −
-              </button>
-              <b className="min-w-[18px] text-center text-[17px]" aria-live="polite">
-                {qty}
-              </b>
-              <button
-                type="button"
-                aria-label={t('opsi.incQty')}
-                onClick={() => setQty((q) => Math.min(99, q + 1))}
-                className="h-11 w-10 text-[22px] font-extrabold"
-              >
-                +
-              </button>
-            </div>
-            <button
-              type="button"
+          <div className="flex items-center gap-3">
+            <Stepper
+              value={qty}
+              onChange={setQty}
+              min={1}
+              max={99}
+              label={tl(item.name, lang)}
+              decLabel={t('opsi.decQty')}
+              incLabel={t('opsi.incQty')}
+            />
+            <Button
+              size="lg"
+              className="min-w-0 grow whitespace-nowrap px-4 text-label-large"
               disabled={!result.ok}
               onClick={() => onAdd({ optionIds: selected, qty, note: note.trim() || undefined })}
-              className={cn(
-                'h-[54px] grow rounded-[14px] text-base font-extrabold',
-                result.ok ? 'bg-primary text-white' : 'cursor-not-allowed bg-[#E4E7EC] text-[#475467]',
-              )}
             >
               {t('order.addToCart', { price: fmt(total) })}
-            </button>
+            </Button>
           </div>
         </footer>
       </div>
     </div>
+  );
+}
+
+/** Tanda radio / checkbox M3 (24px). */
+function SelectMark({ radio, on }: { radio: boolean; on: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'flex size-6 shrink-0 items-center justify-center border-2',
+        radio ? 'rounded-full' : 'rounded-xs',
+        on ? 'border-primary' : 'border-on-surface-variant',
+        on && !radio && 'bg-primary text-on-primary',
+      )}
+    >
+      {on ? (
+        radio ? (
+          <span className="size-3 rounded-full bg-primary" />
+        ) : (
+          <Icon name="check" size={18} />
+        )
+      ) : null}
+    </span>
   );
 }

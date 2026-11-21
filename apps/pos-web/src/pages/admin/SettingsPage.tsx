@@ -1,6 +1,6 @@
 /** Settings — acuan: docs/mockups/Settings.dc.html. */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import {
@@ -17,6 +17,7 @@ import {
   CURRENCY_LABEL,
   ConfirmSheet,
   ErrorBlock,
+  ListRow,
   LoadingBlock,
   MoneyInput,
   NumberBox,
@@ -26,7 +27,7 @@ import {
   Switch,
   TextField,
 } from '../../components/common';
-import { Badge, Button, Segmented, Sheet, useToast } from '../../components/ui';
+import { Badge, Button, Icon, Segmented, Sheet, useToast } from '../../components/ui';
 import { api, errorMessage, qk } from '../../lib/api';
 import { setPrefs } from '../../lib/prefs';
 
@@ -38,19 +39,6 @@ export function settingsDiff(orig: Settings, draft: Settings): SettingsPatch {
   for (const k of Object.keys(draft) as (keyof Settings)[])
     if (JSON.stringify(orig[k]) !== JSON.stringify(draft[k])) out[k] = draft[k];
   return out as SettingsPatch;
-}
-
-function LinkRow({ label, onClick, last }: { label: ReactNode; onClick: () => void; last?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex h-[52px] w-full items-center justify-between text-left font-semibold ${last ? '' : 'border-b border-[#F2F4F7]'}`}
-    >
-      <span>{label}</span>
-      <span aria-hidden>›</span>
-    </button>
-  );
 }
 
 export default function SettingsPage() {
@@ -123,24 +111,30 @@ export default function SettingsPage() {
     <Screen testId="settings-screen">
       <AdminBar
         title={t('admin.settings')}
-        right={<span className="text-xs text-muted">{t('setx.adminOnly')}</span>}
+        right={<span className="text-label-medium text-on-surface-variant">{t('setx.adminOnly')}</span>}
       />
-      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto p-3">
+      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-4 py-3">
         <Section title={t('setx.profileLogo')}>
           <div className="flex items-center gap-2.5">
             {d.profile.logoUrl ? (
               <img
                 src={d.profile.logoUrl}
                 alt={t('admin.logo')}
-                className="size-16 shrink-0 rounded-[14px] object-cover"
+                className="size-16 shrink-0 rounded-lg object-cover"
               />
             ) : (
-              <div className="flex size-16 shrink-0 items-center justify-center rounded-[14px] border-2 border-dashed border-line-strong bg-[#F2F4F7] text-[10px] font-bold text-muted">
-                LOGO
-              </div>
+              <span className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-surface-container-highest text-on-surface-variant">
+                <Icon name="image" size={32} />
+              </span>
             )}
             {logoPicker.element}
-            <Button variant="outline" size="md" loading={logo.isPending} onClick={logoPicker.open}>
+            <Button
+              variant="tonal"
+              size="md"
+              icon="upload"
+              loading={logo.isPending}
+              onClick={logoPicker.open}
+            >
               {t('setx.uploadLogo')}
             </Button>
           </div>
@@ -174,7 +168,7 @@ export default function SettingsPage() {
               onChange={(e) => set('profile', { lng: e.target.value === '' ? null : Number(e.target.value) })}
             />
           </div>
-          <span className="text-xs text-muted">{t('setx.latLngHint')}</span>
+          <span className="text-label-medium text-on-surface-variant">{t('setx.latLngHint')}</span>
         </Section>
 
         <Section title={t('admin.hours')}>
@@ -185,7 +179,7 @@ export default function SettingsPage() {
               inputMode="numeric"
               placeholder="08:00"
               maxLength={5}
-              inputClassName="h-[50px] text-[22px] font-extrabold"
+              inputClassName="h-[50px] text-title-large font-medium"
               onChange={(e) => set('hours', { open: e.target.value.replace('.', ':') })}
               error={HHMM.test(d.hours.open) ? null : 'HH:MM'}
             />
@@ -195,21 +189,21 @@ export default function SettingsPage() {
               inputMode="numeric"
               placeholder="03:00"
               maxLength={5}
-              inputClassName="h-[50px] text-[22px] font-extrabold"
+              inputClassName="h-[50px] text-title-large font-medium"
               onChange={(e) => set('hours', { close: e.target.value.replace('.', ':') })}
               error={HHMM.test(d.hours.close) ? null : 'HH:MM'}
             />
           </div>
-          <span className="text-xs text-muted">{t('setx.hoursHint')}</span>
+          <span className="text-label-medium text-on-surface-variant">{t('setx.hoursHint')}</span>
         </Section>
 
         <Section title={t('admin.currency')}>
           {CURRENCIES.map((c: Currency) => (
-            <div key={c} className="flex min-h-11 items-center gap-2 border-b border-[#F2F4F7]">
-              <label className="flex grow items-center gap-2 font-bold">
+            <div key={c} className="flex min-h-14 items-center gap-2 border-b border-outline-variant/60">
+              <label className="flex min-h-12 grow items-center gap-3 text-body-large">
                 <input
                   type="checkbox"
-                  className="size-5 accent-primary"
+                  className="size-6 accent-primary"
                   checked={d.currency.enabled.includes(c)}
                   disabled={c === d.currency.main}
                   onChange={(e) =>
@@ -223,13 +217,14 @@ export default function SettingsPage() {
                 {CURRENCY_LABEL[c]} {c === 'KHR' ? '៛' : c === 'USD' ? '$' : 'Rp'}
               </label>
               {d.currency.main === c ? (
-                <span className="rounded-lg bg-ink px-2.5 py-1 text-xs font-bold text-white">
+                <Badge tone="primary">
+                  <Icon name="star" filled size={16} />
                   {t('setx.main')}
-                </span>
+                </Badge>
               ) : d.currency.enabled.includes(c) ? (
                 <button
                   type="button"
-                  className="rounded-lg border border-line-strong px-2.5 py-1 text-xs font-bold"
+                  className="state-layer min-h-12 rounded-full px-3 text-label-large text-primary"
                   onClick={() => set('currency', { main: c })}
                 >
                   {t('setx.makeMain')}
@@ -237,7 +232,7 @@ export default function SettingsPage() {
               ) : null}
             </div>
           ))}
-          <div className="flex h-[52px] items-center gap-2 border-b border-[#F2F4F7]">
+          <div className="flex h-[52px] items-center gap-2 border-b border-surface-container-highest">
             <b className="grow">$1 =</b>
             <MoneyInput
               ariaLabel={t('setx.rateUsd')}
@@ -260,7 +255,7 @@ export default function SettingsPage() {
             <span>៛</span>
           </div>
           {d.currency.main !== 'KHR' ? (
-            <span className="text-xs text-warn-dark">{t('setx.mainWarn')}</span>
+            <span className="text-label-medium text-warning">{t('setx.mainWarn')}</span>
           ) : null}
         </Section>
 
@@ -279,7 +274,7 @@ export default function SettingsPage() {
               onChange={(v) => set('delivery', { defaultFee: v ?? 0 })}
             />
           </div>
-          <span className="text-xs text-muted">{t('setx.deliveryHint')}</span>
+          <span className="text-label-medium text-on-surface-variant">{t('setx.deliveryHint')}</span>
         </Section>
 
         <Section title={t('setx.operations')}>
@@ -336,7 +331,7 @@ export default function SettingsPage() {
               setD((x) => (x ? { ...x, payment: { aba: { ...x.payment.aba, qrImageUrl: url } } } : x));
             }}
           />
-          <span className="text-xs text-muted">{t('setx.abaHint')}</span>
+          <span className="text-label-medium text-on-surface-variant">{t('setx.abaHint')}</span>
         </Section>
 
         <Section title={t('setx.botAi')}>
@@ -371,7 +366,7 @@ export default function SettingsPage() {
               {integ.r2 ? t('admin.integrationOn') : t('admin.integrationOff')}
             </Badge>
           </div>
-          <span className="text-xs text-muted">{t('setx.keysHint')}</span>
+          <span className="text-label-medium text-on-surface-variant">{t('setx.keysHint')}</span>
         </Section>
 
         <Section title={t('admin.textSize')}>
@@ -385,23 +380,25 @@ export default function SettingsPage() {
               { value: 'xlarge', label: t('admin.textXLarge') },
             ]}
           />
-          <span className="text-xs text-muted">{t('setx.textSizeHint')}</span>
+          <span className="text-label-medium text-on-surface-variant">{t('setx.textSizeHint')}</span>
         </Section>
 
-        <section className="shrink-0 rounded-card bg-white px-3 py-1 shadow-card">
-          <LinkRow
+        <section className="shrink-0 overflow-hidden rounded-md bg-surface-container-low py-1">
+          <ListRow
+            icon="qr_code_2"
             label={t('setx.tablesLink', { count: tables.data?.tables.length ?? 0 })}
             onClick={() => navigate('/admin/meja')}
           />
-          <LinkRow
+          <ListRow
+            icon="two_wheeler"
             label={t('setx.driversLink', { count: drivers })}
             onClick={() => navigate('/admin/pengguna')}
           />
-          <LinkRow label={t('setx.promoLink')} onClick={() => navigate('/admin/promo')} />
-          <LinkRow label={t('admin.users')} onClick={() => navigate('/admin/pengguna')} />
-          <LinkRow label={t('admin.expenseCategories')} onClick={() => setCatsOpen(true)} />
-          <LinkRow label={t('admin.printerSound')} onClick={() => navigate('/printer')} />
-          <LinkRow label={t('admin.telegramBot')} onClick={() => navigate('/admin/telegram')} last />
+          <ListRow icon="sell" label={t('setx.promoLink')} onClick={() => navigate('/admin/promo')} />
+          <ListRow icon="group" label={t('admin.users')} onClick={() => navigate('/admin/pengguna')} />
+          <ListRow icon="payments" label={t('admin.expenseCategories')} onClick={() => setCatsOpen(true)} />
+          <ListRow icon="print" label={t('admin.printerSound')} onClick={() => navigate('/printer')} />
+          <ListRow icon="send" label={t('admin.telegramBot')} onClick={() => navigate('/admin/telegram')} />
         </section>
       </main>
       {dirty ? (
@@ -458,10 +455,13 @@ function ExpenseCategoriesSheet({ open, onClose }: { open: boolean; onClose: () 
   return (
     <Sheet open={open} onClose={onClose} title={t('admin.expenseCategories')} closeLabel={t('common.close')}>
       {cats.data?.categories.map((c) => (
-        <div key={c.id} className="flex min-h-12 items-center gap-2 border-b border-[#F2F4F7]">
-          <span className="grow font-semibold">{c.name}</span>
+        <div
+          key={c.id}
+          className="flex min-h-12 items-center gap-2 border-b border-surface-container-highest"
+        >
+          <span className="grow font-medium">{c.name}</span>
           <Button
-            variant="ghost"
+            variant="text"
             size="md"
             onClick={() => {
               setEditId(c.id);
@@ -470,7 +470,7 @@ function ExpenseCategoriesSheet({ open, onClose }: { open: boolean; onClose: () 
           >
             {t('common.edit')}
           </Button>
-          <Button variant="ghost" size="md" className="text-danger" onClick={() => setDelId(c.id)}>
+          <Button variant="text" size="md" className="text-error" onClick={() => setDelId(c.id)}>
             {t('common.delete')}
           </Button>
         </div>
@@ -540,29 +540,36 @@ export function AbaQrField({
   const picker = usePhotoPicker(1, (f) => upload.mutate(f));
   return (
     <div className="flex flex-col gap-1" data-testid="aba-qr-field">
-      <span className="text-sm font-bold text-ink">
+      <span className="text-label-medium font-medium text-on-surface">
         {t('setx.abaQr')}{' '}
-        <span className="font-medium text-muted">({t('common.optional').toLowerCase()})</span>
+        <span className="font-medium text-on-surface-variant">({t('common.optional').toLowerCase()})</span>
       </span>
       <div className="flex items-center gap-3">
         {url ? (
           <img
             src={url}
             alt={t('setx.abaQr')}
-            className="size-28 shrink-0 rounded-xl border border-line object-contain bg-white"
+            className="size-32 shrink-0 rounded-md border border-outline-variant bg-white object-contain p-1"
           />
         ) : (
-          <div className="flex size-28 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-line-strong bg-bg px-2 text-center text-xs text-muted">
+          <div className="flex size-32 shrink-0 flex-col items-center justify-center gap-1 rounded-md bg-surface-container-highest px-2 text-center text-label-medium text-on-surface-variant">
+            <Icon name="qr_code_2" size={36} />
             {t('setx.abaQrNone')}
           </div>
         )}
         {picker.element}
         <div className="flex grow flex-col gap-2">
-          <Button variant="secondary" size="md" loading={upload.isPending} onClick={picker.open}>
+          <Button variant="tonal" size="md" icon="upload" loading={upload.isPending} onClick={picker.open}>
             {url ? t('setx.abaQrReplace') : t('setx.abaQrUpload')}
           </Button>
           {url ? (
-            <Button variant="ghost" size="md" className="text-danger" onClick={() => setConfirmRemove(true)}>
+            <Button
+              variant="text"
+              size="md"
+              icon="delete"
+              className="text-error"
+              onClick={() => setConfirmRemove(true)}
+            >
               {t('setx.abaQrRemove')}
             </Button>
           ) : null}

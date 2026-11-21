@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { formatMoney, type OrderDto } from '@pos/shared';
-import { Button, EmptyState, Sheet, useToast } from '../../components/ui';
+import { Button, EmptyState, Icon, Sheet, useToast } from '../../components/ui';
 import {
   ErrorBlock,
   LoadingBlock,
@@ -57,26 +57,27 @@ export default function OnlineOrdersPage() {
       {list.length ? (
         <div
           role="status"
-          className="flex shrink-0 items-center gap-2.5 bg-[#FDB022] px-3.5 py-2.5 text-base font-extrabold"
+          className="mx-4 flex shrink-0 items-center gap-3 rounded-md bg-warning-container px-4 py-3 text-body-large text-on-warning-container"
         >
+          <Icon name="notifications_active" />
           {t('online.banner', { count: list.length })}
         </div>
       ) : null}
-      <main className="min-h-0 grow overflow-y-auto p-3">
+      <main className="min-h-0 grow overflow-y-auto px-4 py-3">
         {pending.isLoading ? <LoadingBlock /> : null}
         {pending.isError ? <ErrorBlock error={pending.error} onRetry={() => void pending.refetch()} /> : null}
         {pending.data && !list.length ? (
-          <EmptyState title={t('online.none')} description={t('online.noneHint')} />
+          <EmptyState icon="notifications" title={t('online.none')} description={t('online.noneHint')} />
         ) : null}
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-3 medium:grid-cols-2 large:grid-cols-3">
           {list.map((o) => (
             <OnlineCard key={o.id} order={o} />
           ))}
         </div>
         {checking.length ? (
           <>
-            <h2 className="mb-2 mt-5 text-base font-extrabold">{t('online.checkingTitle')}</h2>
-            <div className="grid gap-3 md:grid-cols-2">
+            <h2 className="mb-2 mt-5 text-title-medium">{t('online.checkingTitle')}</h2>
+            <div className="grid gap-3 medium:grid-cols-2 large:grid-cols-3">
               {checking.map((o) => (
                 <OnlineCard key={o.id} order={o} />
               ))}
@@ -85,18 +86,18 @@ export default function OnlineOrdersPage() {
         ) : null}
         {others.length ? (
           <>
-            <h2 className="mb-2 mt-5 text-base font-extrabold">{t('online.inProgress')}</h2>
-            <div className="flex flex-col gap-2">
+            <h2 className="mb-2 mt-5 text-title-medium">{t('online.inProgress')}</h2>
+            <div className="grid gap-2 expanded:grid-cols-2">
               {others.map((o) => (
                 <button
                   key={o.id}
                   type="button"
                   onClick={() => navigate(`/kasir/pesanan/${o.id}`)}
-                  className="flex min-h-14 items-center gap-2 rounded-card bg-white px-3 py-2 text-left shadow-card"
+                  className="state-layer flex min-h-[72px] items-center gap-3 rounded-md border border-outline-variant bg-surface-container-lowest px-4 py-2 text-left"
                 >
-                  <b className="w-16 shrink-0">{o.displayNo}</b>
+                  <b className="w-16 shrink-0 text-title-medium tabular-nums">{o.displayNo}</b>
                   <span className="flex min-w-0 grow flex-col">
-                    <span className="truncate font-semibold">
+                    <span className="truncate font-medium">
                       {o.customerName ?? o.customer?.name ?? o.table?.name ?? '—'}
                     </span>
                     <SourceBadge channel={o.channel} />
@@ -174,27 +175,27 @@ export function OnlineCard({ order: o }: { order: OrderDto }) {
 
   return (
     <article
-      className="flex flex-col gap-2.5 rounded-card border-2 border-warn bg-white p-3.5 shadow-card"
+      className="flex flex-col gap-3 rounded-md border-2 border-warning bg-surface-container-lowest p-4 shadow-e1"
       data-testid="online-card"
       data-order-no={o.displayNo}
     >
       <div className="flex items-center justify-between">
         <SourceBadge channel={o.channel} size="md" />
-        <span className="text-[13px] text-muted">
+        <span className="text-label-medium text-on-surface-variant">
           {t('online.becomes', { time: timeHM(o.createdAt), no: o.displayNo })}
         </span>
       </div>
       <div className="flex flex-col gap-0.5">
-        <b className="text-[19px]">{who}</b>
-        <span className="text-sm text-muted">{how}</span>
+        <b className="text-title-large">{who}</b>
+        <span className="text-body-medium text-on-surface-variant">{how}</span>
         {o.address?.landmark ? (
-          <span className="text-sm text-muted">
+          <span className="text-label-medium text-on-surface-variant">
             {t('order.landmark')}: {o.address.landmark}
           </span>
         ) : null}
       </div>
       {o.items.length <= 4 ? (
-        <div className="border-y border-[#F2F4F7] py-1.5 text-[15px]">
+        <div className="border-y border-surface-container-highest py-1.5 text-body-medium">
           <OrderItemsList order={o} lang={i18n.language} compact />
         </div>
       ) : null}
@@ -204,22 +205,22 @@ export function OnlineCard({ order: o }: { order: OrderDto }) {
             ? `${t('common.items', { count: itemCount })} · ${t('common.total')}`
             : t('common.total')}
         </span>
-        <b className="text-2xl tabular-nums">{formatMoney(o.total, o.currency)}</b>
+        <b className="text-headline-small font-medium tabular-nums">{formatMoney(o.total, o.currency)}</b>
       </div>
       {o.note ? (
-        <div className="text-sm font-bold text-danger">
+        <div className="text-body-medium font-medium text-error">
           {t('common.note')}: {o.note}
         </div>
       ) : null}
       {o.paymentMethod === 'aba' ? (
         noProof ? (
-          <div className="rounded-[10px] bg-warn-tint px-3 py-2 text-sm text-warn-dark">
+          <div className="rounded-sm bg-warning-container px-3 py-2 text-body-medium text-on-warning-container">
             <b>{t('online.abaWaiting')}</b>
             <br />
             {t('online.notSentYet')}
           </div>
         ) : (
-          <div className="flex flex-col gap-2 rounded-[10px] bg-primary-tint px-3 py-2 text-sm text-primary-dark">
+          <div className="flex flex-col gap-2 rounded-sm bg-secondary-container px-3 py-2 text-body-medium text-on-secondary-container">
             <span>
               <b>{o.paymentStatus === 'paid' ? t('online.abaVerified') : t('online.abaProof')}</b>
               {pay ? (
@@ -231,14 +232,14 @@ export function OnlineCard({ order: o }: { order: OrderDto }) {
             </span>
             {o.proofUrl ? (
               <div className="flex gap-2">
-                <Button size="md" variant="outline" className="grow" onClick={() => setProofOpen(true)}>
+                <Button size="md" variant="outlined" className="grow" onClick={() => setProofOpen(true)}>
                   {t('online.viewProof')}
                 </Button>
                 {pay ? (
                   <Button
                     size="md"
-                    variant="outline"
-                    className="text-danger"
+                    variant="outlined"
+                    className="border-error text-error"
                     loading={decline.isPending}
                     onClick={() => decline.mutate()}
                   >
@@ -250,12 +251,13 @@ export function OnlineCard({ order: o }: { order: OrderDto }) {
           </div>
         )
       ) : o.paymentMethod === 'cash' ? (
-        <div className="rounded-[10px] bg-[#F2F4F7] px-3 py-2 text-sm font-bold">
+        <div className="rounded-sm bg-surface-container-high px-3 py-2 text-body-medium">
           {o.type === 'delivery' ? t('order.payCash') : t('online.payAtCashier')}
         </div>
       ) : null}
       {o.type === 'delivery' ? (
-        <div className="rounded-[10px] bg-info-tint px-3 py-2 text-[13px] text-info-dark">
+        <div className="flex items-center gap-2 rounded-sm bg-tertiary-container px-3 py-2 text-body-medium text-on-tertiary-container">
+          <Icon name="delivery_dining" size={20} />
           {t('online.driverNote')}
         </div>
       ) : null}
@@ -264,7 +266,7 @@ export function OnlineCard({ order: o }: { order: OrderDto }) {
           <button
             type="button"
             onClick={() => setRejectOpen(true)}
-            className="h-14 w-[104px] rounded-[14px] border-2 border-[#F04438] bg-white text-base font-extrabold text-danger shadow-card"
+            className="state-layer h-14 w-[112px] shrink-0 rounded-full border border-error text-label-large text-error"
           >
             {t('cashier.reject')}
           </button>
@@ -274,19 +276,19 @@ export function OnlineCard({ order: o }: { order: OrderDto }) {
             <button
               type="button"
               disabled
-              className="h-14 grow cursor-default rounded-[14px] bg-[#E4E7EC] text-[17px] font-extrabold text-[#475467]"
+              className="h-14 grow cursor-default rounded-full bg-on-surface/12 text-label-large text-on-surface/60"
             >
               {t('online.waitingProofBtn')}
             </button>
           ) : (
-            <Button className="h-14 grow text-xl" loading={accept.isPending} onClick={() => accept.mutate()}>
+            <Button className="grow" loading={accept.isPending} onClick={() => accept.mutate()}>
               {isPending ? t('cashier.accept') : t('payment.approve')}
             </Button>
           )
         ) : null}
       </div>
       {o.channel === 'telegram' ? (
-        <span className="text-xs text-muted">{t('online.telegramNotify')}</span>
+        <span className="text-label-medium text-on-surface-variant">{t('online.telegramNotify')}</span>
       ) : null}
       <ReasonSheet
         open={rejectOpen}
@@ -309,7 +311,7 @@ export function OnlineCard({ order: o }: { order: OrderDto }) {
         title={`${t('payment.proof')} · ${o.displayNo}`}
         closeLabel={t('common.close')}
       >
-        {o.proofUrl ? <img src={o.proofUrl} alt={t('payment.proof')} className="w-full rounded-xl" /> : null}
+        {o.proofUrl ? <img src={o.proofUrl} alt={t('payment.proof')} className="w-full rounded-md" /> : null}
       </Sheet>
     </article>
   );

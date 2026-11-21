@@ -66,10 +66,10 @@ export function LangInputs({
     <>
       {LANGS.map((l) => (
         <div key={l} className="flex flex-col gap-1">
-          <label htmlFor={`${idPrefix}-${l}`} className="text-[13px] font-bold text-muted">
+          <label htmlFor={`${idPrefix}-${l}`} className="text-label-large text-on-surface-variant">
             {LANG_FIELD_LABEL[l]}
             {l !== 'id' && auto.includes(l) ? (
-              <span className="font-semibold text-info"> · {t('menux.auto')}</span>
+              <span className="font-medium text-tertiary"> · {t('menux.auto')}</span>
             ) : null}
           </label>
           <input
@@ -78,7 +78,7 @@ export function LangInputs({
             value={value[l] ?? ''}
             maxLength={200}
             onChange={(e) => onChange({ ...value, [l]: e.target.value }, l)}
-            className={`h-12 rounded-xl border border-line-strong px-3 ${big ? 'text-[17px]' : ''} ${l === 'kh' ? 'font-khmer' : l === 'zh' ? 'font-sc' : ''}`}
+            className={`h-14 rounded-xs border border-outline bg-surface-container-lowest px-4 text-body-large outline-primary focus:border-primary focus:outline-1 ${big ? 'text-title-medium' : ''} ${l === 'kh' ? 'font-khmer' : l === 'zh' ? 'font-sc' : ''}`}
           />
         </div>
       ))}

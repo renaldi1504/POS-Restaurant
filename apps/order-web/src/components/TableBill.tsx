@@ -16,13 +16,13 @@ export function TableBill({ bill }: { bill: PublicTableBillResponse }) {
   const orders = [...bill.orders].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   return (
     <section className="flex flex-col gap-2.5" aria-labelledby="bill-title" data-testid="table-bill">
-      <h2 id="bill-title" className="text-[17px] font-extrabold">
+      <h2 id="bill-title" className="text-body-large font-medium">
         {t('web.tableBillTitle', { table: bill.table.name })}
       </h2>
       {orders.map((o, i) => (
         <Card key={o.id} padded={false} className="flex flex-col gap-1 p-3">
           <div className="flex items-center justify-between gap-2">
-            <b className="text-[15px]">
+            <b className="text-body-medium">
               {t('web.round', { n: i + 1 })} · {o.displayNo}
             </b>
             <Badge
@@ -38,11 +38,11 @@ export function TableBill({ bill }: { bill: PublicTableBillResponse }) {
             </Badge>
           </div>
           {o.items.map((it) => (
-            <div key={it.id} className="flex justify-between gap-2 text-[15px]">
+            <div key={it.id} className="flex justify-between gap-2 text-body-medium">
               <span className="min-w-0">
                 {it.qty} × {tl(it.name, lang)}
                 {it.options.length ? (
-                  <span className="block text-[13px] text-muted">
+                  <span className="block text-label-medium text-on-surface-variant">
                     {it.options.map((op) => tl(op.optionName, lang)).join(', ')}
                   </span>
                 ) : null}
@@ -54,25 +54,25 @@ export function TableBill({ bill }: { bill: PublicTableBillResponse }) {
       ))}
       <Card className="flex flex-col gap-1">
         <div className="flex items-baseline justify-between">
-          <span className="font-bold">{t('common.total')}</span>
-          <b className="text-2xl tabular-nums">{money(bill.total, c)}</b>
+          <span className="font-medium">{t('common.total')}</span>
+          <b className="text-headline-small tabular-nums">{money(bill.total, c)}</b>
         </div>
         {bill.paid > 0 ? (
           <>
-            <div className="flex justify-between text-[15px] text-muted">
+            <div className="flex justify-between text-body-medium text-on-surface-variant">
               <span>{t('web.paidLabel')}</span>
               <span className="tabular-nums">{money(bill.paid, c)}</span>
             </div>
-            <div className="flex justify-between text-[15px] font-bold">
+            <div className="flex justify-between text-body-medium font-medium">
               <span>{t('web.remaining')}</span>
               <span className="tabular-nums">{money(bill.remaining, c)}</span>
             </div>
           </>
         ) : null}
-        <p className="text-sm text-muted">{t('web.payAtCashier')}</p>
+        <p className="text-label-medium text-on-surface-variant">{t('web.payAtCashier')}</p>
       </Card>
       <Button
-        variant="secondary"
+        variant="tonal"
         block
         disabled={requested || orders.length === 0}
         loading={req.isPending}

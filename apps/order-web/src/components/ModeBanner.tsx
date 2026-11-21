@@ -4,7 +4,7 @@ import { useCustomer } from '../lib/customer';
 import { errorMessage } from '../lib/api';
 import { mainCurrency, money, useSettings } from '../lib/menu';
 import { useRequestBill, useTableBill } from '../lib/table';
-import { useToast } from './ui';
+import { Icon, useToast } from './ui';
 
 /** "Halo [nama] · Masuk otomatis via Telegram" + badge Delivery (mockup Website mode telegram). */
 export function TelegramBanner() {
@@ -12,18 +12,22 @@ export function TelegramBanner() {
   const { tgUser, session } = useCustomer();
   const name = tgUser?.first_name || session?.customer?.name || session?.customer?.username || '';
   return (
-    <div className="flex items-center gap-2.5 rounded-xl bg-info-tint px-3 py-2" data-testid="tg-banner">
+    <div
+      className="flex items-center gap-3 rounded-md bg-tertiary-container px-3 py-2 text-on-tertiary-container"
+      data-testid="tg-banner"
+    >
       <span
         aria-hidden
-        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-info text-xs font-extrabold text-white"
+        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-tertiary text-on-tertiary"
       >
-        TG
+        <Icon name="send" size={20} />
       </span>
       <span className="flex min-w-0 grow flex-col">
-        <b className="text-sm text-info-dark">{t('order.telegramHello', { name })}</b>
-        <span className="text-xs text-info-dark">{t('web.tgSub')}</span>
+        <b className="text-label-large">{t('order.telegramHello', { name })}</b>
+        <span className="text-label-medium font-normal">{t('web.tgSub')}</span>
       </span>
-      <span className="shrink-0 rounded-lg bg-info px-2.5 py-1 text-xs font-extrabold text-white">
+      <span className="flex shrink-0 items-center gap-1 rounded-sm bg-tertiary px-2.5 py-1 text-label-medium text-on-tertiary">
+        <Icon name="delivery_dining" size={16} />
         {t('web.typeDelivery')}
       </span>
     </div>
@@ -46,23 +50,23 @@ export function TableBanner() {
   const hasOrders = (bill.data?.orders.length ?? 0) > 0;
   return (
     <div
-      className="flex items-center gap-2.5 rounded-xl bg-primary-tint px-3 py-2"
+      className="flex items-center gap-3 rounded-md bg-secondary-container px-3 py-2 text-on-secondary-container"
       data-testid="table-banner"
     >
       <span
         aria-hidden
-        className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-primary text-[15px] font-extrabold text-white"
+        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-title-medium text-on-primary"
       >
         {short}
       </span>
       <span className="flex min-w-0 grow flex-col">
-        <b className="text-sm text-primary-dark">{t('order.tableBanner', { name: tableName })}</b>
+        <b className="text-label-large">{t('order.tableBanner', { name: tableName })}</b>
         {hasOrders ? (
-          <Link to="/meja/tagihan" className="text-xs text-primary-dark underline">
+          <Link to="/meja/tagihan" className="text-label-medium text-primary underline underline-offset-2">
             {t('web.tableBill', { amount: money(bill.data!.remaining || bill.data!.total, currency) })}
           </Link>
         ) : (
-          <span className="text-xs text-primary-dark">{t('web.tableNoBill')}</span>
+          <span className="text-label-medium font-normal">{t('web.tableNoBill')}</span>
         )}
       </span>
       <button
@@ -74,7 +78,7 @@ export function TableBanner() {
             onError: (e) => toast.error(errorMessage(e, t)),
           })
         }
-        className="h-11 shrink-0 rounded-[10px] border-[1.5px] border-primary bg-white px-3 text-[13px] font-extrabold text-primary-dark disabled:opacity-60"
+        className="state-layer flex h-12 shrink-0 items-center gap-1 rounded-full bg-primary px-4 text-label-large text-on-primary disabled:bg-on-surface/12 disabled:text-on-surface/38"
       >
         {requested ? t('web.billAsked') : t('order.requestBill')}
       </button>

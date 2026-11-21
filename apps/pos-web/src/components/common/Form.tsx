@@ -8,10 +8,20 @@ import {
   type TextareaHTMLAttributes,
 } from 'react';
 import { formatMoney, parseMoneyInput, type Currency } from '@pos/shared';
-import { cn } from '../ui';
+import { Icon, cn } from '../ui';
 
+export { Switch } from '../ui';
+
+/**
+ * Kolom teks M3 "outlined" (56px, radius 4px). Label selalu terlihat di dalam kolom (tidak pernah hilang —
+ * lebih mudah untuk pengguna lanjut usia), fokus = garis 2px primary, error = garis & teks error + ikon.
+ */
+const boxCls =
+  'group/field relative flex w-full items-stretch rounded-xs border border-outline bg-surface-container-lowest text-on-surface transition-colors focus-within:border-primary focus-within:outline-1 focus-within:outline-primary focus-within:outline-offset-0 has-[:disabled]:border-on-surface/12 has-[:disabled]:text-on-surface/38';
 const inputCls =
-  'h-12 w-full rounded-xl border border-line-strong bg-white px-3 text-ink placeholder:text-[#98A2B3] focus:border-primary focus:outline-2 focus:outline-primary/30 disabled:bg-bg';
+  'w-full min-w-0 grow bg-transparent px-4 text-body-large text-on-surface outline-none placeholder:text-on-surface-variant/70 focus-visible:outline-none';
+const fieldLabelCls =
+  'pointer-events-none absolute left-4 right-4 top-1.5 truncate text-label-medium text-on-surface-variant group-focus-within/field:text-primary';
 
 export function Label({
   htmlFor,
@@ -23,9 +33,44 @@ export function Label({
   hint?: ReactNode;
 }) {
   return (
-    <label htmlFor={htmlFor} className="text-sm font-bold text-ink">
-      {children} {hint ? <span className="font-medium text-muted">{hint}</span> : null}
+    <label htmlFor={htmlFor} className="text-label-large text-on-surface">
+      {children} {hint ? <span className="font-normal text-on-surface-variant">{hint}</span> : null}
     </label>
+  );
+}
+
+function FieldLabel({
+  htmlFor,
+  children,
+  hint,
+  error,
+}: {
+  htmlFor: string;
+  children: ReactNode;
+  hint?: ReactNode;
+  error?: boolean;
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className={cn(fieldLabelCls, error && 'text-error group-focus-within/field:text-error')}
+    >
+      {children} {hint ? <span className="font-normal">{hint}</span> : null}
+    </label>
+  );
+}
+
+function SupportingText({ error, children }: { error?: boolean; children: ReactNode }) {
+  return (
+    <span
+      className={cn(
+        'flex items-center gap-1 px-4 text-label-medium',
+        error ? 'text-error' : 'text-on-surface-variant',
+      )}
+    >
+      {error ? <Icon name="error" size={16} /> : null}
+      {children}
+    </span>
   );
 }
 
@@ -33,6 +78,7 @@ export function TextField({
   label,
   hint,
   error,
+  supporting,
   className,
   inputClassName,
   ...rest
@@ -40,21 +86,32 @@ export function TextField({
   label: ReactNode;
   hint?: ReactNode;
   error?: string | null;
+  /** Teks bantuan di bawah kolom. */
+  supporting?: ReactNode;
   inputClassName?: string;
 }) {
   const id = useId();
+  const inputId = rest.id ?? id;
   return (
     <div className={cn('flex flex-col gap-1', className)}>
-      <Label htmlFor={rest.id ?? id} hint={hint}>
-        {label}
-      </Label>
-      <input
-        id={rest.id ?? id}
-        className={cn(inputCls, error && 'border-danger', inputClassName)}
-        aria-invalid={!!error || undefined}
-        {...rest}
-      />
-      {error ? <span className="text-sm font-bold text-danger">{error}</span> : null}
+      <div
+        className={cn(boxCls, error && 'border-error focus-within:border-error focus-within:outline-error')}
+      >
+        <FieldLabel htmlFor={inputId} hint={hint} error={!!error}>
+          {label}
+        </FieldLabel>
+        <input
+          id={inputId}
+          className={cn(inputCls, 'h-14 pb-1.5 pt-6', inputClassName)}
+          aria-invalid={!!error || undefined}
+          {...rest}
+        />
+      </div>
+      {error ? (
+        <SupportingText error>{error}</SupportingText>
+      ) : supporting ? (
+        <SupportingText>{supporting}</SupportingText>
+      ) : null}
     </div>
   );
 }
@@ -66,17 +123,15 @@ export function TextArea({
   ...rest
 }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: ReactNode; hint?: ReactNode }) {
   const id = useId();
+  const inputId = rest.id ?? id;
   return (
     <div className={cn('flex flex-col gap-1', className)}>
-      <Label htmlFor={rest.id ?? id} hint={hint}>
-        {label}
-      </Label>
-      <textarea
-        id={rest.id ?? id}
-        rows={3}
-        className="w-full resize-none rounded-xl border border-line-strong bg-white px-3 py-2.5 text-ink focus:border-primary focus:outline-2 focus:outline-primary/30"
-        {...rest}
-      />
+      <div className={boxCls}>
+        <FieldLabel htmlFor={inputId} hint={hint}>
+          {label}
+        </FieldLabel>
+        <textarea id={inputId} rows={3} className={cn(inputCls, 'resize-none pb-2 pt-7')} {...rest} />
+      </div>
     </div>
   );
 }
@@ -88,18 +143,28 @@ export function SelectField({
   ...rest
 }: SelectHTMLAttributes<HTMLSelectElement> & { label: ReactNode }) {
   const id = useId();
+  const inputId = rest.id ?? id;
   return (
     <div className={cn('flex flex-col gap-1', className)}>
-      <Label htmlFor={rest.id ?? id}>{label}</Label>
-      <select id={rest.id ?? id} className={cn(inputCls, 'shadow-card')} {...rest}>
-        {children}
-      </select>
+      <div className={boxCls}>
+        <FieldLabel htmlFor={inputId}>{label}</FieldLabel>
+        <select id={inputId} className={cn(inputCls, 'h-14 appearance-none pb-1.5 pr-12 pt-6')} {...rest}>
+          {children}
+        </select>
+        <Icon
+          name="expand_more"
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+        />
+      </div>
     </div>
   );
 }
 
+const SUFFIX: Record<Currency, string> = { KHR: '៛', USD: '$', IDR: 'Rp' };
+
 /**
- * Input uang: tampil berformat ("35.000"), nilai = minor units. Kosong → null.
+ * Input uang: rata kanan, angka tabular, akhiran mata uang; tampil berformat ("35.000"), nilai = minor units.
+ * Kosong → null.
  */
 export function MoneyInput({
   value,
@@ -112,6 +177,7 @@ export function MoneyInput({
   id: idProp,
   placeholder,
   ariaLabel,
+  suffix = true,
 }: {
   value: number | null;
   onChange: (v: number | null) => void;
@@ -123,6 +189,8 @@ export function MoneyInput({
   id?: string;
   placeholder?: string;
   ariaLabel?: string;
+  /** Tampilkan akhiran mata uang (matikan bila judul sudah menyebut mata uangnya, mis. kolom sempit). */
+  suffix?: boolean;
 }) {
   const genId = useId();
   const id = idProp ?? genId;
@@ -135,74 +203,50 @@ export function MoneyInput({
   }, [value, currency, focused]);
   return (
     <div className={cn('flex flex-col gap-1', className)}>
-      {label ? <Label htmlFor={id}>{label}</Label> : null}
-      <input
-        id={id}
-        aria-label={ariaLabel}
-        inputMode={currency === 'USD' ? 'decimal' : 'numeric'}
-        autoComplete="off"
-        autoFocus={autoFocus}
-        placeholder={placeholder ?? '0'}
-        value={text}
-        onFocus={() => setFocused(true)}
-        onBlur={() => {
-          setFocused(false);
-          setText(fmt(value));
-        }}
-        onChange={(e) => {
-          setText(e.target.value);
-          onChange(parseMoneyInput(e.target.value, currency));
-        }}
-        className={cn(
-          inputCls,
-          'font-bold tabular-nums',
-          big && 'h-16 rounded-[14px] border-[1.5px] border-[#98A2B3] px-4 text-[30px] font-extrabold',
-        )}
-      />
+      <div className={cn(boxCls, big && 'rounded-sm border-2')}>
+        {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
+        <input
+          id={id}
+          aria-label={ariaLabel}
+          inputMode={currency === 'USD' ? 'decimal' : 'numeric'}
+          autoComplete="off"
+          autoFocus={autoFocus}
+          placeholder={placeholder ?? '0'}
+          value={text}
+          onFocus={() => setFocused(true)}
+          onBlur={() => {
+            setFocused(false);
+            setText(fmt(value));
+          }}
+          onChange={(e) => {
+            setText(e.target.value);
+            onChange(parseMoneyInput(e.target.value, currency));
+          }}
+          className={cn(
+            inputCls,
+            'pl-2 text-right font-medium tabular-nums',
+            suffix ? 'pr-1' : 'pr-3',
+            label ? 'pb-1.5 pt-6' : '',
+            big ? 'h-[72px] text-headline-medium' : label ? 'h-14' : 'h-12',
+          )}
+        />
+        <span
+          aria-hidden
+          hidden={!suffix}
+          className={cn(
+            'flex shrink-0 items-center pr-3 text-on-surface-variant',
+            label ? 'pt-4' : '',
+            big ? 'text-title-large' : 'text-body-large',
+          )}
+        >
+          {SUFFIX[currency]}
+        </span>
+      </div>
     </div>
   );
 }
 
-/** Saklar on/off besar dengan label. */
-export function Switch({
-  checked,
-  onChange,
-  label,
-  description,
-  disabled,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: ReactNode;
-  description?: ReactNode;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className="flex min-h-12 w-full items-center gap-3 text-left disabled:opacity-50"
-    >
-      <span className="flex grow flex-col">
-        <span className="font-semibold">{label}</span>
-        {description ? <span className="text-[13px] text-muted">{description}</span> : null}
-      </span>
-      <span
-        className={cn(
-          'flex h-8 w-14 shrink-0 rounded-full p-1 transition-colors',
-          checked ? 'justify-end bg-primary' : 'justify-start bg-line-strong',
-        )}
-      >
-        <span className="size-6 rounded-full bg-white shadow-card" />
-      </span>
-    </button>
-  );
-}
-
-/** Stepper angka kecil dalam kotak (mockup OpsiEdit). */
+/** Kotak angka − n + (mockup OpsiEdit). */
 export function NumberBox({
   value,
   onChange,
@@ -216,20 +260,22 @@ export function NumberBox({
   max?: number;
   label: string;
 }) {
+  const btn =
+    'state-layer flex size-12 shrink-0 items-center justify-center rounded-full text-on-surface-variant disabled:opacity-38';
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[13px] font-bold text-[#475467]">{label}</span>
-      <div className="flex h-12 items-center justify-between rounded-xl border border-line-strong px-1">
+      <span className="text-label-medium text-on-surface-variant">{label}</span>
+      <div className="flex h-14 items-center justify-between rounded-xs border border-outline bg-surface-container-lowest px-1">
         <button
           type="button"
           aria-label={`Kurangi ${label.toLowerCase()}`}
           disabled={value <= min}
           onClick={() => onChange(Math.max(min, value - 1))}
-          className="size-10 text-xl font-extrabold disabled:opacity-30"
+          className={btn}
         >
-          −
+          <Icon name="remove" />
         </button>
-        <b className="text-[17px] tabular-nums" aria-live="polite">
+        <b className="text-title-medium tabular-nums" aria-live="polite">
           {value}
         </b>
         <button
@@ -237,9 +283,9 @@ export function NumberBox({
           aria-label={`Tambah ${label.toLowerCase()}`}
           disabled={value >= max}
           onClick={() => onChange(Math.min(max, value + 1))}
-          className="size-10 text-xl font-extrabold disabled:opacity-30"
+          className={btn}
         >
-          +
+          <Icon name="add" />
         </button>
       </div>
     </div>
@@ -261,8 +307,8 @@ export function RoundStepper({
   size?: 44 | 48;
 }) {
   const btn = cn(
-    'flex shrink-0 items-center justify-center rounded-full border border-line-strong bg-white text-[22px] font-bold text-ink shadow-card disabled:opacity-40',
-    size === 48 ? 'size-12 text-2xl' : 'size-11',
+    'state-layer flex shrink-0 items-center justify-center rounded-full border border-outline text-on-surface-variant disabled:opacity-38',
+    size === 48 ? 'size-12' : 'size-11',
   );
   return (
     <div className="flex items-center gap-1.5" role="group" aria-label={label}>
@@ -273,12 +319,12 @@ export function RoundStepper({
         disabled={value <= min}
         onClick={() => onChange(value - 1)}
       >
-        −
+        <Icon name="remove" />
       </button>
       <b
         className={cn(
-          'text-center tabular-nums',
-          size === 48 ? 'w-[30px] text-[22px]' : 'w-[22px] text-[19px]',
+          'text-center font-medium tabular-nums',
+          size === 48 ? 'w-[30px] text-title-large' : 'w-[22px] text-title-medium',
         )}
         aria-live="polite"
       >
@@ -286,11 +332,11 @@ export function RoundStepper({
       </b>
       <button
         type="button"
-        className={btn}
+        className={cn(btn, 'border-0 bg-secondary-container text-on-secondary-container')}
         aria-label={`Tambah ${label}`}
         onClick={() => onChange(value + 1)}
       >
-        +
+        <Icon name="add" />
       </button>
     </div>
   );

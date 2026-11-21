@@ -53,13 +53,13 @@ export function PhotoCropSheet({
       role="dialog"
       aria-modal="true"
       aria-label={t('crop.title')}
-      className="fixed inset-0 z-[70] flex flex-col bg-ink text-white"
+      className="fixed inset-0 z-[70] flex flex-col bg-inverse-surface text-inverse-on-surface"
     >
-      <div className="flex shrink-0 items-center justify-between px-4 py-3">
-        <h2 className="text-lg font-extrabold">{t('crop.title')}</h2>
-        <span className="text-sm text-[#D0D5DD]">{t('crop.hint')}</span>
+      <div className="flex min-h-16 shrink-0 items-center justify-between gap-3 px-4">
+        <h2 className="text-title-large">{t('crop.title')}</h2>
+        <span className="text-label-medium font-normal text-inverse-on-surface/80">{t('crop.hint')}</span>
       </div>
-      <div className="relative min-h-0 grow" data-testid="crop-area">
+      <div className="relative min-h-0 grow bg-black" data-testid="crop-area">
         <Cropper
           image={src}
           crop={crop}
@@ -74,8 +74,8 @@ export function PhotoCropSheet({
           showGrid
         />
       </div>
-      <div className="flex shrink-0 flex-col gap-3 bg-ink px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3">
-        <label className="flex items-center gap-3 text-sm font-bold">
+      <div className="flex shrink-0 flex-col gap-3 bg-inverse-surface px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3">
+        <label className="flex items-center gap-3 text-label-large">
           <span>{t('crop.zoom')}</span>
           <input
             type="range"
@@ -84,15 +84,26 @@ export function PhotoCropSheet({
             step={0.05}
             value={zoom}
             onChange={(e) => setZoom(Number(e.target.value))}
-            className="h-8 grow accent-primary"
+            className="h-8 grow accent-inverse-primary"
             aria-label={t('crop.zoom')}
           />
         </label>
         <div className="flex gap-2.5">
-          <Button variant="outline" size="xl" className="w-32" onClick={onCancel}>
+          <Button
+            variant="outlined"
+            size="xl"
+            className="w-32 border-inverse-on-surface/60 text-inverse-on-surface"
+            onClick={onCancel}
+          >
             {t('common.cancel')}
           </Button>
-          <Button size="xl" className="grow" loading={busy} disabled={!area} onClick={() => void use()}>
+          <Button
+            size="xl"
+            className="grow bg-inverse-primary text-on-primary-container"
+            loading={busy}
+            disabled={!area}
+            onClick={() => void use()}
+          >
             {t('crop.use')}
           </Button>
         </div>

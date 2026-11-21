@@ -5,15 +5,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LANGS, hasAnyPermission, tl, type Lang, type OrderDto, type OrderStatus } from '@pos/shared';
 import { LANG_FONT_CLASS } from '@pos/shared/i18n';
-import { EmptyState, Sheet, cn, useToast } from '../../components/ui';
+import { Button, EmptyState, Icon, Segmented, Sheet, cn, useToast } from '../../components/ui';
 import {
-  AppMenuSheet,
   ErrorBlock,
   LoadingBlock,
-  MenuIcon,
+  MoreButton,
   Screen,
   Switch,
   Tabs,
+  TopBar,
   minutesSince,
 } from '../../components/common';
 import { api, errorMessage, qk } from '../../lib/api';
@@ -36,11 +36,24 @@ export function kitchenTone(
   if (minutesSince(o.acceptedAt ?? o.createdAt, now) > lateMinutes) return 'late';
   return o.status === 'accepted' ? 'new' : 'cooking';
 }
+/** Baru = warning, Dimasak = tertiary, Terlambat = error (selalu disertai teks status). */
 const TONE = {
-  late: { border: 'border-2 border-[#F04438]', head: 'bg-danger-tint', time: 'text-danger' },
-  cooking: { border: 'border-2 border-info', head: 'bg-info-tint', time: 'text-info-dark' },
-  new: { border: 'border-2 border-warn', head: 'bg-warn-tint', time: 'text-warn-dark' },
-};
+  late: {
+    border: 'border-2 border-error',
+    head: 'bg-error-container text-on-error-container',
+    icon: 'warning',
+  },
+  cooking: {
+    border: 'border border-outline-variant',
+    head: 'bg-tertiary-container text-on-tertiary-container',
+    icon: 'skillet',
+  },
+  new: {
+    border: 'border-2 border-warning',
+    head: 'bg-warning-container text-on-warning-container',
+    icon: 'notifications_active',
+  },
+} as const;
 
 /** Rekap "Yang harus dibuat": jumlah per menu dari semua order aktif. */
 export function kitchenRecap(orders: OrderDto[], lang: Lang): { name: string; qty: number }[] {
@@ -68,7 +81,6 @@ export default function KitchenPage() {
   const lateMinutes = useStaffSettings().kitchen.lateMinutes;
   const canUpdate = hasAnyPermission(me?.permissions, ['kitchen.update', 'order.create']);
   const canToggle = hasAnyPermission(me?.permissions, ['menu.toggle_available']);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [availOpen, setAvailOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -127,68 +139,55 @@ export default function KitchenPage() {
 
   return (
     <Screen wide testId="kitchen-screen" lang={lang} className={LANG_FONT_CLASS[lang]}>
-      <header className="flex shrink-0 flex-col gap-2.5 bg-ink px-4 py-3 text-white">
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-2xl font-extrabold">{t('kitchen.title')}</h1>
-          <span className="text-base text-[#D0D5DD]">{t('dapur.activeCount', { count: orders.length })}</span>
-          <div className="grow" />
-          {canToggle ? (
+      <TopBar
+        title={t('kitchen.title')}
+        subtitle={t('dapur.activeCount', { count: orders.length })}
+        right={
+          <>
+            {canToggle ? (
+              <Button variant="tonal" size="md" className="px-4" onClick={() => setAvailOpen(true)}>
+                {t('dapur.soldOutBtn')}
+              </Button>
+            ) : null}
             <button
               type="button"
-              onClick={() => setAvailOpen(true)}
-              className="h-11 rounded-[10px] border border-[#344054] bg-[#1D2939] px-3 text-sm font-bold"
-            >
-              {t('dapur.soldOutBtn')}
-            </button>
-          ) : null}
-          <button
-            type="button"
-            aria-pressed={!prefs.muted}
-            onClick={() => setPrefs({ muted: !prefs.muted })}
-            className="h-11 rounded-[10px] border border-[#344054] bg-[#1D2939] px-3 text-sm font-bold"
-          >
-            {prefs.muted ? t('dapur.soundOff') : t('dapur.soundOn')}
-          </button>
-          <button
-            type="button"
-            aria-label={t('cashier.moreMenu')}
-            onClick={() => setMenuOpen(true)}
-            className="flex size-11 items-center justify-center rounded-[10px] border border-[#344054] bg-[#1D2939]"
-          >
-            <MenuIcon />
-          </button>
-        </div>
-        <div role="radiogroup" aria-label={t('kitchen.screenLanguage')} className="grid grid-cols-4 gap-1.5">
-          {LANGS.map((l) => (
-            <button
-              key={l}
-              type="button"
-              role="radio"
-              aria-checked={l === lang}
-              lang={l === 'kh' ? 'km' : l}
-              onClick={() => setPrefs({ kitchenLang: l })}
+              aria-pressed={!prefs.muted}
+              onClick={() => setPrefs({ muted: !prefs.muted })}
               className={cn(
-                'h-11 rounded-[10px] border-2 text-base font-bold',
-                LANG_FONT_CLASS[l],
-                l === lang ? 'border-white bg-white text-ink' : 'border-muted bg-[#1D2939] text-white',
+                'state-layer flex h-12 shrink-0 items-center gap-1.5 rounded-full px-3 text-label-large',
+                prefs.muted ? 'text-on-surface-variant' : 'text-primary',
               )}
             >
-              {LANG_LABEL[l]}
+              <Icon name={prefs.muted ? 'volume_off' : 'volume_up'} filled={!prefs.muted} />
+              <span className="max-w-24 truncate">
+                {prefs.muted ? t('dapur.soundOff') : t('dapur.soundOn')}
+              </span>
             </button>
-          ))}
-        </div>
-      </header>
-      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-3 pb-6 pt-3">
+            <MoreButton lang={lang} />
+          </>
+        }
+      >
+        <Segmented
+          label={t('kitchen.screenLanguage')}
+          value={lang}
+          onChange={(l) => setPrefs({ kitchenLang: l })}
+          options={LANGS.map((l) => ({ value: l, label: LANG_LABEL[l] }))}
+        />
+      </TopBar>
+      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-4 pb-6 pt-3">
         {recap.length ? (
           <section
-            className="flex shrink-0 flex-col gap-2 rounded-card border border-line bg-white px-3.5 py-3 shadow-card"
+            className="flex shrink-0 flex-col gap-2 rounded-md bg-surface-container-low px-4 py-3"
             data-testid="kitchen-recap"
           >
-            <h2 className="text-lg font-extrabold">{t('kitchen.toMake')}</h2>
+            <h2 className="text-title-medium">{t('kitchen.toMake')}</h2>
             <div className="flex flex-wrap gap-1.5">
               {recap.map((r) => (
-                <span key={r.name} className="rounded-[10px] bg-bg px-2.5 py-1.5 text-[15px] font-semibold">
-                  <b className="text-lg">{r.qty}</b> × {r.name}
+                <span
+                  key={r.name}
+                  className="rounded-sm border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-body-large"
+                >
+                  <b className="text-title-medium font-medium tabular-nums">{r.qty}</b> × {r.name}
                 </span>
               ))}
             </div>
@@ -196,8 +195,8 @@ export default function KitchenPage() {
         ) : null}
         {q.isLoading ? <LoadingBlock label={t('common.loading')} /> : null}
         {q.isError ? <ErrorBlock error={q.error} onRetry={() => void q.refetch()} /> : null}
-        {q.data && !orders.length ? <EmptyState title={t('kitchen.noOrders')} /> : null}
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {q.data && !orders.length ? <EmptyState icon="skillet" title={t('kitchen.noOrders')} /> : null}
+        <div className="grid gap-3 medium:grid-cols-2 expanded:grid-cols-3 large:grid-cols-4">
           {orders.map((o) => {
             const tone = kitchenTone(o, lateMinutes, now);
             const tc = TONE[tone];
@@ -206,41 +205,47 @@ export default function KitchenPage() {
             return (
               <article
                 key={o.id}
-                className={cn('flex flex-col overflow-hidden rounded-card bg-white shadow-card', tc.border)}
+                className={cn(
+                  'flex flex-col overflow-hidden rounded-md bg-surface-container-lowest shadow-e1',
+                  tc.border,
+                )}
                 data-testid="kitchen-card"
                 data-order-no={o.displayNo}
                 data-tone={tone}
               >
-                <div className={cn('flex items-center justify-between gap-2 px-3.5 py-2.5', tc.head)}>
-                  <span className="text-[30px] font-extrabold">{o.displayNo}</span>
-                  <span className={cn('text-right text-base font-extrabold', tc.time)}>
+                <div className={cn('flex items-center justify-between gap-2 px-4 py-2.5', tc.head)}>
+                  <span className="text-headline-medium font-medium tabular-nums">{o.displayNo}</span>
+                  <span className="flex items-center gap-1.5 text-right text-label-large">
+                    <Icon name={tc.icon} size={20} />
                     {isNew
                       ? `${t('kitchen.new')} · ${t('dapur.min', { count: mins })}`
                       : `${t('dapur.min', { count: mins })} · ${t('dapur.cooking')}`}
                     {tone === 'late' ? ` · ${t('kitchen.late')}` : ''}
                   </span>
                 </div>
-                <div className="flex flex-col gap-2 px-3.5 pb-3 pt-2.5">
-                  <span className="text-sm font-bold uppercase text-muted">{typeLabel(o)}</span>
+                <div className="flex flex-col gap-2 px-4 pb-3 pt-2.5">
+                  <span className="text-label-medium uppercase text-on-surface-variant">{typeLabel(o)}</span>
                   {o.items.map((it) => {
                     const opts = it.options.map((x) => tl(x.optionName, lang));
                     return (
                       <div key={it.id} className="flex items-baseline gap-2">
-                        <b className="shrink-0 text-[22px]">{it.qty}×</b>
+                        <b className="shrink-0 text-title-large font-medium tabular-nums">{it.qty}×</b>
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-[19px] font-semibold leading-snug">{tl(it.name, lang)}</span>
+                          <span className="text-title-large">{tl(it.name, lang)}</span>
                           {opts.length ? (
-                            <span className="text-[15px] font-bold text-danger">{opts.join(' · ')}</span>
+                            <span className="text-body-medium font-medium text-error">
+                              {opts.join(' · ')}
+                            </span>
                           ) : null}
                           {it.note ? (
-                            <span className="text-[15px] font-bold text-danger">{it.note}</span>
+                            <span className="text-body-medium font-medium text-error">{it.note}</span>
                           ) : null}
                         </div>
                       </div>
                     );
                   })}
                   {o.note ? (
-                    <span className="rounded-lg bg-danger-tint px-2 py-1 text-[15px] font-bold text-danger">
+                    <span className="rounded-sm bg-error-container px-2 py-1 text-body-medium font-medium text-on-error-container">
                       {t('kitchen.orderNote')}: {o.note}
                     </span>
                   ) : null}
@@ -251,10 +256,11 @@ export default function KitchenPage() {
                     disabled={status.isPending && status.variables?.id === o.id}
                     onClick={() => status.mutate({ id: o.id, status: isNew ? 'cooking' : 'ready' })}
                     className={cn(
-                      'mt-auto h-[58px] text-xl font-extrabold disabled:opacity-60',
-                      isNew ? 'bg-warn text-ink' : 'bg-primary text-white',
+                      'state-layer mx-3 mb-3 mt-auto flex h-14 items-center justify-center gap-2 rounded-full text-title-medium disabled:opacity-60',
+                      isNew ? 'bg-tertiary text-on-tertiary' : 'bg-primary text-on-primary',
                     )}
                   >
+                    <Icon name={isNew ? 'skillet' : 'check_circle'} />
                     {isNew ? t('kitchen.startCooking') : t('kitchen.markReady')}
                   </button>
                 ) : null}
@@ -264,7 +270,6 @@ export default function KitchenPage() {
         </div>
       </main>
       <AvailabilitySheet open={availOpen} onClose={() => setAvailOpen(false)} lang={lang} t={t} />
-      <AppMenuSheet open={menuOpen} onClose={() => setMenuOpen(false)} />
     </Screen>
   );
 }
@@ -340,7 +345,7 @@ export function AvailabilitySheet({
             ))
           : menu.data?.optionGroups.map((g) => (
               <div key={g.id} className="flex flex-col">
-                <b className="mt-2 text-sm text-muted">{tl(g.name, lang)}</b>
+                <b className="mt-3 text-label-large text-primary">{tl(g.name, lang)}</b>
                 {g.options.map((o) => (
                   <Switch
                     key={o.id}

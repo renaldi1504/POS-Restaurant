@@ -1,7 +1,7 @@
-import { useState, type ReactNode } from 'react';
-import { AppMenuButton, AppMenuSheet, TopBar } from '../common';
+import type { ReactNode } from 'react';
+import { TopBar } from '../common';
 
-/** Header layar admin: judul + tombol menu ☰ (navigasi antar layar admin). */
+/** Top app bar layar admin. Navigasi antar layar lewat navigation bar bawah / lembar "Lainnya". */
 export function AdminBar({
   title,
   subtitle,
@@ -15,23 +15,9 @@ export function AdminBar({
   right?: ReactNode;
   children?: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
   return (
-    <>
-      <TopBar
-        title={title}
-        subtitle={subtitle}
-        back={back}
-        right={
-          <>
-            {right}
-            <AppMenuButton onClick={() => setOpen(true)} />
-          </>
-        }
-      >
-        {children}
-      </TopBar>
-      <AppMenuSheet open={open} onClose={() => setOpen(false)} />
-    </>
+    <TopBar title={title} subtitle={subtitle} back={back} right={right}>
+      {children}
+    </TopBar>
   );
 }

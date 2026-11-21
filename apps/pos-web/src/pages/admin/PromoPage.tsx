@@ -123,7 +123,7 @@ export default function PromoPage() {
                 />
               ))}
             </div>
-            <span className="text-xs text-muted">{t('promo.commissionHint')}</span>
+            <span className="text-label-medium text-on-surface-variant">{t('promo.commissionHint')}</span>
             <Button
               size="md"
               loading={saveComm.isPending}
@@ -151,7 +151,7 @@ export default function PromoPage() {
           {promos.isLoading ? <LoadingBlock /> : null}
           {promos.isError ? <ErrorBlock error={promos.error} onRetry={() => void promos.refetch()} /> : null}
           {promos.data && !promos.data.promos.length ? (
-            <span className="text-muted">{t('promo.none')}</span>
+            <span className="text-on-surface-variant">{t('promo.none')}</span>
           ) : null}
           {promos.data?.promos.map((p) => (
             <button
@@ -168,11 +168,11 @@ export default function PromoPage() {
                   active: p.active,
                 })
               }
-              className="flex min-h-14 items-center gap-2 border-b border-[#F2F4F7] text-left"
+              className="flex min-h-14 items-center gap-2 border-b border-surface-container-highest text-left"
             >
               <span className="flex grow flex-col">
                 <b>{p.name}</b>
-                <span className="text-xs text-muted">
+                <span className="text-label-medium text-on-surface-variant">
                   {p.channel ? t(`channel.${p.channel}`) : t('promo.allChannels')}
                   {p.scope.minSubtotal
                     ? ` · ${t('promo.min', { amount: formatMoney(p.scope.minSubtotal, money.main) })}`
@@ -190,6 +190,7 @@ export default function PromoPage() {
         </Section>
       </main>
       <Sheet
+        tablet="side"
         open={!!form}
         onClose={() => setForm(null)}
         title={form?.id ? t('promo.edit') : t('promo.add')}
@@ -198,8 +199,8 @@ export default function PromoPage() {
           <div className="flex gap-2">
             {form?.id ? (
               <Button
-                variant="outline"
-                className="text-danger"
+                variant="outlined"
+                className="text-error"
                 onClick={() => setDel(promos.data?.promos.find((x) => x.id === form.id) ?? null)}
               >
                 {t('common.delete')}

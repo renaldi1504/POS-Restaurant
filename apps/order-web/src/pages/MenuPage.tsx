@@ -19,7 +19,9 @@ import {
   Page,
   StoreHeading,
 } from '../components/Shell';
-import { Card, cn, useToast } from '../components/ui';
+import { Card, Chip, EmptyState, Icon, cn, useToast } from '../components/ui';
+import { useWindowSizeClass } from '../lib/windowSize';
+import CartPage from './CartPage';
 import { useCart } from '../lib/cart';
 import { useCheckout } from '../lib/checkout';
 import { useCustomer } from '../lib/customer';
@@ -37,6 +39,9 @@ import {
   type CategoryFilter,
 } from '../lib/menu';
 import { latestOrderId } from '../lib/recent';
+
+/** Grid menu: 1 kolom (HP) → 2 → 3 → 4 kolom sesuai lebar (SKILL §8b). */
+const GRID = 'grid gap-3 medium:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]';
 
 export default function MenuPage({ mode: routeMode }: { mode: CustomerMode }) {
   const c = useCustomer();
@@ -56,9 +61,9 @@ function OrderTypePicker() {
     <div
       role="radiogroup"
       aria-label={t('web.orderType')}
-      className="grid grid-cols-3 gap-1 rounded-xl bg-[#EEF0F3] p-1"
+      className="grid grid-cols-3 overflow-hidden rounded-full border border-outline"
     >
-      {types.map((ty) => {
+      {types.map((ty, i) => {
         const on = state.type === ty.value;
         return (
           <button
@@ -68,13 +73,13 @@ function OrderTypePicker() {
             aria-checked={on}
             onClick={() => update({ type: ty.value })}
             className={cn(
-              'min-h-11 rounded-[9px] px-1 text-sm leading-tight',
-              on
-                ? 'bg-white font-extrabold shadow-[0_1px_3px_rgba(0,0,0,0.15)]'
-                : 'font-semibold text-[#344054]',
+              'state-layer flex min-h-12 min-w-0 items-center justify-center gap-1 px-1 text-label-large',
+              i > 0 && 'border-l border-outline',
+              on ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface',
             )}
           >
-            {ty.label}
+            {on ? <Icon name="check" size={18} /> : null}
+            <span className="truncate">{ty.label}</span>
           </button>
         );
       })}
@@ -94,6 +99,7 @@ function MenuScreen({ routeMode }: { routeMode: CustomerMode }) {
   const [cat, setCat] = useState<CategoryFilter>(CAT_ALL);
   const [sheetId, setSheetId] = useState<number | null>(null);
   const searchId = useId();
+  const expanded = useWindowSizeClass() === 'expanded';
   const currency = mainCurrency(settings);
   const menu = menuQ.data;
   const sheetItem = (sheetId !== null && menu?.items.find((i) => i.id === sheetId)) || null;
@@ -129,143 +135,154 @@ function MenuScreen({ routeMode }: { routeMode: CustomerMode }) {
     : [];
 
   return (
-    <Page testId="order-menu" mode={routeMode}>
-      <header className="sticky top-0 z-20 flex flex-col gap-2.5 border-b border-line bg-white px-4 pb-2.5 pt-3">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <StoreHeading />
-          <LangPicker />
-        </div>
-        {customer.mode === 'telegram' && customer.status === 'ready' ? <TelegramBanner /> : null}
-        {customer.mode === 'table' && customer.status === 'ready' ? <TableBanner /> : null}
-        {customer.mode === 'none' ? <OrderTypePicker /> : null}
-        <div className="relative">
-          <span className="pointer-events-none absolute left-3.5 top-3.5 text-muted">
-            <SearchIcon />
-          </span>
-          <label htmlFor={searchId} className="sr-only">
-            {t('web.searchLabel')}
-          </label>
-          <input
-            id={searchId}
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={t('web.searchPlaceholder')}
-            enterKeyHint="search"
-            className="h-12 w-full rounded-xl border border-line-strong bg-white pl-11 pr-12 shadow-card [&::-webkit-search-cancel-button]:hidden"
-          />
-          {q ? (
-            <button
-              type="button"
-              onClick={() => setQ('')}
-              aria-label={t('web.clearSearch')}
-              className="absolute right-1 top-1 flex size-10 items-center justify-center rounded-full bg-[#F2F4F7] text-lg font-bold"
-            >
-              ×
-            </button>
-          ) : null}
-        </div>
-        <nav
-          aria-label={t('web.categories')}
-          className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none]"
-        >
-          {chips.map((c) => {
-            const on = c.key === cat;
-            return (
-              <button
-                key={String(c.key)}
-                type="button"
-                aria-pressed={on}
-                onClick={() => setCat(c.key)}
-                className={cn(
-                  'h-11 shrink-0 whitespace-nowrap rounded-full border px-3.5 text-sm font-bold',
-                  on ? 'border-ink bg-ink text-white' : 'border-line-strong bg-white text-ink',
-                )}
-              >
-                {c.label} <span className="font-semibold opacity-70">{c.n}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </header>
-
-      <main className="flex min-h-0 grow flex-col gap-2.5 px-4 pb-28 pt-3">
-        {settings && !settings.isOpen ? (
-          <Card tone="warn" className="text-[15px] font-semibold text-warn-dark" role="status">
-            {t('web.closedBanner', { time: formatHour(settings.hours.open, lang) })}
-          </Card>
-        ) : null}
-        {recentId ? (
-          <Link
-            to={`/pesanan/${recentId}`}
-            className="flex min-h-12 items-center justify-between rounded-xl border border-line-strong bg-white px-4 font-bold shadow-card"
-          >
-            {t('web.myOrders')} <span aria-hidden>›</span>
-          </Link>
-        ) : null}
-
-        {menuQ.isPending || customer.status === 'loading' ? (
-          <LoadingBlock />
-        ) : menuQ.isError || !menu ? (
-          <ErrorBlock message={t('web.loadFailed')} onRetry={() => void menuQ.refetch()} />
-        ) : showHome ? (
-          <>
-            {menu.items.some((i) => i.bestSeller) ? (
-              <section aria-labelledby="best-title" className="flex flex-col gap-2.5">
-                <h2 id="best-title" className="text-[17px] font-extrabold">
-                  {t('order.bestSeller')}
-                </h2>
-                <div
-                  className="-mx-4 flex shrink-0 gap-2.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none]"
-                  data-testid="best-carousel"
+    <Page testId="order-menu" mode={routeMode} wide>
+      <div className="flex grow">
+        <div className="flex min-w-0 grow flex-col">
+          <header className="sticky top-0 z-20 flex flex-col gap-3 bg-surface px-4 pb-2 pt-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <StoreHeading />
+              <LangPicker />
+            </div>
+            {customer.mode === 'telegram' && customer.status === 'ready' ? <TelegramBanner /> : null}
+            {customer.mode === 'table' && customer.status === 'ready' ? <TableBanner /> : null}
+            {customer.mode === 'none' ? <OrderTypePicker /> : null}
+            <div className="relative">
+              <span className="pointer-events-none absolute left-4 top-4 text-on-surface-variant">
+                <SearchIcon />
+              </span>
+              <label htmlFor={searchId} className="sr-only">
+                {t('web.searchLabel')}
+              </label>
+              <input
+                id={searchId}
+                type="search"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={t('web.searchPlaceholder')}
+                enterKeyHint="search"
+                className="h-14 w-full rounded-full bg-surface-container-high pl-14 pr-14 text-body-large outline-secondary placeholder:text-on-surface-variant focus-visible:outline-3 [&::-webkit-search-cancel-button]:hidden"
+              />
+              {q ? (
+                <button
+                  type="button"
+                  onClick={() => setQ('')}
+                  aria-label={t('web.clearSearch')}
+                  className="state-layer absolute right-1 top-1 flex size-12 items-center justify-center rounded-full text-on-surface-variant"
                 >
-                  {sortSoldOutLast(menu.items.filter((i) => i.bestSeller)).map((it) => (
-                    <BestCard key={it.id} item={it} currency={currency} {...actions(it)} />
-                  ))}
-                </div>
-              </section>
-            ) : null}
-            {cats.map((c) => {
-              const items = sortSoldOutLast(menu.items.filter((i) => i.categoryId === c.id));
-              if (!items.length) return null;
-              return (
-                <section key={c.id} aria-labelledby={`cat-${c.id}`} className="flex flex-col gap-2.5">
-                  <h2 id={`cat-${c.id}`} className="mt-1.5 text-[17px] font-extrabold">
-                    {tl(c.name, lang)}
-                  </h2>
-                  {items.map((it) => (
-                    <MenuItemCard key={it.id} item={it} currency={currency} {...actions(it)} />
-                  ))}
-                </section>
-              );
-            })}
-          </>
-        ) : (
-          <section
-            className="flex flex-col gap-2.5"
-            aria-label={t('order.searchPlaceholder')}
-            data-testid="results"
-          >
-            {q.trim() ? (
-              <p className="text-sm text-muted" role="status">
-                {t('web.resultsFor', { count: filtered.length, q: q.trim() })}
-              </p>
-            ) : null}
-            {filtered.length === 0 ? (
-              <div className="flex flex-col gap-1.5 rounded-[14px] bg-white px-4 py-7 text-center shadow-card">
-                <b className="text-[17px]">{t('order.noResults')}</b>
-                <span className="text-sm text-muted">{t('web.emptyHint')}</span>
-              </div>
-            ) : (
-              filtered.map((it) => (
-                <MenuItemCard key={it.id} item={it} currency={currency} {...actions(it)} />
-              ))
-            )}
-          </section>
-        )}
-      </main>
+                  <Icon name="close" />
+                </button>
+              ) : null}
+            </div>
+            <nav
+              aria-label={t('web.categories')}
+              className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none]"
+            >
+              {chips.map((c) => (
+                <Chip
+                  key={String(c.key)}
+                  active={c.key === cat}
+                  onClick={() => setCat(c.key)}
+                  count={c.n}
+                  className="whitespace-nowrap"
+                >
+                  {c.label}
+                </Chip>
+              ))}
+            </nav>
+          </header>
 
-      {!sheetItem ? <CartBar /> : null}
+          <main className={cn('flex min-h-0 grow flex-col gap-3 px-4 pt-3', expanded ? 'pb-6' : 'pb-28')}>
+            {settings && !settings.isOpen ? (
+              <Card tone="warn" className="flex items-center gap-2 text-body-medium" role="status">
+                <Icon name="schedule" />
+                {t('web.closedBanner', { time: formatHour(settings.hours.open, lang) })}
+              </Card>
+            ) : null}
+            {recentId ? (
+              <Link
+                to={`/pesanan/${recentId}`}
+                className="state-layer flex min-h-14 items-center gap-3 rounded-md bg-surface-container-low px-4 text-label-large"
+              >
+                <Icon name="receipt_long" className="text-on-surface-variant" />
+                <span className="grow">{t('web.myOrders')}</span>
+                <Icon name="chevron_right" className="text-on-surface-variant" />
+              </Link>
+            ) : null}
+
+            {menuQ.isPending || customer.status === 'loading' ? (
+              <LoadingBlock />
+            ) : menuQ.isError || !menu ? (
+              <ErrorBlock message={t('web.loadFailed')} onRetry={() => void menuQ.refetch()} />
+            ) : showHome ? (
+              <>
+                {menu.items.some((i) => i.bestSeller) ? (
+                  <section aria-labelledby="best-title" className="flex flex-col gap-2.5">
+                    <h2 id="best-title" className="text-title-large">
+                      {t('order.bestSeller')}
+                    </h2>
+                    <div
+                      className="-mx-4 flex shrink-0 gap-3 overflow-x-auto px-4 pb-2 pt-0.5 [scrollbar-width:none]"
+                      data-testid="best-carousel"
+                    >
+                      {sortSoldOutLast(menu.items.filter((i) => i.bestSeller)).map((it) => (
+                        <BestCard key={it.id} item={it} currency={currency} {...actions(it)} />
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+                {cats.map((c) => {
+                  const items = sortSoldOutLast(menu.items.filter((i) => i.categoryId === c.id));
+                  if (!items.length) return null;
+                  return (
+                    <section key={c.id} aria-labelledby={`cat-${c.id}`} className="flex flex-col gap-2.5">
+                      <h2 id={`cat-${c.id}`} className="mt-2 text-title-large">
+                        {tl(c.name, lang)}
+                      </h2>
+                      <div className={GRID}>
+                        {items.map((it) => (
+                          <MenuItemCard key={it.id} item={it} currency={currency} {...actions(it)} />
+                        ))}
+                      </div>
+                    </section>
+                  );
+                })}
+              </>
+            ) : (
+              <section
+                className="flex flex-col gap-2.5"
+                aria-label={t('order.searchPlaceholder')}
+                data-testid="results"
+              >
+                {q.trim() ? (
+                  <p className="text-label-medium text-on-surface-variant" role="status">
+                    {t('web.resultsFor', { count: filtered.length, q: q.trim() })}
+                  </p>
+                ) : null}
+                {filtered.length === 0 ? (
+                  <EmptyState icon="search" title={t('order.noResults')} description={t('web.emptyHint')} />
+                ) : (
+                  <div className={GRID}>
+                    {filtered.map((it) => (
+                      <MenuItemCard key={it.id} item={it} currency={currency} {...actions(it)} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+          </main>
+        </div>
+        {expanded ? (
+          <aside
+            aria-label={t('web.cartTitle')}
+            className="sticky top-0 flex h-dvh w-[400px] shrink-0 flex-col border-l border-outline-variant bg-surface-container-low"
+            data-testid="cart-pane"
+          >
+            <CartPage embedded />
+          </aside>
+        ) : null}
+      </div>
+
+      {!sheetItem && !expanded ? <CartBar /> : null}
       {sheetItem && menu ? (
         <OptionSheet
           item={sheetItem}

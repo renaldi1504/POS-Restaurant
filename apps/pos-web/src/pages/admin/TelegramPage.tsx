@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { AdminBar } from '../../components/admin/AdminBar';
 import { ErrorBlock, LoadingBlock, Screen, Section } from '../../components/common';
-import { Badge } from '../../components/ui';
+import { Badge, Icon } from '../../components/ui';
 import { api, qk } from '../../lib/api';
 
 export default function TelegramPage() {
@@ -35,9 +35,9 @@ export default function TelegramPage() {
                   href={`https://t.me/${integ.telegramBotUsername}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex h-12 items-center justify-center rounded-xl bg-primary font-extrabold text-white"
+                  className="state-layer flex h-12 items-center justify-center gap-2 rounded-full bg-primary text-label-large text-on-primary"
                 >
-                  @{integ.telegramBotUsername} ›
+                  <Icon name="send" size={20} />@{integ.telegramBotUsername}
                 </a>
               ) : null}
               <div className="flex items-center justify-between">
@@ -52,7 +52,7 @@ export default function TelegramPage() {
               </div>
             </Section>
             <Section title={t('tg.how')}>
-              <ul className="flex list-disc flex-col gap-1.5 pl-5 text-[15px]">
+              <ul className="flex list-disc flex-col gap-1.5 pl-5 text-body-medium">
                 <li>{t('tg.p1')}</li>
                 <li>{t('tg.p2')}</li>
                 <li>{t('tg.p3')}</li>

@@ -74,7 +74,7 @@ function PlacesSearch({ label, onPick }: { label: string; onPick: GoogleMapPicke
   }, [places]);
   return (
     <div className="relative">
-      <span className="pointer-events-none absolute left-3 top-3.5 text-muted">
+      <span className="pointer-events-none absolute left-3 top-3.5 text-on-surface-variant">
         <SearchIcon size={18} />
       </span>
       <input
@@ -82,7 +82,7 @@ function PlacesSearch({ label, onPick }: { label: string; onPick: GoogleMapPicke
         type="search"
         aria-label={label}
         placeholder={label}
-        className="h-12 w-full rounded-xl border border-line-strong bg-white pl-10 pr-3"
+        className="h-12 w-full rounded-md border border-outline-variant bg-surface-container-lowest pl-10 pr-3"
       />
     </div>
   );
@@ -130,7 +130,7 @@ function MapArea({
         ) : null}
         <PanTo point={point} />
       </Map>
-      <span className="pointer-events-none absolute bottom-2.5 left-2.5 rounded-md bg-white/90 px-2 py-1 text-[11px] text-muted">
+      <span className="pointer-events-none absolute bottom-2.5 left-2.5 rounded-sm bg-surface-container-lowest/90 px-2 py-1 text-label-medium text-on-surface-variant">
         {dragHint}
       </span>
     </div>

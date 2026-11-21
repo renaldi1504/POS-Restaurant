@@ -21,9 +21,9 @@ function StatusHero({ order }: { order: PublicOrderDto }) {
   if (order.status === 'rejected') {
     return (
       <Card tone="danger" role="alert" data-testid="status-rejected">
-        <b className="text-lg text-danger">{t('order.rejected')}</b>
+        <b className="text-title-medium text-error">{t('order.rejected')}</b>
         {order.rejectReason ? (
-          <p className="mt-1 text-base">{t('web.rejectedReason', { reason: order.rejectReason })}</p>
+          <p className="mt-1 text-body-medium">{t('web.rejectedReason', { reason: order.rejectReason })}</p>
         ) : null}
       </Card>
     );
@@ -31,23 +31,23 @@ function StatusHero({ order }: { order: PublicOrderDto }) {
   if (order.status === 'cancelled') {
     return (
       <Card tone="danger" role="alert">
-        <b className="text-lg text-danger">{t('web.cancelled')}</b>
+        <b className="text-title-medium text-error">{t('web.cancelled')}</b>
       </Card>
     );
   }
   if (order.status === 'pending_accept') {
     return (
       <Card tone="warn" role="status" data-testid="status-pending">
-        <b className="text-lg text-warn-dark">{t('status.pending_accept')}</b>
-        <p className="mt-1 text-base text-warn-dark">{t('order.waitingAccept')}</p>
+        <b className="text-title-medium text-warning">{t('status.pending_accept')}</b>
+        <p className="mt-1 text-body-medium text-warning">{t('order.waitingAccept')}</p>
       </Card>
     );
   }
   if (order.status === 'done' || order.status === 'delivered') {
     return (
       <Card tone="primary" role="status">
-        <b className="text-lg text-primary-dark">{t('order.thanks')}</b>
-        <p className="mt-1 text-base text-primary-dark">{t('web.doneTitle')}</p>
+        <b className="text-title-medium text-primary">{t('order.thanks')}</b>
+        <p className="mt-1 text-body-medium text-primary">{t('web.doneTitle')}</p>
       </Card>
     );
   }
@@ -73,7 +73,7 @@ function ProofSection({ order }: { order: PublicOrderDto }) {
   if (order.paymentStatus === 'paid') {
     return (
       <Card className="flex items-center justify-between">
-        <span className="font-bold">ABA</span>
+        <span className="font-medium">ABA</span>
         <Badge tone="primary">{t('web.paid')}</Badge>
       </Card>
     );
@@ -81,18 +81,18 @@ function ProofSection({ order }: { order: PublicOrderDto }) {
   if (order.proofUploaded) {
     return (
       <Card tone="primary" data-testid="proof-done">
-        <b className="text-primary-dark">{t('order.proofUploaded')}</b>
-        <p className="text-sm text-primary-dark">{t('order.waitingVerification')}</p>
+        <b className="text-primary">{t('order.proofUploaded')}</b>
+        <p className="text-label-medium text-primary">{t('order.waitingVerification')}</p>
       </Card>
     );
   }
   if (TERMINAL_ORDER_STATUSES.includes(order.status)) return null;
   return (
     <Card tone="warn" className="flex flex-col gap-2.5" data-testid="proof-needed">
-      <b className="text-warn-dark">{t('web.proofNeeded')}</b>
+      <b className="text-warning">{t('web.proofNeeded')}</b>
       <div className="flex items-baseline justify-between">
-        <span className="text-sm">{t('web.abaAmount')}</span>
-        <b className="text-xl tabular-nums">{money(order.total, order.currency)}</b>
+        <span className="text-label-medium">{t('web.abaAmount')}</span>
+        <b className="text-title-large tabular-nums">{money(order.total, order.currency)}</b>
       </div>
       <AbaAccountInfo settings={settings} />
       <ProofPicker value={file} onChange={setFile} />
@@ -160,7 +160,7 @@ export default function OrderStatusPage() {
               </Card>
             ) : null}
             {!TERMINAL_ORDER_STATUSES.includes(order.status) ? (
-              <p className="text-center text-[13px] text-muted" role="status">
+              <p className="text-center text-label-medium text-on-surface-variant" role="status">
                 {t('web.statusLive')}
               </p>
             ) : null}
@@ -171,52 +171,54 @@ export default function OrderStatusPage() {
             ) : (
               <Card className="flex flex-col gap-1.5">
                 {order.items.map((it) => (
-                  <div key={it.id} className="flex justify-between gap-2 text-[15px]">
+                  <div key={it.id} className="flex justify-between gap-2 text-body-medium">
                     <span className="min-w-0">
                       {it.qty} × {tl(it.name, lang)}
                       {it.options.length ? (
-                        <span className="block text-[13px] text-muted">
+                        <span className="block text-label-medium text-on-surface-variant">
                           {it.options.map((op) => tl(op.optionName, lang)).join(', ')}
                         </span>
                       ) : null}
                       {it.note ? (
-                        <span className="block text-[13px] italic text-muted">“{it.note}”</span>
+                        <span className="block text-label-medium italic text-on-surface-variant">
+                          “{it.note}”
+                        </span>
                       ) : null}
                     </span>
                     <span className="shrink-0 tabular-nums">{money(it.lineTotal, order.currency)}</span>
                   </div>
                 ))}
                 {order.deliveryFee ? (
-                  <div className="flex justify-between text-[15px] text-muted">
+                  <div className="flex justify-between text-body-medium text-on-surface-variant">
                     <span>{t('common.deliveryFee')}</span>
                     <span className="tabular-nums">{money(order.deliveryFee, order.currency)}</span>
                   </div>
                 ) : null}
                 {order.discount ? (
-                  <div className="flex justify-between text-[15px] text-muted">
+                  <div className="flex justify-between text-body-medium text-on-surface-variant">
                     <span>{t('common.discount')}</span>
                     <span className="tabular-nums">−{money(order.discount, order.currency)}</span>
                   </div>
                 ) : null}
-                <div className="flex items-baseline justify-between border-t border-line pt-1.5">
-                  <span className="font-bold">{t('common.total')}</span>
-                  <b className="text-2xl tabular-nums">{money(order.total, order.currency)}</b>
+                <div className="flex items-baseline justify-between border-t border-outline-variant pt-1.5">
+                  <span className="font-medium">{t('common.total')}</span>
+                  <b className="text-headline-small tabular-nums">{money(order.total, order.currency)}</b>
                 </div>
                 {order.paymentMethod ? (
-                  <p className="text-sm text-muted">
+                  <p className="text-label-medium text-on-surface-variant">
                     {t(`paymentMethod.${order.paymentMethod}`)} · {t(`paymentStatus.${order.paymentStatus}`)}
                   </p>
                 ) : null}
                 {order.address ? (
-                  <p className="text-sm text-muted">
-                    <b className="text-ink">{t('web.deliverTo')}:</b> {order.address.text}
+                  <p className="text-label-medium text-on-surface-variant">
+                    <b className="text-on-surface">{t('web.deliverTo')}:</b> {order.address.text}
                     {order.address.landmark ? ` · ${order.address.landmark}` : ''}
                   </p>
                 ) : null}
               </Card>
             )}
 
-            <Button variant="outline" block onClick={() => navigate(customer.homePath)}>
+            <Button variant="outlined" block onClick={() => navigate(customer.homePath)}>
               {t('order.orderAgain')}
             </Button>
           </>

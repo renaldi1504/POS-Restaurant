@@ -16,7 +16,7 @@ import {
   Switch,
   TextField,
 } from '../../components/common';
-import { Button, Sheet, cn, useToast } from '../../components/ui';
+import { Button, Icon, Sheet, cn, useToast } from '../../components/ui';
 import { api, errorMessage, qk } from '../../lib/api';
 import { usePublicSettings } from '../../lib/data';
 
@@ -118,34 +118,36 @@ export default function TablesAdminPage() {
         {q.isLoading ? <LoadingBlock /> : null}
         {q.isError ? <ErrorBlock error={q.error} onRetry={() => void q.refetch()} /> : null}
         {sel ? (
-          <section className="flex shrink-0 items-center gap-3 rounded-card bg-white p-3 shadow-card">
+          <section className="flex shrink-0 items-center gap-3 rounded-md bg-surface-container-lowest p-3">
             <div
               aria-label={t('mejaqr.sample', { name: sel.name })}
-              className="flex w-[150px] shrink-0 flex-col items-center gap-1.5 rounded-xl border border-line bg-white p-2.5"
+              className="flex w-[150px] shrink-0 flex-col items-center gap-1.5 rounded-md border border-outline-variant bg-surface-container-lowest p-2.5"
             >
-              <span className="text-[9px] font-bold uppercase text-muted">{settings.data?.name}</span>
-              <b className="text-lg">{sel.name}</b>
+              <span className="text-label-medium font-medium uppercase text-on-surface-variant">
+                {settings.data?.name}
+              </span>
+              <b className="text-title-medium">{sel.name}</b>
               {qr ? (
                 <img src={qr} alt={`QR ${sel.name}`} className="size-[110px]" data-testid="qr-preview" />
               ) : (
-                <div className="size-[110px] bg-bg" />
+                <div className="size-[110px] bg-surface" />
               )}
-              <span className="text-center text-[9px] leading-snug text-[#475467]">
+              <span className="text-center text-label-medium leading-snug text-on-surface-variant">
                 Scan untuk pesan · Scan to order
                 <br />
                 <span className="font-khmer">ស្កេនដើម្បីកម្ម៉ង់</span> · <span className="font-sc">扫码点餐</span>
               </span>
             </div>
             <div className="flex grow flex-col gap-2">
-              <b className="text-[15px]">QR {sel.name}</b>
-              <span className="text-xs text-muted">{t('mejaqr.scanHint')}</span>
-              <Button size="md" className="min-h-11 text-sm" onClick={() => openPdf([sel.id])}>
+              <b className="text-body-medium">QR {sel.name}</b>
+              <span className="text-label-medium text-on-surface-variant">{t('mejaqr.scanHint')}</span>
+              <Button size="md" className="min-h-11 text-label-medium" onClick={() => openPdf([sel.id])}>
                 {t('admin.printQr')}
               </Button>
               <Button
-                variant="outline"
+                variant="outlined"
                 size="md"
-                className="min-h-10 text-[13px]"
+                className="min-h-10 text-label-medium"
                 onClick={() => setRegen(true)}
               >
                 {t('admin.regenerateQr')}
@@ -153,13 +155,13 @@ export default function TablesAdminPage() {
             </div>
           </section>
         ) : null}
-        <section className="flex shrink-0 flex-col rounded-card bg-white px-3 py-1 shadow-card">
+        <section className="flex shrink-0 flex-col rounded-md bg-surface-container-lowest px-3 py-1">
           {tables.map((m) => (
             <div
               key={m.id}
               className={cn(
-                'flex min-h-[54px] items-center gap-2.5 rounded-lg border-b border-[#F2F4F7] px-1',
-                sel?.id === m.id && 'bg-primary-tint',
+                'flex min-h-[54px] items-center gap-2.5 rounded-sm border-b border-surface-container-highest px-1',
+                sel?.id === m.id && 'bg-secondary-container',
               )}
             >
               <button
@@ -168,8 +170,15 @@ export default function TablesAdminPage() {
                 aria-pressed={sel?.id === m.id}
                 className="flex min-h-[54px] grow items-center gap-2.5 text-left"
               >
-                <b className={cn('w-[76px] text-[15px]', !m.active && 'text-muted line-through')}>{m.name}</b>
-                <span className="grow text-[13px] text-muted">
+                <b
+                  className={cn(
+                    'w-[76px] text-body-medium',
+                    !m.active && 'text-on-surface-variant line-through',
+                  )}
+                >
+                  {m.name}
+                </b>
+                <span className="grow text-label-medium text-on-surface-variant">
                   {m.area} · {t('meja.seats', { count: m.seats })}
                 </span>
               </button>
@@ -178,14 +187,14 @@ export default function TablesAdminPage() {
                 onClick={() =>
                   setForm({ id: m.id, name: m.name, area: m.area, seats: m.seats, active: m.active })
                 }
-                className="rounded-lg px-2 py-1.5 text-xs font-bold text-primary"
+                className="rounded-sm px-2 py-1.5 text-label-medium font-medium text-primary"
               >
                 {t('common.edit')}
               </button>
               <button
                 type="button"
                 onClick={() => openPdf([m.id])}
-                className="rounded-lg border border-line-strong px-2.5 py-1.5 text-xs font-bold"
+                className="rounded-sm border border-outline-variant px-2.5 py-1.5 text-label-medium font-medium"
               >
                 {t('admin.printQr')}
               </button>
@@ -194,20 +203,22 @@ export default function TablesAdminPage() {
           <button
             type="button"
             onClick={() => setForm({ name: '', area: areas[0] ?? 'Dalam', seats: 4, active: true })}
-            className="h-12 text-left text-[15px] font-extrabold text-primary"
+            className="state-layer flex min-h-12 items-center gap-2 rounded-full px-3 text-left text-label-large text-primary"
           >
-            + {t('mejaqr.add')}
+            <Icon name="add" />
+            {t('mejaqr.add')}
           </button>
         </section>
       </main>
       <ScreenFooter className="gap-1.5">
-        <Button className="h-14 bg-ink text-[17px] hover:bg-ink/90" block onClick={() => openPdf()}>
+        <Button size="lg" icon="print" block onClick={() => openPdf()}>
           {t('mejaqr.printAll', { count: activeCount })}
         </Button>
-        <span className="text-center text-xs text-muted">{t('mejaqr.sizeHint')}</span>
+        <span className="text-center text-label-medium text-on-surface-variant">{t('mejaqr.sizeHint')}</span>
       </ScreenFooter>
 
       <Sheet
+        tablet="side"
         open={!!form}
         onClose={() => setForm(null)}
         title={form?.id ? t('mejaqr.edit') : t('mejaqr.add')}
@@ -216,8 +227,8 @@ export default function TablesAdminPage() {
           <div className="flex gap-2">
             {form?.id ? (
               <Button
-                variant="outline"
-                className="text-danger"
+                variant="outlined"
+                className="text-error"
                 onClick={() => setDel(tables.find((x) => x.id === form.id) ?? null)}
               >
                 {t('common.delete')}

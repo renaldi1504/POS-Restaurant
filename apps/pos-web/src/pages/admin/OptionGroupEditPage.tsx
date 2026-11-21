@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 import { tl, type AdminOptionGroupDto, type Lang } from '@pos/shared';
-import { Button, Sheet, cn, useToast } from '../../components/ui';
+import { Button, Icon, Sheet, cn, useToast } from '../../components/ui';
 import {
   ConfirmSheet,
   ErrorBlock,
@@ -147,7 +147,7 @@ export default function OptionGroupEditPage() {
           right={
             <Button
               size="md"
-              className="min-h-9 bg-info px-2.5 text-xs hover:bg-info-dark"
+              className="min-h-9 bg-tertiary px-2.5 text-label-medium hover:bg-tertiary"
               loading={translate.isPending}
               disabled={!name.id.trim()}
               onClick={() =>
@@ -178,12 +178,12 @@ export default function OptionGroupEditPage() {
                 id="ng-id"
                 value={name.id}
                 onChange={(e) => setName({ ...name, id: e.target.value })}
-                className="h-12 rounded-xl border border-line-strong px-3 text-[17px] font-bold"
+                className="h-12 rounded-md border border-outline-variant px-3 text-body-large font-medium"
               />
               <button
                 type="button"
                 onClick={() => setShowLangs(true)}
-                className="text-left text-xs text-muted underline"
+                className="text-left text-label-medium text-on-surface-variant underline"
               >
                 {others}
               </button>
@@ -213,7 +213,7 @@ export default function OptionGroupEditPage() {
             />
             <NumberBox label={t('opsi.maxPick')} value={maxSel} min={0} max={20} onChange={setMaxSel} />
           </div>
-          <span className="text-xs text-muted">
+          <span className="text-label-medium text-on-surface-variant">
             {maxSel === 0
               ? t('opsi.noMax')
               : maxSel === 1
@@ -221,7 +221,7 @@ export default function OptionGroupEditPage() {
                 : t('opsi.multiHint', { count: maxSel })}
           </span>
           {!valid && name.id.trim() ? (
-            <span className="text-sm font-bold text-danger">{t('opsi.maxGteMin')}</span>
+            <span className="text-label-medium font-medium text-error">{t('opsi.maxGteMin')}</span>
           ) : null}
         </Section>
         <Section className="px-3 py-1.5">
@@ -229,7 +229,10 @@ export default function OptionGroupEditPage() {
             {t('opsi.optionsTitle', { symbol: money.main === 'KHR' ? '៛' : money.main })}
           </b>
           {opts.map((o, i) => (
-            <div key={o.key} className="flex items-center gap-2 border-b border-[#F2F4F7] py-2">
+            <div
+              key={o.key}
+              className="flex items-center gap-2 border-b border-surface-container-highest py-2"
+            >
               <input
                 aria-label={t('opsi.optionName', { n: i + 1 })}
                 value={o.name.id}
@@ -239,7 +242,7 @@ export default function OptionGroupEditPage() {
                     xs.map((x) => (x.key === o.key ? { ...x, name: { ...x.name, id: e.target.value } } : x)),
                   )
                 }
-                className="h-[42px] min-w-0 grow rounded-[10px] border border-line px-2 font-semibold"
+                className="h-[42px] min-w-0 grow rounded-sm border border-outline-variant px-2 font-medium"
               />
               <MoneyInput
                 ariaLabel={t('opsi.priceOf', { name: o.name.id || i + 1 })}
@@ -257,8 +260,8 @@ export default function OptionGroupEditPage() {
                   setOpts((xs) => xs.map((x) => (x.key === o.key ? { ...x, available: !x.available } : x)))
                 }
                 className={cn(
-                  'h-9 w-[72px] shrink-0 rounded-full text-xs font-extrabold text-white',
-                  o.available ? 'bg-primary' : 'bg-danger',
+                  'h-9 w-[72px] shrink-0 rounded-full text-label-medium font-medium text-on-primary',
+                  o.available ? 'bg-primary' : 'bg-error',
                 )}
               >
                 {o.available ? t('common.available') : t('common.soldOut')}
@@ -267,7 +270,7 @@ export default function OptionGroupEditPage() {
                 type="button"
                 aria-label={`${t('common.edit')} ${o.name.id}`}
                 onClick={() => setEditOpt(o.key)}
-                className="size-9 shrink-0 rounded-lg text-muted"
+                className="size-9 shrink-0 rounded-sm text-on-surface-variant"
               >
                 ⋯
               </button>
@@ -281,9 +284,10 @@ export default function OptionGroupEditPage() {
                 { key: `n${Date.now()}`, name: { id: '' }, priceDelta: 0, available: true },
               ])
             }
-            className="h-12 text-left text-[15px] font-extrabold text-primary"
+            className="state-layer -mx-2 flex min-h-12 items-center gap-2 rounded-full px-3 text-left text-label-large text-primary"
           >
-            + {t('opsi.addOption')}
+            <Icon name="add" />
+            {t('opsi.addOption')}
           </button>
         </Section>
         <Section title={t('admin.attachTo')}>
@@ -291,7 +295,7 @@ export default function OptionGroupEditPage() {
             {itemIds.map((iid) => (
               <span
                 key={iid}
-                className="rounded-full bg-primary-tint px-3 py-2 text-sm font-bold text-primary-dark"
+                className="flex h-10 items-center rounded-sm bg-secondary-container px-3 text-label-large text-on-secondary-container"
               >
                 {tl(items.data?.items.find((x) => x.id === iid)?.name, lang) || `#${iid}`}
               </span>
@@ -299,17 +303,18 @@ export default function OptionGroupEditPage() {
             <button
               type="button"
               onClick={() => setPickOpen(true)}
-              className="h-9 rounded-full border-[1.5px] border-dashed border-[#98A2B3] px-3 text-sm font-bold"
+              className="state-layer relative flex h-10 items-center gap-1 rounded-sm border border-outline-variant pl-2 pr-3 text-label-large text-on-surface-variant after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']"
             >
-              + {t('opsi.pickMenu')}
+              <Icon name="add" size={18} />
+              {t('opsi.pickMenu')}
             </button>
           </div>
-          <span className="text-xs text-muted">{t('opsi.sharedHint')}</span>
+          <span className="text-label-medium text-on-surface-variant">{t('opsi.sharedHint')}</span>
         </Section>
         {id ? (
           <Button
-            variant="outline"
-            className="border-2 border-[#F04438] text-danger"
+            variant="outlined"
+            className="border-2 border-error text-error"
             onClick={() => setDelOpen(true)}
           >
             {t('opsi.deleteGroup')}
@@ -320,7 +325,7 @@ export default function OptionGroupEditPage() {
         <Button
           size="lg"
           block
-          className="h-14 text-lg"
+          className="h-14 text-title-medium"
           disabled={!valid}
           loading={save.isPending}
           onClick={() => save.mutate()}
@@ -342,14 +347,17 @@ export default function OptionGroupEditPage() {
         {items.data?.items.map((it) => {
           const on = itemIds.includes(it.id);
           return (
-            <label key={it.id} className="flex min-h-12 items-center gap-3 border-b border-[#F2F4F7]">
+            <label
+              key={it.id}
+              className="flex min-h-12 items-center gap-3 border-b border-surface-container-highest"
+            >
               <input
                 type="checkbox"
                 className="size-6 accent-primary"
                 checked={on}
                 onChange={() => setItemIds((xs) => (on ? xs.filter((x) => x !== it.id) : [...xs, it.id]))}
               />
-              <span className="font-semibold">{tl(it.name, lang)}</span>
+              <span className="font-medium">{tl(it.name, lang)}</span>
             </label>
           );
         })}
@@ -362,8 +370,8 @@ export default function OptionGroupEditPage() {
         footer={
           <div className="flex gap-2">
             <Button
-              variant="outline"
-              className="text-danger"
+              variant="outlined"
+              className="text-error"
               onClick={() => {
                 setOpts((xs) => xs.filter((x) => x.key !== editOpt));
                 setEditOpt(null);

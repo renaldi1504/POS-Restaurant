@@ -7,7 +7,7 @@ import type { AddressDto, Lang } from '@pos/shared';
 import { LocateIcon } from '../components/Icons';
 import { PlaceholderMap } from '../components/PlaceholderMap';
 import { Page } from '../components/Shell';
-import { BottomBar, Button, cn, HeaderBar, useToast } from '../components/ui';
+import { BottomBar, Button, cn, HeaderBar, Icon, useToast } from '../components/ui';
 import { api, errorMessage, qk } from '../lib/api';
 import { useCart } from '../lib/cart';
 import { useCheckout } from '../lib/checkout';
@@ -25,7 +25,8 @@ const LABELS = [
   { value: 'Lainnya', key: 'web.labelOther' },
 ] as const;
 
-const inputCls = 'h-12 w-full rounded-xl border border-line-strong bg-white px-3';
+const inputCls =
+  'h-14 w-full rounded-xs border border-outline bg-surface-container-lowest px-4 text-body-large outline-primary focus:border-primary focus:outline-1';
 
 export default function AddressPage() {
   const { t, i18n } = useTranslation();
@@ -173,7 +174,7 @@ export default function AddressPage() {
         type="button"
         onClick={() => void locateMe()}
         disabled={locating}
-        className="flex h-[52px] items-center justify-center gap-2 rounded-[14px] border-2 border-info bg-info-tint text-base font-extrabold text-info-dark disabled:opacity-70"
+        className="state-layer flex h-14 items-center justify-center gap-2 rounded-full bg-tertiary-container text-label-large text-on-tertiary-container disabled:opacity-70"
       >
         <LocateIcon />
         {locating ? t('web.locating') : t('order.useMyLocation')}
@@ -181,7 +182,10 @@ export default function AddressPage() {
       {locMsg ? (
         <p
           role={locMsg.tone === 'err' ? 'alert' : 'status'}
-          className={cn('text-sm font-semibold', locMsg.tone === 'err' ? 'text-danger' : 'text-primary-dark')}
+          className={cn(
+            'text-label-medium font-medium',
+            locMsg.tone === 'err' ? 'text-error' : 'text-primary',
+          )}
         >
           {locMsg.text}
         </p>
@@ -196,14 +200,14 @@ export default function AddressPage() {
         onBack={() => navigate('/keranjang')}
         backLabel={t('common.back')}
         right={
-          <span className="shrink-0 rounded-[7px] bg-info-tint px-2 py-1 text-xs font-extrabold text-info-dark">
+          <span className="shrink-0 rounded-[7px] bg-tertiary-container px-2 py-1 text-label-medium font-medium text-on-tertiary-container">
             {t('web.typeDelivery')}
           </span>
         }
       />
 
       {MAPS_KEY ? (
-        <Suspense fallback={<div className="h-[250px] animate-pulse bg-[#E8EDE4]" />}>
+        <Suspense fallback={<div className="h-[250px] animate-pulse bg-surface-container-highest" />}>
           <GoogleMapPicker
             apiKey={MAPS_KEY}
             lang={i18n.language as Lang}
@@ -233,7 +237,7 @@ export default function AddressPage() {
       <main className="flex grow flex-col gap-2.5 px-3.5 pb-4 pt-2.5">
         {saved.length ? (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[13px] text-muted">{t('web.savedShort')}</span>
+            <span className="text-label-medium text-on-surface-variant">{t('web.savedShort')}</span>
             {saved.map((s) => {
               const on = s.id === a.addressId;
               return (
@@ -243,10 +247,10 @@ export default function AddressPage() {
                   aria-pressed={on}
                   onClick={() => pickSaved(s)}
                   className={cn(
-                    'h-11 rounded-full px-3.5 text-sm',
+                    'h-11 rounded-full px-3.5 text-label-medium',
                     on
-                      ? 'border-[1.5px] border-primary bg-primary-tint font-extrabold text-primary-dark'
-                      : 'border border-line-strong bg-white font-semibold shadow-card',
+                      ? 'border-[1.5px] border-primary bg-secondary-container font-medium text-on-secondary-container'
+                      : 'border border-outline-variant bg-surface-container-lowest font-medium',
                   )}
                 >
                   {s.label}
@@ -256,8 +260,8 @@ export default function AddressPage() {
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-1 rounded-xl bg-white px-3 py-2.5 shadow-card">
-          <label htmlFor={ids.text} className="text-[13px] font-bold">
+        <div className="flex flex-col gap-1 rounded-md bg-surface-container-lowest px-3 py-2.5">
+          <label htmlFor={ids.text} className="text-label-medium font-medium">
             {t('web.addressText')}
           </label>
           <textarea
@@ -267,16 +271,18 @@ export default function AddressPage() {
             value={a.text}
             onChange={(e) => edit({ text: e.target.value })}
             placeholder={t('web.addressTextPlaceholder')}
-            className="rounded-lg border border-line-strong p-2.5"
+            className="rounded-sm border border-outline-variant p-2.5"
           />
-          <span className="text-xs text-muted">{point ? t('web.pointHint') : t('web.noPoint')}</span>
+          <span className="text-label-medium text-on-surface-variant">
+            {point ? t('web.pointHint') : t('web.noPoint')}
+          </span>
         </div>
 
         {!MAPS_KEY ? (
           <fieldset className="grid grid-cols-2 gap-2">
-            <legend className="mb-1 text-[13px] font-bold">{t('order.manualLatLng')}</legend>
+            <legend className="mb-1 text-label-medium font-medium">{t('order.manualLatLng')}</legend>
             <div className="flex flex-col gap-1">
-              <label htmlFor={ids.lat} className="text-xs text-muted">
+              <label htmlFor={ids.lat} className="text-label-medium text-on-surface-variant">
                 {t('web.lat')}
               </label>
               <input
@@ -293,7 +299,7 @@ export default function AddressPage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor={ids.lng} className="text-xs text-muted">
+              <label htmlFor={ids.lng} className="text-label-medium text-on-surface-variant">
                 {t('web.lng')}
               </label>
               <input
@@ -312,7 +318,7 @@ export default function AddressPage() {
           </fieldset>
         ) : null}
 
-        <label htmlFor={ids.landmark} className="text-[13px] font-bold">
+        <label htmlFor={ids.landmark} className="text-label-medium font-medium">
           {t('web.landmark')}
         </label>
         <input
@@ -326,7 +332,7 @@ export default function AddressPage() {
 
         {canSave ? (
           <div className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-bold" id="label-title">
+            <span className="text-label-medium font-medium" id="label-title">
               {t('web.saveAs')}
             </span>
             <div role="radiogroup" aria-labelledby="label-title" className="flex flex-wrap gap-1.5">
@@ -338,10 +344,10 @@ export default function AddressPage() {
                   aria-checked={a.label === l.value}
                   onClick={() => edit({ label: l.value })}
                   className={cn(
-                    'h-11 rounded-full px-3.5 text-sm',
+                    'state-layer flex h-10 items-center gap-1 rounded-sm px-3 text-label-large',
                     a.label === l.value
-                      ? 'bg-ink font-bold text-white'
-                      : 'border border-line-strong bg-white font-semibold',
+                      ? 'bg-secondary-container text-on-secondary-container'
+                      : 'border border-outline-variant bg-surface-container-lowest text-on-surface-variant',
                   )}
                 >
                   {t(l.key)}
@@ -353,15 +359,15 @@ export default function AddressPage() {
 
         {isTg ? (
           <>
-            <div className="flex items-center gap-2.5 rounded-xl bg-info-tint px-3 py-2.5">
+            <div className="flex items-center gap-3 rounded-md bg-tertiary-container px-3 py-2.5 text-on-tertiary-container">
               <span
                 aria-hidden
-                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-info text-xs font-extrabold text-white"
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-tertiary text-on-tertiary"
               >
-                TG
+                <Icon name="send" size={20} />
               </span>
               <span className="flex flex-col">
-                <b className="text-sm text-info-dark">
+                <b className="text-label-large">
                   {t('web.tgContact', {
                     user: customer.tgUser?.username
                       ? `@${customer.tgUser.username}`
@@ -370,15 +376,15 @@ export default function AddressPage() {
                         : (customer.tgUser?.first_name ?? ''),
                   })}
                 </b>
-                <span className="text-xs text-info-dark">{t('web.tgContactNote')}</span>
+                <span className="text-label-medium font-normal">{t('web.tgContactNote')}</span>
               </span>
             </div>
             {co.phone ? (
-              <p className="text-sm font-semibold">{t('web.phoneShared', { phone: co.phone })}</p>
+              <p className="text-label-medium font-medium">{t('web.phoneShared', { phone: co.phone })}</p>
             ) : null}
             {phoneInput ? (
               <div className="flex flex-col gap-1">
-                <label htmlFor={ids.phone} className="text-[13px] font-bold">
+                <label htmlFor={ids.phone} className="text-label-medium font-medium">
                   {t('order.phoneOptional')}
                 </label>
                 <input
@@ -395,17 +401,17 @@ export default function AddressPage() {
               <button
                 type="button"
                 onClick={() => void sharePhone()}
-                className="min-h-11 rounded-[10px] border border-dashed border-[#98A2B3] text-sm font-bold text-[#475467]"
+                className="state-layer flex min-h-12 items-center justify-center gap-2 rounded-full border border-outline text-label-large text-primary"
               >
                 {t('web.sharePhone')}
               </button>
             )}
           </>
         ) : (
-          <fieldset className="flex flex-col gap-2 rounded-xl bg-white p-3 shadow-card">
+          <fieldset className="flex flex-col gap-2 rounded-md bg-surface-container-lowest p-3">
             <legend className="sr-only">{t('web.contact')}</legend>
-            <b className="text-[15px]">{t('web.contact')}</b>
-            <label htmlFor={ids.name} className="text-[13px] font-bold">
+            <b className="text-body-medium">{t('web.contact')}</b>
+            <label htmlFor={ids.name} className="text-label-medium font-medium">
               {t('web.yourName')}
             </label>
             <input
@@ -416,7 +422,7 @@ export default function AddressPage() {
               onChange={(e) => update({ name: e.target.value })}
               className={inputCls}
             />
-            <label htmlFor={ids.phone} className="text-[13px] font-bold">
+            <label htmlFor={ids.phone} className="text-label-medium font-medium">
               {t('order.phone')}
             </label>
             <input
@@ -435,7 +441,7 @@ export default function AddressPage() {
         {tried && errors.length ? (
           <ul
             role="alert"
-            className="flex flex-col gap-1 rounded-xl bg-danger-tint p-3 text-sm font-bold text-danger"
+            className="flex flex-col gap-1 rounded-md bg-error-container p-3 text-label-medium font-medium text-on-error-container"
           >
             {errors.map((e) => (
               <li key={e}>{e}</li>
@@ -445,7 +451,7 @@ export default function AddressPage() {
       </main>
 
       <BottomBar>
-        <div className="flex justify-between gap-2 text-sm">
+        <div className="flex justify-between gap-2 text-label-medium">
           <span>
             {t('web.itemsCount', { count })} ·{' '}
             {settings?.delivery.defaultFee
@@ -455,7 +461,11 @@ export default function AddressPage() {
           <b className="shrink-0 tabular-nums">{money(subtotal, currency)}</b>
         </div>
         {gap > 0 ? (
-          <p className="text-center text-sm font-bold text-danger" role="alert" data-testid="min-order">
+          <p
+            className="text-center text-label-medium font-medium text-error"
+            role="alert"
+            data-testid="min-order"
+          >
             {t('web.minOrderShort', {
               amount: money(settings!.delivery.minOrder, currency),
               diff: money(gap, currency),
@@ -469,7 +479,8 @@ export default function AddressPage() {
           loading={save.isPending}
           disabled={gap > 0 || count === 0}
         >
-          {t('web.toPayment')} ›
+          {t('web.toPayment')}
+          <Icon name="arrow_forward" />
         </Button>
       </BottomBar>
     </Page>

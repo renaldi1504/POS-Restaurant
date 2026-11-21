@@ -84,9 +84,9 @@ export function CancelOrderSheet({
       }}
       extra={
         pinNeeded ? (
-          <div className="flex flex-col gap-2 rounded-xl bg-warn-tint p-3">
-            <b className="text-warn-dark">{t('cashier.adminPin')}</b>
-            <span className="text-sm text-warn-dark">{t('pesanan.adminPinHint')}</span>
+          <div className="flex flex-col gap-2 rounded-md bg-warning-container p-3 text-on-warning-container">
+            <b className="text-title-medium">{t('cashier.adminPin')}</b>
+            <span className="text-body-medium">{t('pesanan.adminPinHint')}</span>
             <PinPad value={pin} onChange={setPin} />
           </div>
         ) : null
@@ -169,7 +169,7 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
         subtitle={`${timeHM(order.createdAt)} · ${kindLabel(kind, t)}${order.table ? ` · ${order.table.name}` : ''}`}
         right={<StatusBadge status={order.status} />}
       />
-      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-3.5 py-3">
+      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-4 py-3">
         <Section
           title={
             <span className="flex items-center gap-2">
@@ -189,39 +189,41 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
           }
         >
           {order.customerName || order.customer?.name ? (
-            <div className="text-[15px]">
+            <div className="text-body-medium">
               <b>{order.customerName ?? order.customer?.name}</b>
-              {order.customer?.phone ? <span className="text-muted"> · {order.customer.phone}</span> : null}
+              {order.customer?.phone ? (
+                <span className="text-on-surface-variant"> · {order.customer.phone}</span>
+              ) : null}
             </div>
           ) : null}
           {order.address ? (
-            <div className="text-sm text-muted">
+            <div className="text-label-medium text-on-surface-variant">
               {order.address.text}
               {order.address.landmark ? ` · ${t('order.landmark')}: ${order.address.landmark}` : ''}
             </div>
           ) : null}
           {order.driver ? (
-            <div className="text-sm">{t('order.driverName', { name: order.driver.name })}</div>
+            <div className="text-label-medium">{t('order.driverName', { name: order.driver.name })}</div>
           ) : null}
           {order.note ? (
-            <div className="text-sm font-bold text-danger">
+            <div className="text-label-medium font-medium text-error">
               {t('common.note')}: {order.note}
             </div>
           ) : null}
           {order.rejectReason ? (
-            <div className="text-sm font-bold text-danger">
+            <div className="text-label-medium font-medium text-error">
               {t('common.reason')}: {order.rejectReason}
             </div>
           ) : null}
           {order.cancelReason ? (
-            <div className="text-sm font-bold text-danger">
+            <div className="text-label-medium font-medium text-error">
               {t('common.reason')}: {order.cancelReason}
             </div>
           ) : null}
         </Section>
         <Section>
           <OrderItemsList order={order} lang={lang} />
-          <div className="mt-1 flex flex-col gap-1 border-t border-[#F2F4F7] pt-2 text-[15px]">
+          <div className="mt-1 flex flex-col gap-1 border-t border-surface-container-highest pt-2 text-body-medium">
             <Row label={t('common.subtotal')} value={formatMoney(order.subtotal, order.currency)} />
             {order.discount ? (
               <Row label={t('common.discount')} value={`-${formatMoney(order.discount, order.currency)}`} />
@@ -230,8 +232,10 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
               <Row label={t('common.deliveryFee')} value={formatMoney(order.deliveryFee, order.currency)} />
             ) : null}
             <div className="flex items-baseline justify-between">
-              <b className="text-lg">{t('common.total')}</b>
-              <b className="text-2xl tabular-nums">{formatMoney(order.total, order.currency)}</b>
+              <b className="text-title-medium">{t('common.total')}</b>
+              <b className="text-headline-small font-medium tabular-nums">
+                {formatMoney(order.total, order.currency)}
+              </b>
             </div>
             {order.paidMain > 0 && unpaid ? (
               <Row
@@ -244,11 +248,11 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
         {order.payments.length ? (
           <Section title={t('payment.title')}>
             {order.payments.map((p) => (
-              <div key={p.id} className="flex justify-between text-[15px]">
+              <div key={p.id} className="flex justify-between text-body-medium">
                 <span>
                   {t(`paymentMethod.${p.method}`)} · {timeHM(p.createdAt)}
                   {p.method === 'aba' && p.proofUrl && !p.verifiedAt ? (
-                    <span className="ml-1 font-bold text-warn-dark">({t('payment.verify')})</span>
+                    <span className="ml-1 font-medium text-warning">({t('payment.verify')})</span>
                   ) : null}
                 </span>
                 <b className="tabular-nums">{formatMoney(p.amount, p.currency)}</b>
@@ -257,13 +261,13 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
           </Section>
         ) : null}
         {order.proofUrl ? (
-          <Button variant="outline" onClick={() => setProofOpen(true)}>
+          <Button variant="outlined" onClick={() => setProofOpen(true)}>
             {t('online.viewProof')}
           </Button>
         ) : null}
         <div className="grid grid-cols-2 gap-2">
           <Button
-            variant="outline"
+            variant="outlined"
             size="md"
             onClick={() =>
               void print.printReceipt(
@@ -280,7 +284,7 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
           </Button>
           {canEdit ? (
             <Button
-              variant="outline"
+              variant="outlined"
               size="md"
               onClick={() => {
                 setCart(cartFromOrder(order));
@@ -292,9 +296,9 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
           ) : null}
           {!terminal && hasPermission(me?.permissions, 'order.create') ? (
             <Button
-              variant="outline"
+              variant="outlined"
               size="md"
-              className="border-2 border-[#F04438] text-danger"
+              className="border-error text-error"
               onClick={() => setCancelOpen(true)}
             >
               {t('cashier.cancelOrder')}
@@ -309,11 +313,11 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
               <button
                 type="button"
                 onClick={() => setRejectOpen(true)}
-                className="h-14 w-[104px] rounded-[14px] border-2 border-[#F04438] bg-white text-base font-extrabold text-danger shadow-card"
+                className="state-layer h-14 w-[112px] shrink-0 rounded-full border border-error text-label-large text-error"
               >
                 {t('cashier.reject')}
               </button>
-              <Button className="grow text-xl" loading={accept.isPending} onClick={() => accept.mutate()}>
+              <Button className="grow" loading={accept.isPending} onClick={() => accept.mutate()}>
                 {t('cashier.accept')}
               </Button>
             </div>
@@ -322,7 +326,7 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
               {cashierNext.map((s) => (
                 <Button
                   key={s}
-                  variant="secondary"
+                  variant="tonal"
                   className="grow"
                   loading={status.isPending}
                   onClick={() => status.mutate(s)}
@@ -331,7 +335,7 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
                 </Button>
               ))}
               {unpaid && hasPermission(me?.permissions, 'payment.create') ? (
-                <Button className="grow text-xl" onClick={() => navigate(`/kasir/bayar/${order.id}`)}>
+                <Button className="grow" onClick={() => navigate(`/kasir/bayar/${order.id}`)}>
                   {t('cashier.pay')}
                 </Button>
               ) : null}
@@ -357,7 +361,7 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
         closeLabel={t('common.close')}
       >
         {order.proofUrl ? (
-          <img src={order.proofUrl} alt={t('payment.proof')} className="w-full rounded-xl" />
+          <img src={order.proofUrl} alt={t('payment.proof')} className="w-full rounded-md" />
         ) : null}
       </Sheet>
     </Screen>
@@ -366,7 +370,7 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between text-muted">
+    <div className="flex justify-between text-on-surface-variant">
       <span>{label}</span>
       <span className="tabular-nums">{value}</span>
     </div>

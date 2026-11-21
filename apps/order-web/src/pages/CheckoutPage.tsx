@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import type { PublicPaymentMethod } from '@pos/shared';
 import { AbaAccountInfo } from '../components/AbaAccountInfo';
-import { CheckIcon } from '../components/Icons';
 import { ProofPicker } from '../components/ProofPicker';
 import { Page } from '../components/Shell';
 import { BottomBar, Button, Card, cn, HeaderBar, useToast } from '../components/ui';
@@ -24,7 +23,8 @@ import {
 } from '../lib/menu';
 import { useSubmitOrder } from '../lib/order';
 
-const inputCls = 'h-12 w-full rounded-xl border border-line-strong bg-white px-3';
+const inputCls =
+  'h-14 w-full rounded-xs border border-outline bg-surface-container-lowest px-4 text-body-large outline-primary focus:border-primary focus:outline-1';
 
 export default function CheckoutPage() {
   const { t, i18n } = useTranslation();
@@ -96,36 +96,38 @@ export default function CheckoutPage() {
       />
       <main className="flex grow flex-col gap-3 p-4">
         <Card className="flex flex-col gap-1.5" aria-label={t('web.summary')}>
-          <div className="flex justify-between text-[15px]">
+          <div className="flex justify-between text-body-medium">
             <span>{t('web.itemsCount', { count })}</span>
             <b className="tabular-nums">{money(subtotal, currency)}</b>
           </div>
           {isDelivery ? (
-            <div className="flex justify-between text-[15px] text-muted">
+            <div className="flex justify-between text-body-medium text-on-surface-variant">
               <span>{t('common.deliveryFee')}</span>
               <span>{fee ? money(fee, currency) : t('web.feeConfirm')}</span>
             </div>
           ) : null}
-          <div className="flex items-baseline justify-between border-t border-line pt-1.5">
-            <span className="font-bold">{t('order.totalToPay')}</span>
-            <b className="text-2xl tabular-nums">{money(total, currency)}</b>
+          <div className="flex items-baseline justify-between border-t border-outline-variant pt-1.5">
+            <span className="font-medium">{t('order.totalToPay')}</span>
+            <b className="text-headline-small tabular-nums">{money(total, currency)}</b>
           </div>
           {isDelivery && co.address.text ? (
-            <p className="text-sm text-muted">
-              <b className="text-ink">{t('web.deliverTo')}:</b> {co.address.text}
+            <p className="text-label-medium text-on-surface-variant">
+              <b className="text-on-surface">{t('web.deliverTo')}:</b> {co.address.text}
               {co.address.landmark ? ` · ${co.address.landmark}` : ''}
             </p>
           ) : null}
-          {type === 'takeaway' ? <p className="text-sm text-muted">{t('web.pickupInfo')}</p> : null}
+          {type === 'takeaway' ? (
+            <p className="text-label-medium text-on-surface-variant">{t('web.pickupInfo')}</p>
+          ) : null}
           {customer.mode === 'none' && type === 'dine_in' ? (
-            <p className="text-sm text-muted">{t('web.dineInfo')}</p>
+            <p className="text-label-medium text-on-surface-variant">{t('web.dineInfo')}</p>
           ) : null}
         </Card>
 
         {customer.mode === 'none' && !isDelivery ? (
           <Card className="flex flex-col gap-2">
-            <b className="text-[15px]">{t('web.contact')}</b>
-            <label htmlFor={nameId} className="text-[13px] font-bold">
+            <b className="text-body-medium">{t('web.contact')}</b>
+            <label htmlFor={nameId} className="text-label-medium font-medium">
               {t('web.yourName')}
             </label>
             <input
@@ -136,7 +138,7 @@ export default function CheckoutPage() {
               onChange={(e) => update({ name: e.target.value })}
               className={inputCls}
             />
-            <label htmlFor={phoneId} className="text-[13px] font-bold">
+            <label htmlFor={phoneId} className="text-label-medium font-medium">
               {t('order.phoneOptional')}
             </label>
             <input
@@ -153,7 +155,7 @@ export default function CheckoutPage() {
         ) : null}
 
         <section aria-labelledby="pay-title" className="flex flex-col gap-2">
-          <h2 id="pay-title" className="text-[17px] font-extrabold">
+          <h2 id="pay-title" className="text-title-medium">
             {t('order.payment')}
           </h2>
           <div role="radiogroup" aria-labelledby="pay-title" className="flex flex-col gap-2">
@@ -167,22 +169,24 @@ export default function CheckoutPage() {
                   aria-checked={on}
                   onClick={() => update({ payment: m.value })}
                   className={cn(
-                    'flex min-h-16 items-center gap-3 rounded-[14px] border-2 bg-white px-4 py-2.5 text-left shadow-card',
-                    on ? 'border-primary bg-primary-tint' : 'border-line',
+                    'state-layer flex min-h-[72px] items-center gap-4 rounded-md px-4 py-2.5 text-left',
+                    on
+                      ? 'bg-secondary-container text-on-secondary-container outline-2 outline-primary'
+                      : 'border border-outline-variant bg-surface-container-lowest',
                   )}
                 >
                   <span
                     aria-hidden
                     className={cn(
-                      'flex size-6 shrink-0 items-center justify-center rounded-full border-2 text-white',
-                      on ? 'border-primary bg-primary' : 'border-[#98A2B3]',
+                      'flex size-6 shrink-0 items-center justify-center rounded-full border-2',
+                      on ? 'border-primary' : 'border-on-surface-variant',
                     )}
                   >
-                    {on ? <CheckIcon size={14} /> : null}
+                    {on ? <span className="size-3 rounded-full bg-primary" /> : null}
                   </span>
                   <span className="flex flex-col">
-                    <b className="text-base">{m.title}</b>
-                    <span className="text-sm text-muted">{m.sub}</span>
+                    <b className="text-title-medium">{m.title}</b>
+                    <span className="text-body-medium opacity-80">{m.sub}</span>
                   </span>
                 </button>
               );
@@ -192,21 +196,23 @@ export default function CheckoutPage() {
 
         {co.payment === 'aba' ? (
           <Card className="flex flex-col gap-2.5" data-testid="aba-panel">
-            <b className="text-base">{t('web.abaTitle')}</b>
-            <div className="flex items-baseline justify-between rounded-xl bg-bg px-3 py-2">
-              <span className="text-sm">{t('web.abaAmount')}</span>
-              <b className="text-xl tabular-nums">{money(total, currency)}</b>
+            <b className="text-title-medium">{t('web.abaTitle')}</b>
+            <div className="flex items-baseline justify-between rounded-md bg-surface-container-highest px-4 py-3">
+              <span className="text-body-medium">{t('web.abaAmount')}</span>
+              <b className="text-headline-small font-medium tabular-nums">{money(total, currency)}</b>
             </div>
             <AbaAccountInfo settings={settings} />
             <ProofPicker value={proof} onChange={setProof} />
-            {!proof ? <p className="text-xs text-muted">{t('web.proofLater')}</p> : null}
+            {!proof ? (
+              <p className="text-label-medium text-on-surface-variant">{t('web.proofLater')}</p>
+            ) : null}
           </Card>
         ) : null}
 
         {tried && (needName || needDeliveryInfo) ? (
           <ul
             role="alert"
-            className="flex flex-col gap-1 rounded-xl bg-danger-tint p-3 text-sm font-bold text-danger"
+            className="flex flex-col gap-1 rounded-md bg-error-container p-3 text-label-medium font-medium text-on-error-container"
           >
             {needName ? <li>{t('web.needName')}</li> : null}
             {needDeliveryInfo ? <li>{t('web.needAddress')}</li> : null}
@@ -216,7 +222,11 @@ export default function CheckoutPage() {
 
       <BottomBar>
         {gap > 0 ? (
-          <p className="text-center text-sm font-bold text-danger" role="alert" data-testid="min-order">
+          <p
+            className="text-center text-label-medium font-medium text-error"
+            role="alert"
+            data-testid="min-order"
+          >
             {t('web.minOrderShort', {
               amount: money(settings!.delivery.minOrder, currency),
               diff: money(gap, currency),
@@ -224,7 +234,7 @@ export default function CheckoutPage() {
           </p>
         ) : null}
         {closed && settings ? (
-          <p className="text-center text-sm font-bold text-danger" role="alert">
+          <p className="text-center text-label-medium font-medium text-error" role="alert">
             {t('web.closedOpensAt', { time: formatHour(settings.hours.open, i18n.language) })}
           </p>
         ) : null}

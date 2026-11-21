@@ -4,6 +4,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router';
 import { hasAnyPermission, type PermissionKey, type StaffUser } from '@pos/shared';
 import { api, isApiError, qk, UNAUTHORIZED_EVENT } from './api';
 import { setLang, storedLang } from './i18n';
+import { resetNavSession } from './navSession';
 import { disconnectSocket, reconnectSocket } from './socket';
 
 /** Halaman awal sesuai permission (routing berdasarkan role). */
@@ -38,6 +39,7 @@ export function useAuthActions() {
     /** Setelah POST /auth/pin berhasil. */
     onLoggedIn(user: StaffUser) {
       qc.setQueryData(qk.me, user);
+      resetNavSession();
       if (!storedLang()) setLang(user.lang);
       reconnectSocket();
       navigate(homePathFor(user.permissions), { replace: true });
@@ -47,6 +49,7 @@ export function useAuthActions() {
         await api.call('authLogout');
       } finally {
         disconnectSocket();
+        resetNavSession();
         qc.clear();
         navigate('/login', { replace: true });
       }
@@ -73,7 +76,7 @@ export function UnauthorizedListener() {
 export function RequireAuth({ any, children }: { any?: PermissionKey[]; children: ReactNode }) {
   const { data: me, isLoading } = useMe();
   const location = useLocation();
-  if (isLoading) return <div className="p-6 text-muted">…</div>;
+  if (isLoading) return <div className="p-6 text-on-surface-variant">…</div>;
   if (!me) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   if (any && any.length && !hasAnyPermission(me.permissions, any))
     return <Navigate to={homePathFor(me.permissions)} replace />;

@@ -25,7 +25,7 @@ export default function GoogleDriverMap({
       >
         {center ? (
           <AdvancedMarker position={center}>
-            <div className="flex size-9 items-center justify-center rounded-full bg-ink text-[11px] font-extrabold text-white">
+            <div className="flex size-9 items-center justify-center rounded-full bg-primary text-label-medium text-on-primary">
               {restoLabel}
             </div>
           </AdvancedMarker>
@@ -33,7 +33,7 @@ export default function GoogleDriverMap({
         {pins.map((p) => (
           <AdvancedMarker key={p.id} position={{ lat: p.lat, lng: p.lng }}>
             <span
-              className={`rounded-lg px-2 py-1 text-xs font-extrabold text-white ${p.mine ? 'bg-info' : 'bg-warn'}`}
+              className={`rounded-sm px-2 py-1 text-label-medium ${p.mine ? 'bg-tertiary text-on-tertiary' : 'bg-warning text-on-warning'}`}
             >
               {p.label}
             </span>

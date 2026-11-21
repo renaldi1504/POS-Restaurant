@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 import { formatMoney, tl, type OrderDto, type TableBillDto } from '@pos/shared';
-import { Badge, Button, EmptyState, Sheet, cn, useToast } from '../../components/ui';
+import { Badge, Button, EmptyState, Icon, Sheet, cn, useToast } from '../../components/ui';
 import {
   ChoiceButton,
   ErrorBlock,
@@ -15,6 +15,7 @@ import {
   Screen,
   ScreenFooter,
   SourceBadge,
+  StatusBadge,
   Tabs,
   TopBar,
   minutesSince,
@@ -26,16 +27,7 @@ import { useMoney } from '../../lib/data';
 import { evenShares } from '../../lib/payment';
 import { TABLE_STYLE } from './TablesPage';
 
-const STATUS_COLOR: Partial<Record<OrderDto['status'], string>> = {
-  pending_accept: 'text-warn-dark',
-  accepted: 'text-warn-dark',
-  cooking: 'text-info-dark',
-  ready: 'text-primary-dark',
-  served: 'text-primary-dark',
-  done: 'text-primary-dark',
-  cancelled: 'text-danger',
-  rejected: 'text-danger',
-};
+const TABLE_ACTION_ICON = { move: 'swap_horiz', merge: 'call_merge', split: 'call_split' } as const;
 
 export default function TableBillPage() {
   const { t, i18n } = useTranslation();
@@ -128,49 +120,52 @@ export default function TableBillPage() {
         subtitle={`${bill.session ? `${t('tables.seated', { count: mins })} · ` : ''}${t('meja.seats', { count: bill.table.seats })}`}
         right={
           <span
-            className={cn('rounded-lg px-2.5 py-1 text-xs font-extrabold', st.card.split(' ')[0], st.text)}
+            className={cn(
+              'flex min-h-8 items-center gap-1 rounded-sm px-2.5 text-label-medium',
+              st.card.replace(/border\S*/g, ''),
+            )}
           >
+            <Icon name={st.icon} size={16} />
             {t(st.key)}
           </span>
         }
       />
-      <main className="flex min-h-0 grow flex-col gap-2.5 overflow-y-auto p-3">
+      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-4 py-3">
         {!bill.orders.length ? (
-          <EmptyState title={t('tables.empty')} description={t('meja.emptyHint')} />
+          <EmptyState icon="table_restaurant" title={t('tables.empty')} description={t('meja.emptyHint')} />
         ) : null}
         {bill.orders.map((o) => (
           <section
             key={o.id}
             className={cn(
-              'flex shrink-0 flex-col rounded-card bg-white px-3 py-2.5 shadow-card',
+              'flex shrink-0 flex-col rounded-md border border-outline-variant bg-surface-container-lowest px-4 py-3',
               (o.status === 'cancelled' || o.status === 'rejected') && 'opacity-50',
             )}
           >
-            <div className="flex items-center justify-between border-b border-[#F2F4F7] pb-1.5">
+            <div className="flex items-center justify-between gap-2 border-b border-surface-container-highest pb-2">
               <button
                 type="button"
-                className="flex items-center gap-1.5 text-left"
+                className="state-layer -ml-2 flex min-h-12 flex-wrap items-center gap-1.5 rounded-sm px-2 text-left"
                 onClick={() => navigate(`/kasir/pesanan/${o.id}`)}
               >
-                <b>
+                <b className="text-title-medium">
                   {t('cashier.orderNo', { no: o.displayNo })} · {timeHM(o.createdAt)}
                 </b>
                 <SourceBadge channel={o.channel} />
               </button>
-              <span className={cn('text-xs font-bold', STATUS_COLOR[o.status] ?? 'text-muted')}>
-                {t(`status.${o.status}`)}
-              </span>
+              <StatusBadge status={o.status} />
             </div>
             <OrderItemsList order={o} lang={lang} />
             {o.status === 'pending_accept' ? (
               <div className="flex gap-2 pt-1">
-                <button
-                  type="button"
+                <Button
+                  variant="outlined"
+                  size="md"
+                  className="border-error text-error"
                   onClick={() => setRejecting(o)}
-                  className="h-12 w-24 rounded-xl border-2 border-[#F04438] font-extrabold text-danger"
                 >
                   {t('cashier.reject')}
-                </button>
+                </Button>
                 <Button
                   className="grow"
                   size="md"
@@ -186,9 +181,10 @@ export default function TableBillPage() {
         <button
           type="button"
           onClick={addOrder}
-          className="flex h-12 shrink-0 items-center justify-center rounded-xl border-[1.5px] border-dashed border-[#98A2B3] text-[15px] font-bold"
+          className="state-layer flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-secondary-container px-4 text-label-large text-on-secondary-container"
         >
-          + {t('meja.addOrderTo', { name: bill.table.name })}
+          <Icon name="add" />
+          {t('meja.addOrderTo', { name: bill.table.name })}
         </button>
         {bill.session ? (
           <div className="grid shrink-0 grid-cols-3 gap-2">
@@ -197,8 +193,9 @@ export default function TableBillPage() {
                 key={k}
                 type="button"
                 onClick={() => setSheet(k)}
-                className="h-[46px] rounded-xl border border-line-strong bg-white text-[13px] font-bold shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
+                className="state-layer flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-md border border-outline px-1 py-1 text-label-medium text-primary"
               >
+                <Icon name={TABLE_ACTION_ICON[k]} size={20} />
                 {t(k === 'move' ? 'tables.move' : k === 'merge' ? 'tables.merge' : 'tables.splitBill')}
               </button>
             ))}
@@ -207,27 +204,27 @@ export default function TableBillPage() {
       </main>
       {bill.session ? (
         <ScreenFooter>
-          <div className="flex justify-between text-sm text-[#475467]">
+          <div className="flex justify-between text-label-medium text-on-surface-variant">
             <span>{t('meja.subtotalRounds', { rounds: live.length, items: itemCount })}</span>
             <span className="tabular-nums">{formatMoney(bill.subtotal, bill.currency)}</span>
           </div>
           {bill.discount ? (
-            <div className="flex justify-between text-sm text-[#475467]">
+            <div className="flex justify-between text-label-medium text-on-surface-variant">
               <span>{t('common.discount')}</span>
               <span className="tabular-nums">-{formatMoney(bill.discount, bill.currency)}</span>
             </div>
           ) : null}
           {bill.paid > 0 ? (
-            <div className="flex justify-between text-sm text-primary-dark">
+            <div className="flex justify-between text-label-medium text-primary">
               <span>{t('payment.paid')}</span>
               <span className="tabular-nums">{formatMoney(bill.paid, bill.currency)}</span>
             </div>
           ) : null}
           <div className="flex items-baseline justify-between">
-            <span className="text-[17px] font-semibold">
+            <span className="text-body-large font-medium">
               {bill.paid > 0 ? t('payment.remaining') : t('meja.totalBill')}
             </span>
-            <b className="text-[28px] tabular-nums" data-testid="bill-total">
+            <b className="text-headline-medium font-medium tabular-nums" data-testid="bill-total">
               {formatMoney(bill.paid > 0 ? bill.remaining : bill.total, bill.currency)}
             </b>
           </div>
@@ -235,13 +232,15 @@ export default function TableBillPage() {
             <button
               type="button"
               onClick={() => navigate(`/kasir/meja/${tableId}/nota`)}
-              className="h-[58px] w-[130px] rounded-[14px] border border-line-strong bg-white text-[15px] font-extrabold shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
+              className="state-layer flex h-14 shrink-0 items-center justify-center gap-1.5 rounded-full border border-outline px-4 text-label-large text-primary"
             >
+              <Icon name="print" size={20} />
               {t('meja.printNote')}
             </button>
             <Button
-              size="xl"
-              className="h-[58px] grow text-[19px]"
+              size="lg"
+              icon="payments"
+              className="grow"
               disabled={bill.remaining <= 0}
               onClick={() => navigate(`/kasir/bayar?tableId=${tableId}`)}
             >
@@ -257,7 +256,7 @@ export default function TableBillPage() {
         title={t('tables.move')}
         closeLabel={t('common.close')}
       >
-        <p className="mb-2 text-sm text-muted">{t('meja.moveHint')}</p>
+        <p className="mb-2 text-label-medium text-on-surface-variant">{t('meja.moveHint')}</p>
         <div className="grid grid-cols-3 gap-2">
           {others
             .filter((x) => x.status === 'empty')
@@ -274,7 +273,9 @@ export default function TableBillPage() {
         title={t('tables.merge')}
         closeLabel={t('common.close')}
       >
-        <p className="mb-2 text-sm text-muted">{t('meja.mergeHint', { name: bill.table.name })}</p>
+        <p className="mb-2 text-label-medium text-on-surface-variant">
+          {t('meja.mergeHint', { name: bill.table.name })}
+        </p>
         <div className="grid grid-cols-2 gap-2">
           {others
             .filter((x) => x.status !== 'empty')
@@ -286,7 +287,7 @@ export default function TableBillPage() {
                 className="flex flex-col py-2"
               >
                 <span>{x.name}</span>
-                <span className="text-sm text-muted tabular-nums">
+                <span className="text-label-medium text-on-surface-variant tabular-nums">
                   {formatMoney(x.runningTotal, money.main)}
                 </span>
               </ChoiceButton>
@@ -374,7 +375,10 @@ export function SplitBillSheet({
             </div>
             <div className="flex flex-col gap-1.5">
               {shares.map((s, i) => (
-                <div key={i} className="flex items-center justify-between rounded-xl bg-bg px-3 py-2">
+                <div
+                  key={i}
+                  className="flex min-h-12 items-center justify-between rounded-md bg-surface-container-lowest px-4 py-2"
+                >
                   <span>{t('meja.person', { n: i + 1 })}</span>
                   <span className="flex items-center gap-2">
                     <b className="tabular-nums">{formatMoney(s, bill.currency)}</b>
@@ -399,14 +403,17 @@ export function SplitBillSheet({
           </>
         ) : (
           <>
-            <p className="text-sm text-muted">{t('meja.pickItems')}</p>
+            <p className="text-label-medium text-on-surface-variant">{t('meja.pickItems')}</p>
             {lines.map((it) => (
-              <div key={it.id} className="flex items-center gap-2 border-b border-[#F2F4F7] py-1.5">
+              <div
+                key={it.id}
+                className="flex items-center gap-2 border-b border-surface-container-highest py-1.5"
+              >
                 <span className="flex grow flex-col">
-                  <span className="font-semibold">
+                  <span className="font-medium">
                     {it.qty} × {tl(it.name, i18n.language)}
                   </span>
-                  <span className="text-xs text-muted tabular-nums">
+                  <span className="text-label-medium text-on-surface-variant tabular-nums">
                     {formatMoney(it.lineTotal, bill.currency)}
                   </span>
                 </span>

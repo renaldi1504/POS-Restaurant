@@ -51,20 +51,20 @@ export default function HistoryPage() {
           <button
             key={o.id}
             type="button"
-            onClick={() => navigate(`/kasir/pesanan/${o.id}`)}
-            className="flex min-h-16 shrink-0 items-center gap-3 rounded-card bg-white px-3 py-2.5 text-left shadow-card"
+            onClick={() => navigate(`/kasir/riwayat/${o.id}`)}
+            className="flex min-h-16 shrink-0 items-center gap-3 rounded-md bg-surface-container-lowest px-3 py-2.5 text-left"
           >
             <span className="flex w-20 shrink-0 flex-col">
-              <b className="text-lg">{o.displayNo}</b>
-              <span className="text-xs text-muted">{timeHM(o.createdAt)}</span>
+              <b className="text-title-medium">{o.displayNo}</b>
+              <span className="text-label-medium text-on-surface-variant">{timeHM(o.createdAt)}</span>
             </span>
             <span className="flex min-w-0 grow flex-col gap-1">
-              <span className="truncate font-semibold">
+              <span className="truncate font-medium">
                 {o.table?.name ?? o.customerName ?? o.customer?.name ?? t(`orderType.${o.type}`)}
               </span>
               <span className="flex flex-wrap gap-1">
                 <SourceBadge channel={o.channel} />
-                <Badge tone={o.paymentStatus === 'paid' ? 'primary' : 'danger'} className="text-[11px]">
+                <Badge tone={o.paymentStatus === 'paid' ? 'primary' : 'danger'} className="text-label-medium">
                   {t(`paymentStatus.${o.paymentStatus}`)}
                 </Badge>
               </span>

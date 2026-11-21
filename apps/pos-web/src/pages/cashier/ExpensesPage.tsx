@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { formatMoney, type Currency, type ExpenseSource } from '@pos/shared';
-import { Button, useToast } from '../../components/ui';
+import { Button, Icon, useToast } from '../../components/ui';
 import {
   CURRENCY_SHORT,
   ChoiceButton,
@@ -83,16 +83,18 @@ export default function ExpensesPage() {
         back={{ label: t('cashier.title'), onClick: () => navigate('/kasir') }}
         title={t('expense.title')}
         right={
-          <span className="text-right text-[13px] text-muted">
+          <span className="text-right text-label-medium text-on-surface-variant">
             {t('keluar.thisShift')}
             <br />
-            <b className="text-[15px] text-ink tabular-nums">{formatMoney(totalMain, money.main)}</b>
+            <b className="text-body-medium text-on-surface tabular-nums">
+              {formatMoney(totalMain, money.main)}
+            </b>
           </span>
         }
       />
       <main className="flex min-h-0 grow flex-col gap-3.5 overflow-y-auto px-3.5 py-3">
         <section className="flex flex-col gap-2">
-          <b>1. {t('keluar.forWhat')}</b>
+          <b className="text-title-medium">1. {t('keluar.forWhat')}</b>
           {cats.isLoading ? <LoadingBlock /> : null}
           {cats.isError ? <ErrorBlock error={cats.error} onRetry={() => void cats.refetch()} /> : null}
           <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('expense.category')}>
@@ -110,7 +112,7 @@ export default function ExpensesPage() {
             ))}
           </div>
           {showErr && !categoryId ? (
-            <span className="text-sm font-bold text-danger">{t('keluar.pickCategory')}</span>
+            <span className="text-label-medium font-medium text-error">{t('keluar.pickCategory')}</span>
           ) : null}
         </section>
         <section className="flex flex-col gap-2">
@@ -123,15 +125,15 @@ export default function ExpensesPage() {
             onChange={setAmount}
           />
           {showErr && !amount ? (
-            <span className="text-sm font-bold text-danger">{t('keluar.fillAmount')}</span>
+            <span className="text-label-medium font-medium text-error">{t('keluar.fillAmount')}</span>
           ) : null}
           <div
             role="radiogroup"
             aria-label={t('payment.currency')}
-            className="grid gap-1 rounded-xl bg-[#EEF0F3] p-1"
+            className="grid overflow-hidden rounded-full border border-outline"
             style={{ gridTemplateColumns: `repeat(${money.enabled.length}, minmax(0,1fr))` }}
           >
-            {money.enabled.map((c) => (
+            {money.enabled.map((c, i) => (
               <button
                 key={c}
                 type="button"
@@ -142,19 +144,19 @@ export default function ExpensesPage() {
                   setAmount(null);
                 }}
                 className={cn(
-                  'h-[42px] rounded-[9px] text-[15px]',
-                  currency === c
-                    ? 'bg-white font-extrabold shadow-[0_1px_3px_rgba(0,0,0,0.15)]'
-                    : 'font-semibold',
+                  'state-layer flex h-12 items-center justify-center gap-1 text-label-large',
+                  i > 0 && 'border-l border-outline',
+                  currency === c ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface',
                 )}
               >
+                {currency === c ? <Icon name="check" size={18} /> : null}
                 {CURRENCY_SHORT[c]}
               </button>
             ))}
           </div>
         </section>
         <section className="flex flex-col gap-2">
-          <b>3. {t('keluar.fromWhere')}</b>
+          <b className="text-title-medium">3. {t('keluar.fromWhere')}</b>
           <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('expense.source')}>
             <ChoiceButton
               role="radio"
@@ -182,7 +184,7 @@ export default function ExpensesPage() {
             value={note}
             maxLength={300}
             onChange={(e) => setNote(e.target.value)}
-            inputClassName="h-[52px] text-[17px]"
+            inputClassName="h-[52px] text-body-large"
           />
           <input
             ref={fileRef}
@@ -197,24 +199,27 @@ export default function ExpensesPage() {
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={upload.isPending}
-            className="h-12 rounded-[14px] border-[1.5px] border-dashed border-[#98A2B3] text-[15px] font-bold"
+            className="state-layer flex min-h-12 items-center justify-center gap-2 rounded-full bg-secondary-container px-4 text-label-large text-on-secondary-container disabled:opacity-60"
           >
-            {upload.isPending ? t('common.loading') : photo ? `✓ ${photo.name}` : t('expense.photo')}
+            <Icon name={photo ? 'check_circle' : 'photo_camera'} />
+            <span className="truncate">
+              {upload.isPending ? t('common.loading') : photo ? photo.name : t('expense.photo')}
+            </span>
           </button>
         </section>
         {list.data?.expenses.length ? (
-          <section className="flex flex-col gap-1 rounded-card bg-white p-3 shadow-card">
+          <section className="flex flex-col gap-1 rounded-md bg-surface-container-low p-4">
             <b>{t('expense.list')}</b>
             {list.data.expenses.map((e) => (
               <div
                 key={e.id}
-                className="flex justify-between gap-2 border-b border-[#F2F4F7] py-1.5 text-[15px] last:border-0"
+                className="flex justify-between gap-2 border-b border-surface-container-highest py-1.5 text-body-medium last:border-0"
               >
                 <span className="flex flex-col">
-                  <span className="font-semibold">
+                  <span className="font-medium">
                     {e.category.name} · {e.source === 'cash' ? t('keluar.cashDrawer') : 'ABA'}
                   </span>
-                  <span className="text-xs text-muted">
+                  <span className="text-label-medium text-on-surface-variant">
                     {timeHM(e.createdAt)}
                     {e.note ? ` · ${e.note}` : ''}
                   </span>
@@ -229,7 +234,7 @@ export default function ExpensesPage() {
         <Button
           size="xl"
           block
-          className="text-[21px]"
+          className="text-title-large"
           loading={save.isPending}
           onClick={() => {
             if (!valid) {

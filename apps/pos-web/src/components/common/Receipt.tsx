@@ -20,11 +20,11 @@ export function ReceiptPreview({ data, doc }: { data?: ReceiptData; doc?: DocLin
     <div
       data-testid="receipt-preview"
       aria-label="Pratinjau struk"
-      className="self-center bg-white px-4 pb-6 pt-5 font-mono text-[12px] leading-[1.55] text-ink shadow-[0_4px_16px_rgba(16,24,40,0.12)]"
+      className="self-center bg-surface-container-lowest px-4 pb-6 pt-5 font-mono text-[12px] leading-[1.55] text-black shadow-e2"
       style={{ width: `${cols + 4}ch` }}
     >
       {lines.map((l, i) => (
-        <div key={i} className={l.bold ? 'font-bold' : undefined} style={{ whiteSpace: 'pre' }}>
+        <div key={i} className={l.bold ? 'font-medium' : undefined} style={{ whiteSpace: 'pre' }}>
           {l.text || ' '}
         </div>
       ))}

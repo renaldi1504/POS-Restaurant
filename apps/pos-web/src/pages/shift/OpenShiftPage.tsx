@@ -80,19 +80,19 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
 
   return (
     <>
-      <header className="flex shrink-0 flex-col gap-0.5 border-b border-line bg-white px-3.5 py-3">
+      <header className="flex shrink-0 flex-col gap-0.5 border-b border-outline-variant bg-surface-container-lowest px-3.5 py-3">
         {embedded ? (
-          <span className="text-xs font-bold uppercase tracking-wide text-warn-dark">
+          <span className="text-label-medium font-medium uppercase tracking-wide text-warning">
             {t('shift.noShift')}
           </span>
         ) : null}
-        <h2 className="text-xl font-extrabold">{t('shiftx.openTitle', { name: shiftName })}</h2>
-        <span className="text-sm text-muted">{t('shiftx.countFirst')}</span>
+        <h2 className="text-title-large font-medium">{t('shiftx.openTitle', { name: shiftName })}</h2>
+        <span className="text-label-medium text-on-surface-variant">{t('shiftx.countFirst')}</span>
       </header>
       <main className="flex min-h-0 grow flex-col gap-2.5 overflow-y-auto px-3.5 py-3">
         {names.length > 1 ? (
           <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t('shift.shiftName')}>
-            <span className="mr-1 text-sm font-bold">{t('shift.shiftName')}:</span>
+            <span className="mr-1 text-label-medium font-medium">{t('shift.shiftName')}:</span>
             {names.map((n) => (
               <Chip key={n} active={shiftName === n} onClick={() => setName(n)}>
                 {n}
@@ -127,15 +127,15 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
       </main>
       <ScreenFooter className="gap-2.5">
         <div className="flex items-baseline justify-between">
-          <span className="text-[15px] text-muted">
+          <span className="text-body-medium text-on-surface-variant">
             {t('shiftx.totalIn', { currency: money.main === 'KHR' ? 'Riel' : money.main })}
           </span>
-          <b className="text-[28px] text-primary-dark tabular-nums" data-testid="opening-total">
+          <b className="text-headline-medium text-primary tabular-nums" data-testid="opening-total">
             {formatMoney(totalMain, money.main)}
           </b>
         </div>
         {breakdown ? (
-          <span className="-mt-2 text-right text-xs text-muted">
+          <span className="-mt-2 text-right text-label-medium text-on-surface-variant">
             {breakdown}
             {rateNote ? ` (${t('admin.rate').toLowerCase()} ${rateNote})` : ''}
           </span>

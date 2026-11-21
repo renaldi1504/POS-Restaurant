@@ -10,7 +10,7 @@ import {
   type Currency,
   type PaymentLineInput,
 } from '@pos/shared';
-import { Button, cn, useToast } from '../../components/ui';
+import { Button, Icon, cn, useToast } from '../../components/ui';
 import {
   CURRENCY_SHORT,
   ChoiceButton,
@@ -65,14 +65,14 @@ export function CashPanel({
   return (
     <>
       <section className="flex flex-col gap-2">
-        <b className="text-base">2. {t('bayar.received')}</b>
+        <b className="text-title-medium">2. {t('bayar.received')}</b>
         <div
           role="radiogroup"
           aria-label={t('payment.currency')}
-          className="grid gap-1 rounded-xl bg-[#EEF0F3] p-1"
+          className="grid overflow-hidden rounded-full border border-outline"
           style={{ gridTemplateColumns: `repeat(${money.enabled.length}, minmax(0,1fr))` }}
         >
-          {money.enabled.map((c) => (
+          {money.enabled.map((c, i) => (
             <button
               key={c}
               type="button"
@@ -84,18 +84,18 @@ export function CashPanel({
                 setCustom(false);
               }}
               className={cn(
-                'h-[42px] rounded-[9px] text-[15px] text-ink',
-                currency === c
-                  ? 'bg-white font-extrabold shadow-[0_1px_3px_rgba(0,0,0,0.15)]'
-                  : 'font-semibold',
+                'state-layer flex h-12 items-center justify-center gap-1 text-label-large',
+                i > 0 && 'border-l border-outline',
+                currency === c ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface',
               )}
             >
+              {currency === c ? <Icon name="check" size={18} /> : null}
               {CURRENCY_SHORT[c]}
             </button>
           ))}
         </div>
         {currency !== money.main ? (
-          <span className="text-sm text-muted">
+          <span className="text-label-medium text-on-surface-variant">
             {t('bayar.totalIn', { amount: formatMoney(exact, currency) })}
           </span>
         ) : null}
@@ -106,7 +106,7 @@ export function CashPanel({
               setCustom(false);
               onReceived(exact);
             }}
-            className="h-16 text-[19px] font-bold"
+            className="h-16 text-title-large"
           >
             {t('payment.exact')}
           </ChoiceButton>
@@ -118,7 +118,7 @@ export function CashPanel({
                 setCustom(false);
                 onReceived(v);
               }}
-              className="h-16 text-[22px] font-extrabold tabular-nums"
+              className="h-16 text-title-large tabular-nums"
             >
               {formatMoney(v, currency)}
             </ChoiceButton>
@@ -140,8 +140,9 @@ export function CashPanel({
               setCustom(true);
               onReceived(null);
             }}
-            className="h-[52px] rounded-[14px] border-[1.5px] border-dashed border-[#98A2B3] text-[17px] font-bold"
+            className="state-layer flex h-14 items-center justify-center gap-2 rounded-full border border-outline text-label-large text-primary"
           >
+            <Icon name="edit" />
             {t('bayar.typeOther')}
           </button>
         )}
@@ -149,22 +150,19 @@ export function CashPanel({
       {received ? (
         res.enough ? (
           <div
-            className="flex flex-col gap-0.5 rounded-card bg-primary-tint px-4 py-3.5"
+            className="flex flex-col gap-0.5 rounded-lg bg-primary-container px-5 py-4 text-on-primary-container"
             role="status"
             data-testid="change-box"
           >
-            <span className="text-[15px] text-primary">
+            <span className="text-body-medium">
               {t('bayar.receivedAmount', { amount: formatMoney(received, currency) })}
             </span>
-            <span className="text-lg font-bold text-primary-dark">{t('payment.change')}</span>
-            <b
-              className="text-[48px] leading-[1.05] text-primary-dark tabular-nums"
-              data-testid="change-amount"
-            >
+            <span className="text-title-medium">{t('payment.change')}</span>
+            <b className="text-[48px] font-medium leading-[1.1] tabular-nums" data-testid="change-amount">
               {formatMoney(res.changeMain, money.main)}
             </b>
             {res.changeMain > 0 && changeOther ? (
-              <span className="text-sm text-primary">
+              <span className="text-body-medium">
                 {t('bayar.orAbout', {
                   amount: formatMoney(
                     convertMoney(res.changeMain, money.main, changeOther, money.rates),
@@ -175,8 +173,12 @@ export function CashPanel({
             ) : null}
           </div>
         ) : (
-          <div className="rounded-card bg-danger-tint px-4 py-3.5 text-danger" role="alert">
-            <b className="text-2xl">
+          <div
+            className="flex items-center gap-3 rounded-lg bg-error-container px-5 py-4 text-on-error-container"
+            role="alert"
+          >
+            <Icon name="error" size={32} />
+            <b className="text-headline-small">
               {t('payment.insufficient', { amount: formatMoney(res.shortMain, money.main) })}
             </b>
           </div>
@@ -328,17 +330,20 @@ export default function PaymentPage() {
     return (
       <Screen testId="payment-done">
         <TopBar title={finished ? t('payment.paid') : t('bayar.partialPaid')} />
-        <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-3.5 py-3">
-          <div className="flex flex-col gap-0.5 rounded-card bg-primary-tint px-4 py-4" role="status">
-            <span className="text-lg font-bold text-primary-dark">{t('payment.change')}</span>
-            <b
-              className="text-[52px] leading-[1.05] text-primary-dark tabular-nums"
-              data-testid="done-change"
-            >
+        <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-4 py-3">
+          <div
+            className="flex flex-col gap-0.5 rounded-lg bg-primary-container px-5 py-5 text-on-primary-container"
+            role="status"
+          >
+            <span className="flex items-center gap-2 text-title-medium">
+              <Icon name="check_circle" filled />
+              {t('payment.change')}
+            </span>
+            <b className="text-[52px] font-medium leading-[1.1] tabular-nums" data-testid="done-change">
               {formatMoney(res.changeMain, money.main)}
             </b>
             {!finished ? (
-              <span className="text-base font-bold text-warn-dark">
+              <span className="text-body-medium font-medium text-warning">
                 {t('bayar.remainingTable', { amount: formatMoney(res.remainingMain, money.main) })}
               </span>
             ) : null}
@@ -347,7 +352,12 @@ export default function PaymentPage() {
         </main>
         <ScreenFooter>
           <div className="flex gap-2.5">
-            <Button variant="outline" className="h-16 w-36" onClick={() => void print.printReceipt(receipt)}>
+            <Button
+              variant="outlined"
+              icon="print"
+              className="h-16 w-36 px-3"
+              onClick={() => void print.printReceipt(receipt)}
+            >
               {t('payment.printReceipt')}
             </Button>
             {tableId && !finished ? (
@@ -383,20 +393,22 @@ export default function PaymentPage() {
   return (
     <Screen testId="payment-screen">
       <TopBar back={{ label: t('common.back'), onClick: back }} title={title} />
-      <main className="flex min-h-0 grow flex-col gap-3.5 overflow-y-auto px-3.5 py-3">
-        <div className="flex items-baseline justify-between rounded-card bg-white px-4 py-3.5 shadow-card">
-          <span className="text-lg">{partial ? (shareLabel ?? t('bayar.share')) : t('common.total')}</span>
-          <b className="text-[32px] tabular-nums" data-testid="pay-total">
+      <main className="flex min-h-0 grow flex-col gap-4 overflow-y-auto px-4 py-3">
+        <div className="flex items-baseline justify-between rounded-lg bg-surface-container-highest px-5 py-4">
+          <span className="text-title-medium">
+            {partial ? (shareLabel ?? t('bayar.share')) : t('common.total')}
+          </span>
+          <b className="text-display-small font-medium tabular-nums" data-testid="pay-total">
             {formatMoney(dueMain, money.main)}
           </b>
         </div>
         {dueMain <= 0 ? (
-          <div className="rounded-card bg-primary-tint p-4 text-lg font-bold text-primary-dark">
+          <div className="rounded-md bg-primary-container p-4 text-title-medium text-on-primary-container">
             {t('payment.paid')}
           </div>
         ) : null}
         <section className="flex flex-col gap-2">
-          <b className="text-base">1. {t('bayar.how')}</b>
+          <b className="text-title-medium">1. {t('bayar.how')}</b>
           <div
             role="radiogroup"
             aria-label={t('payment.method')}
@@ -409,7 +421,7 @@ export default function PaymentPage() {
                 aria-checked={method === m.value}
                 selected={method === m.value}
                 onClick={() => setMethod(m.value)}
-                className="h-[60px] text-[19px]"
+                className="h-14 px-1 text-title-medium"
               >
                 {m.label}
               </ChoiceButton>
@@ -427,15 +439,17 @@ export default function PaymentPage() {
           />
         ) : null}
         {method === 'aba' ? (
-          <div className="rounded-card bg-info-tint px-4 py-3.5 text-info-dark">
-            <b className="text-lg">{t('bayar.abaTitle', { amount: formatMoney(dueMain, money.main) })}</b>
-            <p className="mt-1 text-[15px]">{t('bayar.abaHint')}</p>
+          <div className="rounded-md bg-tertiary-container px-4 py-3.5 text-on-tertiary-container">
+            <b className="text-title-medium">
+              {t('bayar.abaTitle', { amount: formatMoney(dueMain, money.main) })}
+            </b>
+            <p className="mt-1 text-body-medium">{t('bayar.abaHint')}</p>
           </div>
         ) : null}
         {method === 'platform' ? (
-          <div className="rounded-card bg-[#F2F4F7] px-4 py-3.5">
-            <b className="text-lg">{t('bayar.platformTitle')}</b>
-            <p className="mt-1 text-[15px] text-muted">{t('bayar.platformHint')}</p>
+          <div className="rounded-md bg-surface-container-high px-4 py-3.5">
+            <b className="text-title-medium">{t('bayar.platformTitle')}</b>
+            <p className="mt-1 text-body-medium text-on-surface-variant">{t('bayar.platformHint')}</p>
           </div>
         ) : null}
         {method === 'split' ? (
@@ -446,7 +460,7 @@ export default function PaymentPage() {
         <Button
           size="xl"
           block
-          className="h-16 text-[22px]"
+          icon="check_circle"
           disabled={!ready}
           loading={pay.isPending}
           onClick={() => pay.mutate()}
@@ -475,15 +489,15 @@ function SplitEditor({
     onChange(lines.map((l) => (l.id === id ? { ...l, ...patch } : l)));
   return (
     <section className="flex flex-col gap-2">
-      <b className="text-base">2. {t('bayar.splitTitle')}</b>
+      <b className="text-title-medium">2. {t('bayar.splitTitle')}</b>
       {lines.map((l, i) => (
-        <div key={l.id} className="flex flex-col gap-2 rounded-card bg-white p-3 shadow-card">
+        <div key={l.id} className="flex flex-col gap-3 rounded-md bg-surface-container-low p-4">
           <div className="flex items-center gap-2">
             <b className="grow">{t('bayar.part', { n: i + 1 })}</b>
             {lines.length > 1 ? (
               <button
                 type="button"
-                className="min-h-10 rounded-lg px-2 text-sm font-bold text-danger"
+                className="state-layer min-h-12 rounded-full px-3 text-label-large text-error"
                 onClick={() => onChange(lines.filter((x) => x.id !== l.id))}
               >
                 {t('common.delete')}
@@ -511,10 +525,10 @@ function SplitEditor({
                   aria-checked={l.currency === c}
                   onClick={() => update(l.id, { currency: c, amount: null })}
                   className={cn(
-                    'min-h-10 grow rounded-lg text-sm',
+                    'state-layer min-h-12 grow rounded-sm text-label-large',
                     l.currency === c
-                      ? 'bg-ink font-bold text-white'
-                      : 'border border-line-strong font-semibold',
+                      ? 'bg-secondary-container text-on-secondary-container'
+                      : 'border border-outline-variant text-on-surface-variant',
                   )}
                 >
                   {CURRENCY_SHORT[c]}
@@ -531,7 +545,7 @@ function SplitEditor({
               onChange={(v) => update(l.id, { amount: v })}
             />
             <Button
-              variant="outline"
+              variant="outlined"
               size="md"
               onClick={() => {
                 const others = lines.filter((x) => x.id !== l.id);
@@ -549,18 +563,21 @@ function SplitEditor({
         onClick={() =>
           onChange([...lines, { id: Date.now(), method: 'cash', currency: money.main, amount: null }])
         }
-        className="h-12 rounded-[14px] border-[1.5px] border-dashed border-[#98A2B3] font-bold"
+        className="state-layer flex min-h-12 items-center justify-center gap-2 rounded-full bg-secondary-container text-label-large text-on-secondary-container"
       >
-        + {t('bayar.addPart')}
+        <Icon name="add" />
+        {t('bayar.addPart')}
       </button>
       <div
         className={cn(
-          'rounded-card px-4 py-3',
-          calc.remainingMain > 0 ? 'bg-warn-tint text-warn-dark' : 'bg-primary-tint text-primary-dark',
+          'rounded-md px-4 py-3',
+          calc.remainingMain > 0
+            ? 'bg-warning-container text-on-warning-container'
+            : 'bg-primary-container text-on-primary-container',
         )}
         role="status"
       >
-        <div className="flex justify-between text-lg font-bold">
+        <div className="flex justify-between text-title-medium font-medium">
           <span>{calc.remainingMain > 0 ? t('payment.remaining') : t('payment.change')}</span>
           <span className="tabular-nums">
             {formatMoney(calc.remainingMain > 0 ? calc.remainingMain : calc.changeMain, money.main)}

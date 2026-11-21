@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { formatMoney, type ClosingPreview, type ClosingResult, type Currency } from '@pos/shared';
-import { Button, Card, EmptyState, cn, useToast } from '../../components/ui';
+import { Button, Card, EmptyState, Icon, IconButton, cn, useToast } from '../../components/ui';
 import {
   CurrencyTabs,
   DenominationList,
@@ -35,7 +35,10 @@ export function DiffLabel({ diff, currency }: { diff: number; currency: Currency
   const { t } = useTranslation();
   const k = diffKind(diff);
   return (
-    <b className={cn('text-xl', k === 'match' ? 'text-primary' : 'text-danger')} data-testid="diff-label">
+    <b
+      className={cn('text-title-large', k === 'match' ? 'text-primary' : 'text-error')}
+      data-testid="diff-label"
+    >
       {k === 'match'
         ? t('tutup.match')
         : k === 'short'
@@ -80,7 +83,7 @@ export function ClosingResultView({
   return (
     <>
       {preview.unpaidOrderCount || preview.activeOrderCount ? (
-        <Card tone="warn" className="text-[15px] font-bold text-warn-dark">
+        <Card tone="warn" className="text-body-medium font-medium text-warning">
           {preview.unpaidOrderCount ? (
             <div>{t('closing.unpaidWarning', { count: preview.unpaidOrderCount })}</div>
           ) : null}
@@ -91,26 +94,26 @@ export function ClosingResultView({
       ) : null}
       <section
         className={cn(
-          'flex flex-col gap-1.5 rounded-card border-2 bg-white px-3.5 py-3 shadow-card',
-          calc.cashDiff ? 'border-[#F04438]' : 'border-primary',
+          'flex flex-col gap-1.5 rounded-md border-2 bg-surface-container-lowest px-3.5 py-3',
+          calc.cashDiff ? 'border-error' : 'border-primary',
         )}
         data-testid="cash-result"
       >
         <div className="flex items-baseline justify-between">
-          <b className="text-xl">{t('common.cash')}</b>
+          <b className="text-title-large">{t('common.cash')}</b>
           <DiffLabel diff={calc.cashDiff} currency={cur} />
         </div>
-        <div className="flex justify-between text-[15px]">
-          <span className="text-muted">{t('tutup.expected')}</span>
+        <div className="flex justify-between text-body-medium">
+          <span className="text-on-surface-variant">{t('tutup.expected')}</span>
           <b className="tabular-nums">{fmt(calc.cashExpectedMain)}</b>
         </div>
-        <div className="flex justify-between text-[15px]">
-          <span className="text-muted">{t('tutup.counted')}</span>
+        <div className="flex justify-between text-body-medium">
+          <span className="text-on-surface-variant">{t('tutup.counted')}</span>
           <b className="tabular-nums" data-testid="cash-counted">
             {fmt(calc.cashActualMain)}
           </b>
         </div>
-        <span className="text-xs text-muted">
+        <span className="text-label-medium text-on-surface-variant">
           {t('tutup.explain', {
             opening: plain(calc.openingMain),
             sales: plain(calc.cashSalesMain),
@@ -120,56 +123,56 @@ export function ClosingResultView({
       </section>
       <section
         className={cn(
-          'flex flex-col gap-1.5 rounded-card border-2 bg-white px-3.5 py-3 shadow-card',
-          calc.abaDiff ? 'border-[#F04438]' : 'border-primary',
+          'flex flex-col gap-1.5 rounded-md border-2 bg-surface-container-lowest px-3.5 py-3',
+          calc.abaDiff ? 'border-error' : 'border-primary',
         )}
         data-testid="aba-result"
       >
         <div className="flex items-baseline justify-between">
-          <b className="text-xl">ABA</b>
+          <b className="text-title-large">ABA</b>
           <DiffLabel diff={calc.abaDiff} currency={cur} />
         </div>
         {calc.abaDiff ? (
           <>
-            <div className="flex justify-between text-[15px]">
-              <span className="text-muted">{t('tutup.expected')}</span>
+            <div className="flex justify-between text-body-medium">
+              <span className="text-on-surface-variant">{t('tutup.expected')}</span>
               <b className="tabular-nums">{fmt(calc.abaExpectedMain)}</b>
             </div>
-            <div className="flex justify-between text-[15px]">
-              <span className="text-muted">{t('tutup.counted')}</span>
+            <div className="flex justify-between text-body-medium">
+              <span className="text-on-surface-variant">{t('tutup.counted')}</span>
               <b className="tabular-nums">{fmt(calc.abaActualMain)}</b>
             </div>
           </>
         ) : (
-          <div className="flex justify-between text-[15px]">
-            <span className="text-muted">{t('tutup.expectedCounted')}</span>
+          <div className="flex justify-between text-body-medium">
+            <span className="text-on-surface-variant">{t('tutup.expectedCounted')}</span>
             <b className="tabular-nums">{fmt(calc.abaExpectedMain)}</b>
           </div>
         )}
       </section>
-      <section className="flex flex-col gap-1.5 rounded-card bg-white px-3.5 py-3 shadow-card">
+      <section className="flex flex-col gap-1.5 rounded-md bg-surface-container-lowest px-3.5 py-3">
         <TextField
           label={calc.needsNote ? t('tutup.noteRequired') : t('tutup.noteOptional')}
           value={note}
           maxLength={500}
           onChange={(e) => onNote(e.target.value)}
           error={noteError ? t('closing.noteRequired') : null}
-          inputClassName="border-[1.5px] border-[#98A2B3]"
+          inputClassName="border-[1.5px] border-outline"
         />
       </section>
       {preview.drivers.length ? (
-        <section className="flex flex-col gap-2 rounded-card bg-white px-3.5 py-3 shadow-card">
-          <b className="text-[17px]">{t('closing.driverSettlement')}</b>
+        <section className="flex flex-col gap-2 rounded-md bg-surface-container-lowest px-3.5 py-3">
+          <b className="text-body-large">{t('closing.driverSettlement')}</b>
           {preview.drivers.map((d) => (
             <div key={d.id} className="flex items-center gap-2">
               <div className="flex grow flex-col">
                 <b>{d.driver.name}</b>
-                <span className="text-[13px] text-muted">
+                <span className="text-label-medium text-on-surface-variant">
                   {t('tutup.driverLine', { count: d.deliveries, amount: fmt(d.cashCollected) })}
                 </span>
               </div>
               {d.settledAt ? (
-                <span className="rounded-lg bg-primary-tint px-2.5 py-1.5 text-[13px] font-extrabold text-primary-dark">
+                <span className="rounded-sm bg-secondary-container px-2.5 py-1.5 text-label-medium font-medium text-on-secondary-container">
                   {t('closing.settled')}
                 </span>
               ) : (
@@ -177,7 +180,7 @@ export function ClosingResultView({
                   type="button"
                   disabled={settle.isPending}
                   onClick={() => settle.mutate(d.id)}
-                  className="h-11 rounded-[10px] border-2 border-warn bg-warn-tint px-3 text-[13px] font-extrabold"
+                  className="h-11 rounded-sm border-2 border-warning bg-warning-container px-3 text-label-medium font-medium"
                 >
                   {t('tutup.markSettled')}
                 </button>
@@ -186,8 +189,8 @@ export function ClosingResultView({
           ))}
         </section>
       ) : null}
-      <section className="flex flex-col gap-1.5 rounded-card bg-white px-3.5 py-3 text-[15px] shadow-card">
-        <b className="text-[17px]">{t('tutup.summary')}</b>
+      <section className="flex flex-col gap-1.5 rounded-md bg-surface-container-lowest px-3.5 py-3 text-body-medium">
+        <b className="text-body-large">{t('tutup.summary')}</b>
         <div className="flex justify-between">
           <span>Cash · ABA</span>
           <span className="tabular-nums">
@@ -200,11 +203,11 @@ export function ClosingResultView({
             {plain(ch('grab'))} · {plain(ch('foodpanda'))}
           </span>
         </div>
-        <div className="flex justify-between text-[17px]">
+        <div className="flex justify-between text-body-large">
           <b>{t('admin.salesTotal')}</b>
           <b className="tabular-nums">{fmt(preview.salesTotalMain)}</b>
         </div>
-        <div className="flex justify-between text-muted">
+        <div className="flex justify-between text-on-surface-variant">
           <span>{t('tutup.orderExpenses')}</span>
           <span className="tabular-nums">
             {preview.orderCount} · {plain(preview.expenses.cashMain + preview.expenses.abaMain)}
@@ -278,21 +281,19 @@ export default function ClosingPage() {
 
   const steps = [t('closing.step1'), t('closing.step2'), t('closing.step3')];
   const header = (
-    <header className="flex shrink-0 flex-col gap-2.5 border-b border-line bg-white px-3.5 py-3">
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
+    <header className="flex shrink-0 flex-col gap-2 bg-surface px-1 pb-3">
+      <div className="flex min-h-16 items-center gap-1">
+        <IconButton
+          icon="arrow_back"
+          label={t('common.back')}
           onClick={() => navigate('/kasir')}
-          aria-label={t('common.back')}
-          className="flex h-11 items-center rounded-xl border border-line-strong px-3 font-bold"
-        >
-          ‹
-        </button>
-        <h1 className="text-xl font-extrabold">
+          className="text-on-surface"
+        />
+        <h1 className="truncate px-1 text-title-large">
           {t('tutup.title', { name: preview.data?.shift.name ?? '' })}
         </h1>
       </div>
-      <ol className="grid grid-cols-3 gap-1.5 text-center text-[13px] font-bold">
+      <ol className="grid grid-cols-3 gap-2 px-3 text-center text-label-medium">
         {steps.map((s, i) => {
           const n = (i + 1) as Step;
           const doneStep = n < step || !!result;
@@ -301,16 +302,16 @@ export default function ClosingPage() {
               key={s}
               aria-current={n === step && !result ? 'step' : undefined}
               className={cn(
-                'rounded-[10px] px-1 py-2',
+                'flex min-h-10 items-center justify-center gap-1 rounded-full px-1 py-1',
                 n === step && !result
-                  ? 'bg-ink text-white'
+                  ? 'bg-primary text-on-primary'
                   : doneStep
-                    ? 'bg-primary-tint text-primary-dark'
-                    : 'bg-[#F2F4F7] text-muted',
+                    ? 'bg-secondary-container text-on-secondary-container'
+                    : 'bg-surface-container-high text-on-surface-variant',
               )}
             >
+              {doneStep ? <Icon name="check" size={16} /> : null}
               {n}. {s}
-              {doneStep ? ' ✓' : ''}
             </li>
           );
         })}
@@ -340,10 +341,10 @@ export default function ClosingPage() {
         {header}
         <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-3.5 py-3">
           <Card tone="primary" className="text-center">
-            <b className="text-xl text-primary-dark">{t('tutup.closed')}</b>
-            <p className="mt-1 text-[15px]">{t('closing.locked')}</p>
+            <b className="text-title-large text-primary">{t('tutup.closed')}</b>
+            <p className="mt-1 text-body-medium">{t('closing.locked')}</p>
           </Card>
-          <section className="flex flex-col gap-1 rounded-card bg-white p-3.5 text-[15px] shadow-card">
+          <section className="flex flex-col gap-1 rounded-md bg-surface-container-lowest p-3.5 text-body-medium">
             <div className="flex justify-between">
               <span>{t('tutup.cashDiff')}</span>
               <b className="tabular-nums">
@@ -361,7 +362,7 @@ export default function ClosingPage() {
         <ScreenFooter>
           <div className="flex gap-2">
             <Button
-              variant="outline"
+              variant="outlined"
               className="h-16 w-36"
               onClick={() =>
                 void print.printDoc(
@@ -386,7 +387,7 @@ export default function ClosingPage() {
       <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-3.5 py-3">
         {step === 1 ? (
           <>
-            <p className="text-[15px] text-muted">{t('closing.countCash')}</p>
+            <p className="text-body-medium text-on-surface-variant">{t('closing.countCash')}</p>
             <Tabs
               dense
               label={t('closing.countCash')}
@@ -414,7 +415,7 @@ export default function ClosingPage() {
           </>
         ) : null}
         {step === 2 ? (
-          <section className="flex flex-col gap-2 rounded-card bg-white p-3.5 shadow-card">
+          <section className="flex flex-col gap-2 rounded-md bg-surface-container-lowest p-3.5">
             <MoneyInput
               big
               autoFocus
@@ -423,7 +424,7 @@ export default function ClosingPage() {
               value={aba}
               onChange={setAba}
             />
-            <span className="text-sm text-muted">{t('tutup.abaHint')}</span>
+            <span className="text-label-medium text-on-surface-variant">{t('tutup.abaHint')}</span>
           </section>
         ) : null}
         {step === 3 ? (
@@ -444,8 +445,8 @@ export default function ClosingPage() {
       <ScreenFooter>
         {step === 1 ? (
           <div className="flex items-baseline justify-between">
-            <span className="text-[15px] text-muted">{t('closing.actualCash')}</span>
-            <b className="text-2xl tabular-nums">
+            <span className="text-body-medium text-on-surface-variant">{t('closing.actualCash')}</span>
+            <b className="text-headline-small tabular-nums">
               {formatMoney(closingCalc(p, totals, 0, p.currency, money.rates).cashActualMain, p.currency)}
             </b>
           </div>
@@ -455,9 +456,10 @@ export default function ClosingPage() {
             <button
               type="button"
               onClick={() => setStep(step === 3 ? 1 : 1)}
-              className="h-16 w-[110px] rounded-2xl border border-line-strong bg-white text-[15px] font-bold shadow-card"
+              className="state-layer flex h-16 w-[120px] shrink-0 items-center justify-center gap-1 rounded-full border border-outline px-2 text-label-large text-primary"
             >
-              ‹ {step === 3 ? t('tutup.recount') : t('common.back')}
+              <Icon name="arrow_back" size={20} />
+              <span className="truncate">{step === 3 ? t('tutup.recount') : t('common.back')}</span>
             </button>
           ) : null}
           {step < 3 ? (
@@ -467,7 +469,7 @@ export default function ClosingPage() {
           ) : (
             <Button
               size="xl"
-              className="grow text-lg"
+              className="grow text-title-medium"
               loading={close.isPending}
               onClick={() => {
                 const calc = closingCalc(p, totals, aba ?? 0, p.currency, money.rates);

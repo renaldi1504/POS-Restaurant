@@ -1,11 +1,21 @@
 /** Keranjang — tinjau item (ubah jumlah/opsi/hapus), catatan, lalu lanjut sesuai tipe pesanan. */
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { tl } from '@pos/shared';
 import { OptionSheet } from '../components/OptionSheet';
 import { Page } from '../components/Shell';
-import { BottomBar, Button, Card, EmptyState, HeaderBar, Stepper, useToast } from '../components/ui';
+import {
+  BottomBar,
+  Button,
+  Card,
+  EmptyState,
+  HeaderBar,
+  Icon,
+  Stepper,
+  cn,
+  useToast,
+} from '../components/ui';
 import { errorMessage } from '../lib/api';
 import { useCart } from '../lib/cart';
 import { useCheckout } from '../lib/checkout';
@@ -23,7 +33,8 @@ import {
 } from '../lib/menu';
 import { useSubmitOrder } from '../lib/order';
 
-export default function CartPage() {
+/** `embedded` = panel keranjang di samping menu (tablet expanded): tanpa tombol kembali / Tambah lagi. */
+export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const navigate = useNavigate();
@@ -71,23 +82,28 @@ export default function CartPage() {
         ? t('web.toAddress')
         : t('web.toPayment');
 
+  const Wrap = embedded ? PaneWrap : Page;
   return (
-    <Page testId="cart-page">
+    <Wrap testId="cart-page">
       <HeaderBar
         title={t('web.cartTitle')}
         subtitle={t(typeLabelKey(customer.orderType))}
-        onBack={() => navigate(customer.homePath)}
+        onBack={embedded ? undefined : () => navigate(customer.homePath)}
         backLabel={t('web.backToMenu')}
+        className={embedded ? 'bg-surface-container-low' : undefined}
       />
       {count === 0 ? (
         <main className="flex grow flex-col p-4">
-          <Card>
-            <EmptyState
-              title={t('order.emptyCart')}
-              description={t('web.emptyCartHint')}
-              action={<Button onClick={() => navigate(customer.homePath)}>{t('web.seeMenu')}</Button>}
-            />
-          </Card>
+          <EmptyState
+            icon="shopping_bag"
+            title={t('order.emptyCart')}
+            description={t('web.emptyCartHint')}
+            action={
+              embedded ? undefined : (
+                <Button onClick={() => navigate(customer.homePath)}>{t('web.seeMenu')}</Button>
+              )
+            }
+          />
         </main>
       ) : (
         <>
@@ -96,22 +112,25 @@ export default function CartPage() {
               <div
                 role="radiogroup"
                 aria-label={t('web.orderType')}
-                className="grid grid-cols-3 gap-1 rounded-xl bg-[#EEF0F3] p-1"
+                className="grid grid-cols-3 overflow-hidden rounded-full border border-outline"
               >
-                {(['delivery', 'takeaway', 'dine_in'] as const).map((ty) => (
+                {(['delivery', 'takeaway', 'dine_in'] as const).map((ty, i) => (
                   <button
                     key={ty}
                     type="button"
                     role="radio"
                     aria-checked={co.type === ty}
                     onClick={() => update({ type: ty })}
-                    className={
+                    className={cn(
+                      'state-layer flex min-h-12 min-w-0 items-center justify-center gap-1 px-1 text-label-large',
+                      i > 0 && 'border-l border-outline',
                       co.type === ty
-                        ? 'min-h-11 rounded-[9px] bg-white px-1 text-sm font-extrabold shadow-[0_1px_3px_rgba(0,0,0,0.15)]'
-                        : 'min-h-11 rounded-[9px] px-1 text-sm font-semibold text-[#344054]'
-                    }
+                        ? 'bg-secondary-container text-on-secondary-container'
+                        : 'text-on-surface',
+                    )}
                   >
-                    {t(typeLabelKey(ty))}
+                    {co.type === ty ? <Icon name="check" size={18} /> : null}
+                    <span className="truncate">{t(typeLabelKey(ty))}</span>
                   </button>
                 ))}
               </div>
@@ -123,24 +142,33 @@ export default function CartPage() {
                 const hasGroups = !!(menu && p.item && groupsForItem(menu, p.item).length);
                 return (
                   <li key={p.line.key}>
-                    <Card padded={false} className={p.available ? 'p-3' : 'border-danger bg-danger-tint p-3'}>
+                    <Card
+                      padded={false}
+                      className={p.available ? 'p-4' : 'border-error bg-error-container p-4'}
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex min-w-0 flex-col gap-0.5">
-                          <b className="text-base">{name}</b>
+                          <b className="text-title-medium">{name}</b>
                           {p.options.length ? (
-                            <span className="text-sm text-muted">
+                            <span className="text-label-medium text-on-surface-variant">
                               {p.options.map((o) => tl(o.name, lang)).join(', ')}
                             </span>
                           ) : null}
                           {p.line.note ? (
-                            <span className="text-sm italic text-muted">“{p.line.note}”</span>
+                            <span className="text-label-medium italic text-on-surface-variant">
+                              “{p.line.note}”
+                            </span>
                           ) : null}
-                          <span className="text-sm text-muted tabular-nums">{money(p.unit, currency)}</span>
+                          <span className="text-label-medium text-on-surface-variant tabular-nums">
+                            {money(p.unit, currency)}
+                          </span>
                         </div>
-                        <b className="shrink-0 text-base tabular-nums">{money(p.total, currency)}</b>
+                        <b className="shrink-0 text-title-medium font-medium tabular-nums">
+                          {money(p.total, currency)}
+                        </b>
                       </div>
                       {!p.available ? (
-                        <p className="mt-1 text-sm font-bold text-danger" role="alert">
+                        <p className="mt-1 text-label-medium font-medium text-error" role="alert">
                           {t('web.itemUnavailable', { name })}
                         </p>
                       ) : null}
@@ -155,14 +183,14 @@ export default function CartPage() {
                         />
                         <div className="flex gap-1.5">
                           {hasGroups && p.item?.available ? (
-                            <Button size="md" variant="outline" onClick={() => setEditKey(p.line.key)}>
+                            <Button size="md" variant="outlined" onClick={() => setEditKey(p.line.key)}>
                               {t('web.editOptions')}
                             </Button>
                           ) : null}
                           <Button
                             size="md"
-                            variant="ghost"
-                            className="text-danger"
+                            variant="text"
+                            className="text-error"
                             onClick={() => cart.remove(p.line.key)}
                             aria-label={t('web.removeItem', { name })}
                           >
@@ -176,13 +204,18 @@ export default function CartPage() {
               })}
             </ul>
 
-            <Button variant="outline" block onClick={() => navigate(customer.homePath)}>
-              {t('web.addMore')}
-            </Button>
+            {embedded ? null : (
+              <Button variant="outlined" block onClick={() => navigate(customer.homePath)}>
+                {t('web.addMore')}
+              </Button>
+            )}
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor={noteId} className="font-bold">
-                {t('web.orderNote')} <span className="font-medium text-muted">{t('web.noteOptional')}</span>
+            <div className="group/field relative flex rounded-xs border border-outline bg-surface-container-lowest focus-within:border-primary focus-within:outline-1 focus-within:outline-primary">
+              <label
+                htmlFor={noteId}
+                className="pointer-events-none absolute left-4 right-4 top-1.5 truncate text-label-medium text-on-surface-variant group-focus-within/field:text-primary"
+              >
+                {t('web.orderNote')} <span className="font-normal">{t('web.noteOptional')}</span>
               </label>
               <textarea
                 id={noteId}
@@ -191,40 +224,39 @@ export default function CartPage() {
                 value={co.note}
                 onChange={(e) => update({ note: e.target.value })}
                 placeholder={t('web.orderNotePlaceholder')}
-                className="rounded-xl border border-line-strong bg-white p-3"
+                className="w-full resize-none bg-transparent px-4 pb-2 pt-7 text-body-large outline-none placeholder:text-on-surface-variant/70"
               />
             </div>
 
             {customer.orderType === 'takeaway' ? (
-              <Card tone="info" className="text-[15px] text-info-dark">
+              <Card tone="info" className="text-body-medium">
                 {t('web.pickupInfo')}
               </Card>
             ) : null}
             {customer.mode === 'none' && customer.orderType === 'dine_in' ? (
-              <Card
-                tone="warn"
-                className="text-[15px] font-semibold text-warn-dark"
-                role="alert"
-                data-testid="dine-info"
-              >
+              <Card tone="warn" className="text-body-medium" role="alert" data-testid="dine-info">
                 {t('web.dineInfo')}
               </Card>
             ) : null}
           </main>
 
           <BottomBar>
-            <div className="flex justify-between text-[15px]">
+            <div className="flex items-baseline justify-between text-body-large">
               <span>{t('common.subtotal')}</span>
-              <b className="tabular-nums">{money(subtotal, currency)}</b>
+              <b className="text-title-large font-medium tabular-nums">{money(subtotal, currency)}</b>
             </div>
             {isDelivery ? (
-              <div className="flex justify-between text-[15px] text-muted">
+              <div className="flex justify-between text-body-medium text-on-surface-variant">
                 <span>{t('common.deliveryFee')}</span>
                 <span>{fee ? money(fee, currency) : t('web.feeConfirm')}</span>
               </div>
             ) : null}
             {gap > 0 ? (
-              <p className="text-center text-sm font-bold text-danger" role="alert" data-testid="min-order">
+              <p
+                className="text-center text-label-medium font-medium text-error"
+                role="alert"
+                data-testid="min-order"
+              >
                 {t('web.minOrderShort', {
                   amount: money(settings!.delivery.minOrder, currency),
                   diff: money(gap, currency),
@@ -232,12 +264,13 @@ export default function CartPage() {
               </p>
             ) : null}
             {closed && settings ? (
-              <p className="text-center text-sm font-bold text-danger" role="alert">
+              <p className="text-center text-label-medium font-medium text-error" role="alert">
                 {t('web.closedOpensAt', { time: formatHour(settings.hours.open, lang) })}
               </p>
             ) : null}
             <Button size="lg" block disabled={blocked} loading={submit.isPending} onClick={goNext}>
-              {primaryLabel} ›
+              {primaryLabel}
+              <Icon name="arrow_forward" />
             </Button>
           </BottomBar>
         </>
@@ -261,6 +294,14 @@ export default function CartPage() {
           }}
         />
       ) : null}
-    </Page>
+    </Wrap>
+  );
+}
+
+function PaneWrap({ children, testId }: { children: ReactNode; testId?: string }) {
+  return (
+    <div className="flex h-full min-h-0 flex-col overflow-y-auto" data-testid={testId}>
+      {children}
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { tl, type Currency, type PublicMenuItem } from '@pos/shared';
 import { money } from '../lib/menu';
 import { FoodIcon } from './Icons';
-import { cn } from './ui';
+import { Icon, cn } from './ui';
 
 export interface ItemActions {
   qty: number;
@@ -14,7 +14,7 @@ function Photo({ item, className }: { item: PublicMenuItem; className: string })
   return (
     <div
       className={cn(
-        'flex shrink-0 items-center justify-center overflow-hidden bg-[#EEF1F5] text-[#98A2B3]',
+        'flex shrink-0 items-center justify-center overflow-hidden bg-surface-container-high text-outline',
         className,
       )}
     >
@@ -42,22 +42,23 @@ export function MenuItemCard({
   return (
     <article
       className={cn(
-        'flex shrink-0 items-center gap-3 rounded-[14px] bg-white p-2.5 shadow-card',
-        soldOut && 'opacity-55',
+        'flex shrink-0 items-center gap-3 rounded-md bg-surface-container-lowest p-3 shadow-e1',
+        soldOut && 'opacity-60 shadow-none',
       )}
       aria-label={name}
       data-testid={`item-${item.id}`}
     >
-      <Photo item={item} className="size-[84px] rounded-[10px]" />
+      <Photo item={item} className="size-[84px] rounded-sm" />
       <div className="flex min-w-0 grow flex-col gap-1">
-        <h3 className="text-base font-bold leading-snug">{name}</h3>
-        {desc ? <p className="line-clamp-1 text-[13px] text-muted">{desc}</p> : null}
+        <h3 className="text-title-medium">{name}</h3>
+        {desc ? <p className="line-clamp-1 text-body-medium text-on-surface-variant">{desc}</p> : null}
         {item.bestSeller ? (
-          <span className="self-start rounded-md bg-[#FEF0C7] px-2 py-0.5 text-xs font-bold text-warn-dark">
+          <span className="flex items-center gap-1 self-start rounded-sm bg-warning-container px-2 py-0.5 text-label-medium text-on-warning-container">
+            <Icon name="local_fire_department" size={16} />
             {t('web.bestTag')}
           </span>
         ) : null}
-        <b className="text-base text-primary-dark tabular-nums">{money(item.price, currency)}</b>
+        <b className="text-body-large font-medium text-primary tabular-nums">{money(item.price, currency)}</b>
       </div>
       <ItemControl name={name} soldOut={soldOut} qty={qty} onAdd={onAdd} onDec={onDec} variant="pill" />
     </article>
@@ -79,7 +80,7 @@ export function ItemControl({
   const { t } = useTranslation();
   if (soldOut) {
     return (
-      <span className="shrink-0 rounded-lg bg-danger px-2.5 py-1.5 text-[13px] font-extrabold text-white">
+      <span className="shrink-0 rounded-sm bg-error-container px-2.5 py-1.5 text-label-large text-on-error-container">
         {t('order.soldOut')}
       </span>
     );
@@ -91,13 +92,14 @@ export function ItemControl({
         onClick={onAdd}
         aria-label={t('web.addItem', { name })}
         className={cn(
-          'shrink-0 font-extrabold',
+          'state-layer flex shrink-0 items-center justify-center gap-1 rounded-full text-label-large',
           variant === 'pill'
-            ? 'h-12 rounded-full border-[1.5px] border-primary bg-white px-4 text-[15px] text-primary shadow-card'
-            : 'h-11 w-full rounded-[10px] bg-primary text-[15px] text-white',
+            ? 'h-12 bg-secondary-container pl-3 pr-4 text-on-secondary-container'
+            : 'h-12 w-full bg-primary text-on-primary',
         )}
       >
-        + {t('order.add')}
+        <Icon name="add" size={20} />
+        {t('order.add')}
       </button>
     );
   }
@@ -108,28 +110,28 @@ export function ItemControl({
       className={cn(
         'flex shrink-0 items-center',
         variant === 'pill'
-          ? 'h-12 gap-0.5 rounded-full bg-primary text-white'
-          : 'h-11 w-full justify-between rounded-[10px] bg-primary-tint text-primary-dark',
+          ? 'h-12 gap-0.5 rounded-full bg-primary text-on-primary'
+          : 'h-12 w-full justify-between rounded-full bg-secondary-container text-on-secondary-container',
       )}
     >
       <button
         type="button"
         onClick={onDec}
         aria-label={t('web.decItem', { name })}
-        className="flex h-12 w-11 items-center justify-center text-2xl font-extrabold"
+        className="state-layer flex h-12 w-12 items-center justify-center rounded-full"
       >
-        −
+        <Icon name="remove" />
       </button>
-      <b className="min-w-4 text-center tabular-nums" aria-live="polite">
+      <b className="min-w-4 text-center text-title-medium font-medium tabular-nums" aria-live="polite">
         {qty}
       </b>
       <button
         type="button"
         onClick={onAdd}
         aria-label={t('web.incItem', { name })}
-        className="flex h-12 w-11 items-center justify-center text-2xl font-extrabold"
+        className="state-layer flex h-12 w-12 items-center justify-center rounded-full"
       >
-        +
+        <Icon name="add" />
       </button>
     </div>
   );
@@ -148,20 +150,21 @@ export function BestCard({
   return (
     <article
       className={cn(
-        'flex w-[150px] shrink-0 flex-col overflow-hidden rounded-[14px] bg-white shadow-card',
-        !item.available && 'opacity-55',
+        'flex w-[160px] shrink-0 flex-col overflow-hidden rounded-md bg-surface-container-lowest shadow-e1',
+        !item.available && 'opacity-60',
       )}
       aria-label={name}
     >
       <div className="relative h-[100px]">
         <Photo item={item} className="size-full" />
-        <span className="absolute left-2 top-2 rounded-md bg-ink px-2 py-0.5 text-[11px] font-bold text-white">
+        <span className="absolute left-2 top-2 flex items-center gap-1 rounded-sm bg-warning-container px-2 py-0.5 text-label-medium text-on-warning-container">
+          <Icon name="local_fire_department" size={16} />
           {t('web.bestTag')}
         </span>
       </div>
-      <div className="flex grow flex-col gap-1.5 px-2.5 pb-2.5 pt-2">
-        <h3 className="text-sm font-bold leading-snug">{name}</h3>
-        <b className="text-[15px] text-primary-dark tabular-nums">{money(item.price, currency)}</b>
+      <div className="flex grow flex-col gap-1 px-3 pb-3 pt-2">
+        <h3 className="text-title-medium">{name}</h3>
+        <b className="text-body-large font-medium text-primary tabular-nums">{money(item.price, currency)}</b>
         <div className="grow" />
         <ItemControl
           name={name}

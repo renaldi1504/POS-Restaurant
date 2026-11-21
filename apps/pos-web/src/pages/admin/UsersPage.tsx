@@ -15,6 +15,7 @@ import {
 import { dictionaries } from '@pos/shared/i18n';
 import { AdminBar } from '../../components/admin/AdminBar';
 import {
+  ExtendedFab,
   ConfirmSheet,
   ErrorBlock,
   LoadingBlock,
@@ -24,7 +25,7 @@ import {
   Tabs,
   TextField,
 } from '../../components/common';
-import { Button, Sheet, cn, useToast } from '../../components/ui';
+import { Button, Icon, Sheet, cn, useToast } from '../../components/ui';
 import { api, errorMessage, qk } from '../../lib/api';
 
 const UQK = ['admin', 'users'] as const;
@@ -32,11 +33,20 @@ const RQK = ['admin', 'roles'] as const;
 
 export function roleColors(name: string): { av: string; badge: string } {
   const n = name.toLowerCase();
-  if (n.includes('owner') || n.includes('admin')) return { av: 'bg-ink', badge: 'bg-ink text-white' };
-  if (n.includes('kasir')) return { av: 'bg-primary', badge: 'bg-primary-tint text-primary-dark' };
-  if (n.includes('dapur')) return { av: 'bg-[#DC6803]', badge: 'bg-[#FEF0C7] text-warn-dark' };
-  if (n.includes('bot')) return { av: 'bg-info', badge: 'bg-info-tint text-info-dark' };
-  return { av: 'bg-muted', badge: 'bg-[#F2F4F7] text-ink' };
+  if (n.includes('owner') || n.includes('admin'))
+    return {
+      av: 'bg-inverse-surface text-inverse-on-surface',
+      badge: 'bg-inverse-surface text-inverse-on-surface',
+    };
+  if (n.includes('kasir'))
+    return { av: 'bg-primary text-on-primary', badge: 'bg-secondary-container text-on-secondary-container' };
+  if (n.includes('dapur'))
+    return { av: 'bg-warning text-on-warning', badge: 'bg-warning-container text-on-warning-container' };
+  if (n.includes('driver'))
+    return { av: 'bg-tertiary text-on-tertiary', badge: 'bg-tertiary-container text-on-tertiary-container' };
+  if (n.includes('bot'))
+    return { av: 'bg-tertiary text-on-tertiary', badge: 'bg-tertiary-container text-on-tertiary-container' };
+  return { av: 'bg-on-surface-variant text-surface', badge: 'bg-surface-container-high text-on-surface' };
 }
 const initials = (n: string) =>
   n
@@ -164,7 +174,7 @@ export default function UsersPage() {
           ]}
         />
       </AdminBar>
-      <main className="flex min-h-0 grow flex-col gap-2 overflow-y-auto px-3 pb-24 pt-3">
+      <main className="flex min-h-0 grow flex-col gap-2 overflow-y-auto px-4 pb-24 pt-3">
         {tab === 'users' ? (
           <>
             {users.isLoading ? <LoadingBlock /> : null}
@@ -188,29 +198,29 @@ export default function UsersPage() {
                     })
                   }
                   className={cn(
-                    'flex shrink-0 items-center gap-2.5 rounded-[14px] bg-white px-3 py-2.5 text-left shadow-card disabled:cursor-default',
+                    'state-layer flex min-h-[72px] shrink-0 items-center gap-3 rounded-md border border-outline-variant bg-surface-container-lowest px-4 py-2 text-left disabled:cursor-default',
                     !u.active && 'opacity-60',
                   )}
                 >
                   <span
                     className={cn(
-                      'flex size-[42px] shrink-0 items-center justify-center rounded-full text-sm font-extrabold text-white',
+                      'flex size-10 shrink-0 items-center justify-center rounded-full text-label-large',
                       c.av,
                     )}
                   >
                     {initials(u.name)}
                   </span>
                   <span className="flex min-w-0 grow flex-col gap-[3px]">
-                    <b className="text-base">{u.name}</b>
-                    <span className="text-xs text-muted">{userInfo(u)}</span>
+                    <b className="text-title-medium">{u.name}</b>
+                    <span className="text-body-medium text-on-surface-variant">{userInfo(u)}</span>
                   </span>
-                  <span className={cn('shrink-0 rounded-[7px] px-2 py-1 text-xs font-extrabold', c.badge)}>
+                  <span className={cn('shrink-0 rounded-sm px-2 py-1 text-label-medium', c.badge)}>
                     {u.role.name}
                   </span>
                 </button>
               );
             })}
-            <span className="px-0.5 py-1 text-xs text-muted">{t('userx.hint')}</span>
+            <span className="px-0.5 py-1 text-label-medium text-on-surface-variant">{t('userx.hint')}</span>
           </>
         ) : (
           <>
@@ -230,28 +240,26 @@ export default function UsersPage() {
                       userCount: r.userCount,
                     })
                   }
-                  className="flex shrink-0 flex-col gap-1.5 rounded-[14px] bg-white p-3 text-left shadow-card"
+                  className="state-layer flex shrink-0 flex-col gap-1.5 rounded-md border border-outline-variant bg-surface-container-lowest p-4 text-left"
                 >
                   <div className="flex w-full items-center justify-between">
-                    <span className={cn('rounded-[7px] px-2.5 py-1 text-[13px] font-extrabold', c.badge)}>
-                      {r.name}
+                    <span className={cn('rounded-sm px-2.5 py-1 text-label-medium', c.badge)}>{r.name}</span>
+                    <span className="text-label-medium text-on-surface-variant">
+                      {t('userx.userCount', { count: r.userCount })}
                     </span>
-                    <span className="text-xs text-muted">{t('userx.userCount', { count: r.userCount })}</span>
                   </div>
                   {PERMISSION_KEYS.map((k) => {
                     const yes = r.permissions.includes(k);
                     if (!yes && r.permissions.length > 8) return null;
                     return (
-                      <div key={k} className="flex items-center gap-2 text-sm">
-                        <span
-                          className={cn(
-                            'flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-extrabold text-white',
-                            yes ? 'bg-primary' : 'bg-line-strong',
-                          )}
-                        >
-                          {yes ? '✓' : '–'}
-                        </span>
-                        <span className={yes ? 'text-ink' : 'text-muted'}>
+                      <div key={k} className="flex items-center gap-2 text-body-medium">
+                        <Icon
+                          name={yes ? 'check_circle' : 'remove'}
+                          filled={yes}
+                          size={20}
+                          className={yes ? 'text-primary' : 'text-outline'}
+                        />
+                        <span className={yes ? 'text-on-surface' : 'text-on-surface-variant'}>
                           {PERMISSION_LABELS[k][permLang]}
                         </span>
                       </div>
@@ -263,32 +271,28 @@ export default function UsersPage() {
           </>
         )}
       </main>
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 mx-auto w-full max-w-[560px] px-3">
-        <button
-          type="button"
-          onClick={() =>
-            tab === 'users'
-              ? setUf({
-                  name: '',
-                  roleId: roles.data?.roles.find((r) => !r.system || r.name === 'Kasir')?.id ?? null,
-                  lang: 'id',
-                  pin: '',
-                  active: true,
-                  locked: false,
-                })
-              : setRf({ name: '', permissions: [], system: false, userCount: 0 })
-          }
-          className="pointer-events-auto h-[60px] w-full rounded-2xl bg-primary text-lg font-extrabold text-white shadow-[0_4px_14px_rgba(0,0,0,0.18)]"
-        >
-          {tab === 'users' ? t('userx.addUser') : t('userx.addRole')}
-        </button>
-      </div>
+      <ExtendedFab
+        label={tab === 'users' ? t('userx.addUser') : t('userx.addRole')}
+        onClick={() =>
+          tab === 'users'
+            ? setUf({
+                name: '',
+                roleId: roles.data?.roles.find((r) => !r.system || r.name === 'Kasir')?.id ?? null,
+                lang: 'id',
+                pin: '',
+                active: true,
+                locked: false,
+              })
+            : setRf({ name: '', permissions: [], system: false, userCount: 0 })
+        }
+      />
 
       <Sheet
         open={!!uf}
         onClose={() => setUf(null)}
         title={uf?.id ? t('userx.editUser') : t('userx.addUser')}
         closeLabel={t('common.close')}
+        tablet="side"
         footer={
           <Button
             block
@@ -361,12 +365,13 @@ export default function UsersPage() {
         onClose={() => setRf(null)}
         title={rf?.id ? t('userx.editRole') : t('userx.addRole')}
         closeLabel={t('common.close')}
+        tablet="side"
         footer={
           <div className="flex gap-2">
             {rf?.id && !rf.system ? (
               <Button
-                variant="outline"
-                className="text-danger"
+                variant="outlined"
+                className="text-error"
                 disabled={rf.userCount > 0}
                 onClick={() => setDelRole(true)}
               >

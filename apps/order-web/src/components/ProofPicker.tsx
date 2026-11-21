@@ -60,16 +60,16 @@ export function ProofPicker({ value, onChange }: { value: File | null; onChange:
             <img
               src={preview}
               alt={t('web.proofPreview')}
-              className="max-h-64 w-full rounded-xl border border-line object-contain bg-white"
+              className="max-h-64 w-full rounded-md border border-outline-variant object-contain bg-surface-container-lowest"
             />
           ) : (
-            <p className="text-sm font-semibold">{value.name}</p>
+            <p className="text-label-medium font-medium">{value.name}</p>
           )}
           <div className="flex gap-2">
-            <Button variant="outline" size="md" className="grow" onClick={() => input.current?.click()}>
+            <Button variant="outlined" size="md" className="grow" onClick={() => input.current?.click()}>
               {t('web.changePhoto')}
             </Button>
-            <Button variant="ghost" size="md" className="text-danger" onClick={() => onChange(null)}>
+            <Button variant="text" size="md" className="text-error" onClick={() => onChange(null)}>
               {t('web.removePhoto')}
             </Button>
           </div>
@@ -77,7 +77,7 @@ export function ProofPicker({ value, onChange }: { value: File | null; onChange:
       ) : (
         <label
           htmlFor={inputId}
-          className="flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-[14px] border-2 border-dashed border-primary bg-white text-base font-extrabold text-primary-dark"
+          className="state-layer flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-full bg-secondary-container text-label-large text-on-secondary-container"
           aria-busy={busy || undefined}
         >
           <CameraIcon />
@@ -85,7 +85,7 @@ export function ProofPicker({ value, onChange }: { value: File | null; onChange:
         </label>
       )}
       {error ? (
-        <p role="alert" className="text-sm font-bold text-danger">
+        <p role="alert" className="text-label-medium font-medium text-error">
           {error}
         </p>
       ) : null}

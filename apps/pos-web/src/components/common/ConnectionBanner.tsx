@@ -25,7 +25,7 @@ export function ConnectionBanner() {
     <div
       role="status"
       data-testid="connection-banner"
-      className="fixed inset-x-0 top-0 z-50 bg-warn px-3 py-1 text-center text-sm font-bold text-ink"
+      className="fixed inset-x-0 top-0 z-50 bg-warning-container px-3 py-1 text-center text-label-medium font-medium text-on-surface"
     >
       {t('common.reconnecting')}
     </div>

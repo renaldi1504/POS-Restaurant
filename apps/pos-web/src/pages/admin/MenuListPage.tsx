@@ -3,7 +3,7 @@ import type { TFunction } from 'i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import {
   effectiveMax,
   formatMoney,
@@ -13,8 +13,16 @@ import {
   type CategoryDto,
 } from '@pos/shared';
 import { AdminBar } from '../../components/admin/AdminBar';
-import { ConfirmSheet, ErrorBlock, LoadingBlock, Screen, Tabs, TextField } from '../../components/common';
-import { Button, Sheet, cn, useToast } from '../../components/ui';
+import {
+  ConfirmSheet,
+  ErrorBlock,
+  ExtendedFab,
+  LoadingBlock,
+  Screen,
+  Tabs,
+  TextField,
+} from '../../components/common';
+import { Button, Icon, Sheet, cn, useToast } from '../../components/ui';
 import { api, errorMessage, qk } from '../../lib/api';
 import { useMoney } from '../../lib/data';
 
@@ -37,11 +45,12 @@ export default function MenuListPage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const navigate = useNavigate();
+  const { itemId, groupId } = useParams();
   const qc = useQueryClient();
   const toast = useToast();
   const money = useMoney();
   const [sp, setSp] = useSearchParams();
-  const tab = (sp.get('tab') as 'menu' | 'opsi') ?? 'menu';
+  const tab = (sp.get('tab') as 'menu' | 'opsi' | null) ?? (groupId ? 'opsi' : 'menu');
   const [q, setQ] = useState('');
   const [catOpen, setCatOpen] = useState(false);
   const items = useQuery({ queryKey: adminQk.items, queryFn: () => api.call('adminItemsList') });
@@ -73,7 +82,11 @@ export default function MenuListPage() {
     <Screen wide testId="menu-admin-screen">
       <AdminBar
         title={t('admin.menu')}
-        right={<span className="text-[13px] text-muted">{t('menux.soldOutCount', { count: soldOut })}</span>}
+        right={
+          <span className="text-label-medium text-on-surface-variant">
+            {t('menux.soldOutCount', { count: soldOut })}
+          </span>
+        }
       >
         <Tabs
           label={t('admin.menu')}
@@ -85,18 +98,22 @@ export default function MenuListPage() {
           ]}
         />
         <div className="flex gap-2">
-          <input
-            aria-label={t('common.search')}
-            placeholder={tab === 'menu' ? t('cashier.searchMenu') : t('menux.searchGroup')}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            className="h-11 min-w-0 grow rounded-xl border border-line-strong px-3.5"
-          />
+          <label className="flex h-12 min-w-0 grow items-center gap-2 rounded-full bg-surface-container-high px-4 text-on-surface-variant focus-within:outline-3 focus-within:outline-secondary">
+            <Icon name="search" />
+            <input
+              aria-label={t('common.search')}
+              placeholder={tab === 'menu' ? t('cashier.searchMenu') : t('menux.searchGroup')}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              className="h-full min-w-0 grow bg-transparent text-body-large text-on-surface outline-none placeholder:text-on-surface-variant"
+            />
+          </label>
           {tab === 'menu' ? (
             <Button
-              variant="outline"
+              variant="outlined"
               size="md"
-              className="h-11 min-h-11 shrink-0"
+              icon="category"
+              className="shrink-0 px-4"
               onClick={() => setCatOpen(true)}
             >
               {t('admin.category')}
@@ -104,32 +121,37 @@ export default function MenuListPage() {
           ) : null}
         </div>
       </AdminBar>
-      <main className="flex min-h-0 grow flex-col gap-2 overflow-y-auto px-3 pb-24 pt-2.5">
+      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-4 pb-24 pt-3">
         {tab === 'menu' ? (
           <>
-            <span className="text-[13px] text-muted">{t('menux.hint')}</span>
+            <span className="text-label-medium text-on-surface-variant">{t('menux.hint')}</span>
             {items.isLoading ? <LoadingBlock /> : null}
             {items.isError ? <ErrorBlock error={items.error} onRetry={() => void items.refetch()} /> : null}
-            <div className="grid gap-2 md:grid-cols-2">
+            <div className="grid gap-2 large:grid-cols-2">
               {list.map((m) => (
                 <div
                   key={m.id}
-                  className="flex items-center gap-2.5 rounded-[14px] bg-white p-2.5 shadow-card"
+                  className={cn(
+                    'flex min-h-[72px] items-center gap-3 rounded-md border bg-surface-container-lowest py-2 pl-2 pr-3',
+                    String(m.id) === itemId
+                      ? 'border-primary bg-secondary-container'
+                      : 'border-outline-variant',
+                  )}
                 >
-                  <div className="flex size-[52px] shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-[#EEF1F5] text-[#98A2B3]">
+                  <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-surface-container-high text-outline">
                     {m.photoUrl ? (
                       <img src={m.photoUrl} alt="" className="size-full object-cover" />
                     ) : (
-                      <span aria-hidden>🍽</span>
+                      <Icon name="restaurant" />
                     )}
                   </div>
                   <button
                     type="button"
                     onClick={() => navigate(`/admin/menu/${m.id}`)}
-                    className="flex min-w-0 grow flex-col gap-0.5 text-left"
+                    className="flex min-h-12 min-w-0 grow flex-col justify-center gap-0.5 text-left"
                   >
-                    <b className="text-base leading-tight">{tl(m.name, lang)}</b>
-                    <span className="text-[13px] text-muted">
+                    <b className="text-title-medium">{tl(m.name, lang)}</b>
+                    <span className="text-body-medium text-on-surface-variant">
                       {catName(m.categoryId)} · {formatMoney(m.prices.store, money.main)}
                     </span>
                   </button>
@@ -139,10 +161,13 @@ export default function MenuListPage() {
                     aria-label={`${tl(m.name, lang)}: ${m.available ? t('common.available') : t('common.soldOut')}`}
                     onClick={() => toggle.mutate({ id: m.id, available: !m.available })}
                     className={cn(
-                      'h-11 w-24 shrink-0 rounded-full text-sm font-extrabold text-white',
-                      m.available ? 'bg-primary' : 'bg-danger',
+                      'state-layer flex h-10 min-w-[104px] shrink-0 items-center justify-center gap-1 rounded-sm px-2 text-label-large',
+                      m.available
+                        ? 'bg-secondary-container text-on-secondary-container'
+                        : 'bg-error-container text-on-error-container',
                     )}
                   >
+                    <Icon name={m.available ? 'check' : 'block'} size={18} />
                     {m.available ? t('common.available') : t('common.soldOut')}
                   </button>
                 </div>
@@ -151,31 +176,38 @@ export default function MenuListPage() {
           </>
         ) : (
           <>
-            <span className="text-[13px] text-muted">{t('menux.groupHint')}</span>
+            <span className="text-label-medium text-on-surface-variant">{t('menux.groupHint')}</span>
             {groups.isLoading ? <LoadingBlock /> : null}
             {groups.isError ? (
               <ErrorBlock error={groups.error} onRetry={() => void groups.refetch()} />
             ) : null}
-            <div className="grid gap-2 md:grid-cols-2">
+            <div className="grid gap-2 large:grid-cols-2">
               {glist.map((g) => (
                 <button
                   key={g.id}
                   type="button"
                   onClick={() => navigate(`/admin/opsi/${g.id}`)}
-                  className="flex flex-col gap-1.5 rounded-[14px] bg-white p-3 text-left shadow-card"
+                  className={cn(
+                    'state-layer flex flex-col gap-1.5 rounded-md border bg-surface-container-lowest p-4 text-left',
+                    String(g.id) === groupId
+                      ? 'border-primary bg-secondary-container'
+                      : 'border-outline-variant',
+                  )}
                 >
                   <div className="flex w-full items-center justify-between gap-2">
-                    <b className="text-base">{tl(g.name, lang)}</b>
+                    <b className="text-title-medium">{tl(g.name, lang)}</b>
                     <span
                       className={cn(
-                        'rounded-[7px] px-2 py-[3px] text-xs font-extrabold',
-                        g.required ? 'bg-danger-tint text-danger' : 'bg-[#F2F4F7] text-[#475467]',
+                        'shrink-0 rounded-sm px-2 py-0.5 text-label-medium',
+                        g.required
+                          ? 'bg-error-container text-on-error-container'
+                          : 'bg-surface-container-high text-on-surface-variant',
                       )}
                     >
                       {groupRuleShort(g, t)}
                     </span>
                   </div>
-                  <span className="text-[13px] text-[#475467]">
+                  <span className="text-label-medium text-on-surface-variant">
                     {g.options
                       .map(
                         (o) =>
@@ -183,7 +215,7 @@ export default function MenuListPage() {
                       )
                       .join(', ')}
                   </span>
-                  <span className="text-xs text-muted">
+                  <span className="text-label-medium text-on-surface-variant">
                     {t('menux.usedIn')}: {g.itemIds.map(itemName).filter(Boolean).join(', ') || '—'}
                   </span>
                 </button>
@@ -192,15 +224,10 @@ export default function MenuListPage() {
           </>
         )}
       </main>
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 mx-auto w-full max-w-[960px] px-3">
-        <button
-          type="button"
-          onClick={() => navigate(tab === 'menu' ? '/admin/menu/baru' : '/admin/opsi/baru')}
-          className="pointer-events-auto flex h-[60px] w-full items-center justify-center rounded-2xl bg-primary text-lg font-extrabold text-white shadow-[0_4px_14px_rgba(0,0,0,0.18)]"
-        >
-          {tab === 'menu' ? t('menux.addMenu') : t('menux.addGroup')}
-        </button>
-      </div>
+      <ExtendedFab
+        label={tab === 'menu' ? t('menux.addMenu') : t('menux.addGroup')}
+        onClick={() => navigate(tab === 'menu' ? '/admin/menu/baru' : '/admin/opsi/baru')}
+      />
       <CategoriesSheet
         open={catOpen}
         onClose={() => setCatOpen(false)}
@@ -263,10 +290,13 @@ function CategoriesSheet({
     <Sheet open={open} onClose={onClose} title={t('admin.category')} closeLabel={t('common.close')}>
       <div className="flex flex-col gap-2">
         {categories.map((c) => (
-          <div key={c.id} className="flex min-h-12 items-center gap-2 border-b border-[#F2F4F7]">
-            <span className="grow font-semibold">{tl(c.name, i18n.language)}</span>
+          <div
+            key={c.id}
+            className="flex min-h-12 items-center gap-2 border-b border-surface-container-highest"
+          >
+            <span className="grow font-medium">{tl(c.name, i18n.language)}</span>
             <Button
-              variant="ghost"
+              variant="text"
               size="md"
               onClick={() => {
                 setEditing(c);
@@ -275,7 +305,7 @@ function CategoriesSheet({
             >
               {t('common.edit')}
             </Button>
-            <Button variant="ghost" size="md" className="text-danger" onClick={() => setDel(c)}>
+            <Button variant="text" size="md" className="text-error" onClick={() => setDel(c)}>
               {t('common.delete')}
             </Button>
           </div>

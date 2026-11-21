@@ -10,9 +10,9 @@ export function AbaAccountInfo({ settings }: { settings: PublicSettingsResponse 
   if (!aba) {
     return (
       <>
-        <p className="text-sm text-muted">{t('web.abaNoInfo')}</p>
+        <p className="text-label-medium text-on-surface-variant">{t('web.abaNoInfo')}</p>
         {settings?.phone ? (
-          <p className="text-sm font-semibold">{t('web.abaPhone', { phone: settings.phone })}</p>
+          <p className="text-label-medium font-medium">{t('web.abaPhone', { phone: settings.phone })}</p>
         ) : null}
       </>
     );
@@ -27,20 +27,20 @@ export function AbaAccountInfo({ settings }: { settings: PublicSettingsResponse 
   };
   return (
     <div className="flex flex-col gap-2" data-testid="aba-account">
-      <dl className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1 text-sm">
+      <dl className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1 text-label-medium">
         {aba.accountName ? (
           <>
-            <dt className="text-muted">{t('web.abaAccountName')}</dt>
-            <dd className="font-bold">{aba.accountName}</dd>
+            <dt className="text-on-surface-variant">{t('web.abaAccountName')}</dt>
+            <dd className="font-medium">{aba.accountName}</dd>
           </>
         ) : null}
-        <dt className="text-muted">{t('web.abaAccountNumber')}</dt>
+        <dt className="text-on-surface-variant">{t('web.abaAccountNumber')}</dt>
         <dd className="flex items-center justify-between gap-2">
-          <b className="text-lg tabular-nums">{aba.accountNumber}</b>
+          <b className="text-title-medium tabular-nums">{aba.accountNumber}</b>
           <button
             type="button"
             onClick={() => void copy()}
-            className="min-h-10 rounded-lg border border-line-strong px-3 text-sm font-bold"
+            className="min-h-10 rounded-sm border border-outline-variant px-3 text-label-medium font-medium"
           >
             {t('web.abaCopy')}
           </button>
@@ -50,10 +50,10 @@ export function AbaAccountInfo({ settings }: { settings: PublicSettingsResponse 
         <img
           src={aba.qrImageUrl}
           alt={t('web.abaQrAlt')}
-          className="mx-auto size-48 rounded-xl border border-line object-contain"
+          className="mx-auto size-48 rounded-md border border-outline-variant object-contain"
         />
       ) : null}
-      <p className="text-sm text-muted">{t('web.abaAfter')}</p>
+      <p className="text-label-medium text-on-surface-variant">{t('web.abaAfter')}</p>
     </div>
   );
 }

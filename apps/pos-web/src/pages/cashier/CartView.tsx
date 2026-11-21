@@ -11,8 +11,9 @@ import {
   type OrderDto,
   type UpdateOrderRequest,
 } from '@pos/shared';
-import { Button, EmptyState, Segmented, Sheet, cn, useToast } from '../../components/ui';
+import { Button, EmptyState, Icon, Segmented, Sheet, cn, useToast } from '../../components/ui';
 import {
+  Banner,
   ChoiceButton,
   ConfirmSheet,
   MoneyInput,
@@ -20,6 +21,7 @@ import {
   Screen,
   ScreenFooter,
   Section,
+  SelectField,
   Switch,
   TextField,
   TopBar,
@@ -178,9 +180,9 @@ export function CartView() {
   return (
     <Screen testId="cart-screen">
       <TopBar back={{ label: t('common.menu'), onClick: () => navigate('/kasir') }} title={title} />
-      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-3.5 py-3">
-        <Section title={<span className="text-[15px]">{t('cashier.orderType')}</span>}>
-          <div role="radiogroup" aria-label={t('cashier.orderType')} className="grid grid-cols-3 gap-1.5">
+      <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-4 py-3">
+        <Section title={t('cashier.orderType')}>
+          <div role="radiogroup" aria-label={t('cashier.orderType')} className="grid grid-cols-3 gap-2">
             {CART_KINDS.map((k) => {
               const active = cart.kind === k;
               return (
@@ -196,28 +198,31 @@ export function CartView() {
                   }
                   onClick={() => setCart({ kind: k })}
                   className={cn(
-                    'h-12 rounded-xl text-[15px] disabled:opacity-40',
+                    'state-layer flex min-h-12 items-center justify-center gap-1 rounded-sm px-1 text-label-large disabled:opacity-38',
                     active
-                      ? 'bg-primary font-extrabold text-white'
-                      : 'border border-line-strong bg-white font-semibold text-ink shadow-card',
+                      ? 'bg-secondary-container text-on-secondary-container'
+                      : 'border border-outline-variant bg-surface-container-lowest text-on-surface-variant',
                   )}
                 >
-                  {kindLabel(k, t)}
+                  {active ? <Icon name="check" size={18} /> : null}
+                  <span className="truncate">{kindLabel(k, t)}</span>
                 </button>
               );
             })}
           </div>
           {isDeliveryKind(cart.kind) ? (
-            <div className="mt-1 rounded-xl bg-info-tint px-3 py-2.5 text-sm leading-snug text-info-dark">
-              <b>{t('pesanan.noDriverTitle')}</b> {t('pesanan.noDriverBody')}
-            </div>
+            <Banner tone="info">
+              <b className="font-medium">{t('pesanan.noDriverTitle')}</b> {t('pesanan.noDriverBody')}
+            </Banner>
           ) : null}
           {cart.kind === 'dine_in' ? (
             <div className="mt-1 flex flex-col gap-1.5">
-              <b className="text-sm">{t('cashier.chooseTable')}</b>
-              {tables.isLoading ? <span className="text-sm text-muted">{t('common.loading')}</span> : null}
+              <b className="text-label-large">{t('cashier.chooseTable')}</b>
+              {tables.isLoading ? (
+                <span className="text-label-medium text-on-surface-variant">{t('common.loading')}</span>
+              ) : null}
               <div
-                className="grid grid-cols-3 gap-1.5 sm:grid-cols-5"
+                className="grid grid-cols-3 gap-2 medium:grid-cols-4"
                 role="radiogroup"
                 aria-label={t('cashier.chooseTable')}
               >
@@ -230,17 +235,19 @@ export function CartView() {
                       aria-checked={cart.tableId === tb.id}
                       selected={cart.tableId === tb.id}
                       onClick={() => setCart({ tableId: tb.id })}
-                      className="flex min-h-12 flex-col items-center justify-center py-1 text-[15px] leading-tight"
+                      className="flex min-h-12 flex-col items-center justify-center py-1 text-body-medium leading-tight"
                     >
                       <span>{tb.name}</span>
                       {tb.status !== 'empty' ? (
-                        <span className="text-[11px] font-bold text-info-dark">{t('tables.eating')}</span>
+                        <span className="text-label-medium font-medium text-tertiary">
+                          {t('tables.eating')}
+                        </span>
                       ) : null}
                     </ChoiceButton>
                   ))}
               </div>
               {showErrors && !cart.tableId ? (
-                <span className="text-sm font-bold text-danger">{t('pesanan.errTable')}</span>
+                <span className="text-label-medium font-medium text-error">{t('pesanan.errTable')}</span>
               ) : null}
             </div>
           ) : null}
@@ -257,7 +264,7 @@ export function CartView() {
         </Section>
 
         {isDeliveryKind(cart.kind) ? (
-          <Section title={<span className="text-[15px]">{t('pesanan.deliveryData')}</span>}>
+          <Section title={t('pesanan.deliveryData')}>
             <TextField
               label={t('common.name')}
               value={cart.delivery.name}
@@ -294,10 +301,10 @@ export function CartView() {
         ) : null}
 
         <section
-          className="shrink-0 rounded-card bg-white px-3 py-1 shadow-card"
+          className="shrink-0 rounded-md bg-surface-container-low px-4 py-1"
           aria-label={t('cashier.cart')}
         >
-          {!cart.lines.length ? <EmptyState title={t('cashier.emptyCart')} /> : null}
+          {!cart.lines.length ? <EmptyState icon="shopping_cart" title={t('cashier.emptyCart')} /> : null}
           {totals.lines.map((l) => {
             const name = l.item ? tl(l.item.name, lang) : `#${l.itemId}`;
             const unit = (l.unitPrice ?? 0) + l.optionsDelta;
@@ -305,16 +312,19 @@ export function CartView() {
               .filter(Boolean)
               .join(' · ');
             return (
-              <div key={l.key} className="flex items-center gap-2 border-b border-[#F2F4F7] py-3">
+              <div
+                key={l.key}
+                className="flex items-center gap-2 border-b border-surface-container-highest py-3"
+              >
                 <div className="flex min-w-0 grow flex-col gap-0.5">
-                  <b className="text-base leading-snug">{name}</b>
-                  <span className="text-sm text-muted tabular-nums">
+                  <b className="text-title-medium">{name}</b>
+                  <span className="text-body-medium text-on-surface-variant tabular-nums">
                     {l.qty} × {formatMoney(unit, money.main, { noSymbol: true })} ={' '}
                     {formatMoney(l.lineTotal, money.main)}
                   </span>
-                  {sub ? <span className="text-[13px] font-bold text-danger">{sub}</span> : null}
+                  {sub ? <span className="text-body-medium text-error">{sub}</span> : null}
                   {l.unitPrice === null || (l.item && !l.item.available) ? (
-                    <span className="text-[13px] font-bold text-danger">
+                    <span className="text-label-medium font-medium text-error">
                       {l.item && !l.item.available ? t('errors.ITEM_UNAVAILABLE') : t('kasir.notOnChannel')}
                     </span>
                   ) : null}
@@ -331,9 +341,9 @@ export function CartView() {
             type="button"
             aria-expanded={extrasOpen}
             onClick={() => setExtrasOpen((v) => !v)}
-            className="h-12 w-full text-left text-[15px] font-bold text-primary"
+            className="state-layer -mx-2 flex min-h-12 w-[calc(100%+1rem)] items-center gap-2 rounded-sm px-2 text-left text-label-large text-primary"
           >
-            {extrasOpen ? '− ' : '+ '}
+            <Icon name={extrasOpen ? 'remove' : 'add'} />
             {t('pesanan.extras')}
           </button>
           {extrasOpen ? (
@@ -364,36 +374,31 @@ export function CartView() {
                 onChange={(e) => setCart({ note: e.target.value })}
               />
               {canPromos && promos.data?.promos.some((p) => p.active) ? (
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="promo" className="text-sm font-bold">
-                    {t('cashier.promo')}
-                  </label>
-                  <select
-                    id="promo"
-                    value={cart.promoId ?? ''}
-                    onChange={(e) =>
-                      setCart({
-                        promoId: e.target.value ? Number(e.target.value) : null,
-                        discount: e.target.value ? null : cart.discount,
-                      })
-                    }
-                    className="h-12 rounded-xl border border-line-strong bg-white px-3"
-                  >
-                    <option value="">{t('pesanan.noPromo')}</option>
-                    {promos.data.promos
-                      .filter(
-                        (p) => p.active && (!p.channel || p.channel === kindToChannelType(cart.kind).channel),
-                      )
-                      .map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} · {p.kind === 'pct' ? `${p.value}%` : formatMoney(p.value, money.main)}
-                        </option>
-                      ))}
-                  </select>
-                </div>
+                <SelectField
+                  label={t('cashier.promo')}
+                  id="promo"
+                  value={cart.promoId ?? ''}
+                  onChange={(e) =>
+                    setCart({
+                      promoId: e.target.value ? Number(e.target.value) : null,
+                      discount: e.target.value ? null : cart.discount,
+                    })
+                  }
+                >
+                  <option value="">{t('pesanan.noPromo')}</option>
+                  {promos.data.promos
+                    .filter(
+                      (p) => p.active && (!p.channel || p.channel === kindToChannelType(cart.kind).channel),
+                    )
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} · {p.kind === 'pct' ? `${p.value}%` : formatMoney(p.value, money.main)}
+                      </option>
+                    ))}
+                </SelectField>
               ) : null}
               <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-bold">{t('cashier.manualDiscount')}</span>
+                <span className="text-label-large">{t('cashier.manualDiscount')}</span>
                 <Segmented
                   size="md"
                   label={t('cashier.manualDiscount')}
@@ -419,15 +424,15 @@ export function CartView() {
                         const v = Math.min(100, Math.max(0, Number(e.target.value.replace(/\D/g, '')) || 0));
                         setCart({ discount: { kind: 'pct', value: v }, promoId: null });
                       }}
-                      className="h-12 w-28 rounded-xl border border-line-strong px-3 text-right font-bold"
+                      className="h-12 w-24 rounded-xs border border-outline bg-surface-container-lowest px-3 text-right font-medium tabular-nums"
                     />
                     <b>%</b>
-                    <span className="text-sm text-muted">
+                    <span className="text-label-medium text-on-surface-variant">
                       {[5, 10, 20].map((p) => (
                         <button
                           key={p}
                           type="button"
-                          className="ml-1 min-h-10 rounded-lg border border-line-strong px-2 font-bold"
+                          className="state-layer ml-1 min-h-12 rounded-sm border border-outline-variant px-3 text-label-large text-on-surface-variant"
                           onClick={() => setCart({ discount: { kind: 'pct', value: p }, promoId: null })}
                         >
                           {p}%
@@ -453,47 +458,49 @@ export function CartView() {
 
       <ScreenFooter>
         {isDeliveryKind(cart.kind) ? (
-          <div className="flex items-center justify-between text-[15px] text-muted">
+          <div className="flex items-center justify-between text-body-medium text-on-surface-variant">
             <span>{t('pesanan.feeManual')}</span>
             <button
               type="button"
               onClick={() => setFeeOpen(true)}
-              className="h-9 rounded-[10px] border border-line-strong bg-white px-3 text-sm font-bold text-ink shadow-card"
+              className="state-layer flex min-h-12 items-center gap-1 rounded-full px-3 text-label-large text-primary"
             >
+              <Icon name="edit" size={18} />
               {formatMoney(cart.deliveryFee, money.main)} · {t('common.edit')}
             </button>
           </div>
         ) : null}
         {totals.discountAmount > 0 ? (
-          <div className="flex justify-between text-[15px] text-muted">
+          <div className="flex justify-between text-body-medium text-on-surface-variant">
             <span>{t('common.discount')}</span>
             <span className="tabular-nums">-{formatMoney(totals.discountAmount, money.main)}</span>
           </div>
         ) : null}
         <div className="flex items-baseline justify-between">
-          <span className="text-lg font-semibold">{t('common.total')}</span>
-          <b className="text-[30px] tabular-nums" data-testid="cart-total">
+          <span className="text-title-medium font-medium">{t('common.total')}</span>
+          <b className="text-headline-medium font-medium tabular-nums" data-testid="cart-total">
             {formatMoney(totals.total, money.main)}
           </b>
         </div>
         {equivalents.length ? (
-          <div className="-mt-1.5 flex justify-end gap-3 text-[13px] text-muted">
+          <div className="-mt-1.5 flex justify-end gap-3 text-label-medium text-on-surface-variant">
             {equivalents.map((e) => (
               <span key={e}>{e}</span>
             ))}
           </div>
         ) : null}
         <div className="flex gap-2.5">
-          <button
-            type="button"
+          <Button
+            variant="outlined"
+            size="lg"
+            className="w-28 border-error px-3 text-error"
             onClick={() => (cart.lines.length ? setConfirmCancel(true) : navigate('/kasir'))}
-            className="h-[60px] w-24 rounded-[14px] border-2 border-[#F04438] bg-white text-[17px] font-bold text-danger shadow-card"
           >
             {t('common.cancel')}
-          </button>
+          </Button>
           <Button
-            size="xl"
-            className="h-[60px] grow text-[22px]"
+            size="lg"
+            className="grow"
             loading={submit.isPending}
             disabled={!cart.lines.length}
             onClick={go}

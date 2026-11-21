@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useCart } from '../lib/cart';
 import { useCustomer } from '../lib/customer';
+import { Icon } from './ui';
 import { cartTotals, mainCurrency, money, useMenu, useSettings } from '../lib/menu';
 
 /** Bar keranjang mengambang di bawah menu: "3 item · 42.000 ៛   Lihat pesanan ›" / "Kirim ke dapur ›". */
@@ -16,18 +17,20 @@ export function CartBar() {
   if (count === 0) return null;
   const currency = mainCurrency(settings);
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 mx-auto w-full max-w-[480px] px-3 pb-[max(16px,env(safe-area-inset-bottom))]">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 mx-auto w-full max-w-[640px] px-4 pb-[max(16px,env(safe-area-inset-bottom))]">
       <button
         type="button"
         onClick={() => navigate('/keranjang')}
-        className="pointer-events-auto flex h-[60px] w-full items-center justify-between gap-2 rounded-2xl bg-primary px-[18px] text-white shadow-[0_4px_14px_rgba(0,0,0,0.18)]"
+        className="state-layer pointer-events-auto flex h-16 w-full items-center justify-between gap-2 rounded-lg bg-primary px-5 text-on-primary shadow-e3"
         data-testid="cart-bar"
       >
-        <span className="truncate text-base font-bold tabular-nums">
+        <span className="flex min-w-0 items-center gap-2 truncate text-label-large tabular-nums">
+          <Icon name="shopping_bag" />
           {t('web.cartSummary', { count, amount: money(subtotal, currency) })}
         </span>
-        <span className="shrink-0 text-base font-extrabold">
-          {mode === 'table' ? t('order.sendToKitchen') : t('web.viewOrder')} ›
+        <span className="flex shrink-0 items-center gap-1 text-label-large">
+          {mode === 'table' ? t('order.sendToKitchen') : t('web.viewOrder')}
+          <Icon name="arrow_forward" size={20} />
         </span>
       </button>
     </div>

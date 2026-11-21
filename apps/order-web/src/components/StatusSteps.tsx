@@ -50,27 +50,34 @@ export function StatusSteps({ order }: { order: PublicOrderDto }) {
             <div className="flex flex-col items-center self-stretch">
               <span
                 className={cn(
-                  'flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-extrabold',
-                  done && 'border-primary bg-primary text-white',
-                  current && 'border-primary bg-primary-tint text-primary-dark',
-                  !done && !current && 'border-line-strong bg-white text-muted',
+                  'flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-label-medium font-medium',
+                  done && 'border-primary bg-primary text-on-primary',
+                  current && 'border-primary bg-secondary-container text-on-secondary-container',
+                  !done &&
+                    !current &&
+                    'border-outline-variant bg-surface-container-lowest text-on-surface-variant',
                 )}
                 aria-hidden
               >
                 {done ? <CheckIcon size={16} /> : i + 1}
               </span>
               {i < steps.length - 1 ? (
-                <span className={cn('my-0.5 w-0.5 grow', done ? 'bg-primary' : 'bg-line-strong')} />
+                <span
+                  className={cn('my-0.5 w-0.5 grow', done ? 'bg-primary' : 'bg-surface-container-highest')}
+                />
               ) : null}
             </div>
             <div className="flex min-h-12 flex-col pb-2 pt-1">
               <span
-                className={cn('text-base', current ? 'font-extrabold' : done ? 'font-bold' : 'text-muted')}
+                className={cn(
+                  'text-body-medium',
+                  current ? 'font-medium' : done ? 'font-medium' : 'text-on-surface-variant',
+                )}
               >
                 {label}
               </span>
               {current && i === 2 && order.driverName && isDelivery ? (
-                <span className="text-sm font-semibold text-info-dark">
+                <span className="text-label-medium font-medium text-tertiary">
                   {t('web.driverOnWay', { name: order.driverName })}
                 </span>
               ) : null}

@@ -18,7 +18,7 @@ import {
 } from '@pos/shared';
 import { money } from '../lib/menu';
 import { CheckIcon, ChevronLeft, FoodIcon } from './Icons';
-import { cn } from './ui';
+import { Icon, Stepper, cn } from './ui';
 
 export interface OptionSheetValue {
   optionIds: number[];
@@ -98,7 +98,7 @@ export function OptionSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-center bg-ink/50"
+      className="fixed inset-0 z-50 flex animate-fade-in justify-center bg-scrim medium:items-center medium:p-6"
       onClick={onClose}
       data-testid="option-sheet"
     >
@@ -107,10 +107,10 @@ export function OptionSheet({
         aria-modal="true"
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
-        className="flex h-dvh w-full max-w-[480px] flex-col bg-bg text-[15px]"
+        className="flex h-dvh w-full max-w-[560px] flex-col bg-surface-container-low text-body-large shadow-e3 medium:h-auto medium:max-h-[90dvh] medium:overflow-hidden medium:rounded-xl"
       >
         <main className="flex min-h-0 grow flex-col overflow-y-auto">
-          <div className="relative flex h-[190px] shrink-0 items-center justify-center bg-[#EEF1F5] text-[#98A2B3]">
+          <div className="relative flex h-[190px] shrink-0 items-center justify-center bg-surface-container-high text-outline">
             {item.photoUrl ? (
               <img src={item.photoUrl} alt="" className="size-full object-cover" />
             ) : (
@@ -121,18 +121,18 @@ export function OptionSheet({
               type="button"
               onClick={onClose}
               aria-label={t('web.backToMenu')}
-              className="absolute left-3 top-3 flex size-12 items-center justify-center rounded-full bg-white text-ink shadow-[0_1px_3px_rgba(16,24,40,0.15)]"
+              className="state-layer absolute left-3 top-3 flex size-12 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface shadow-e1"
             >
               <ChevronLeft />
             </button>
           </div>
 
-          <div className="flex flex-col gap-1 bg-white px-4 py-3.5">
-            <h2 id={titleId} className="text-[21px] font-extrabold">
+          <div className="flex flex-col gap-1 px-6 pb-2 pt-4">
+            <h2 id={titleId} className="text-headline-small">
               {name}
             </h2>
-            {desc ? <p className="text-[13px] text-muted">{desc}</p> : null}
-            <b className="mt-0.5 text-[17px] text-primary-dark tabular-nums">
+            {desc ? <p className="text-body-medium text-on-surface-variant">{desc}</p> : null}
+            <b className="mt-0.5 text-title-medium text-primary tabular-nums">
               {hasPricedOptions
                 ? t('web.priceFrom', { price: money(item.price, currency) })
                 : money(item.price, currency)}
@@ -148,23 +148,31 @@ export function OptionSheet({
             const labelId = `grp-${g.id}`;
             const badge = g.required
               ? groupOk
-                ? { text: t('web.selected'), cls: 'bg-primary-tint text-primary-dark' }
-                : { text: t('common.required'), cls: 'bg-danger-tint text-danger' }
-              : { text: t('common.optional'), cls: 'bg-[#F2F4F7] text-[#475467]' };
+                ? { text: t('web.selected'), cls: 'bg-secondary-container text-on-secondary-container' }
+                : { text: t('common.required'), cls: 'bg-error-container text-on-error-container' }
+              : { text: t('common.optional'), cls: 'bg-surface-container-high text-on-surface-variant' };
             return (
               <section
                 key={g.id}
-                className="mt-2 flex flex-col bg-white px-4 pb-1.5 pt-3"
+                className="mx-4 mt-3 flex flex-col rounded-md bg-surface-container-lowest px-4 pb-1 pt-3"
                 aria-labelledby={labelId}
               >
                 <div className="mb-1 flex items-center justify-between gap-2">
                   <div className="flex flex-col gap-0.5">
-                    <h3 id={labelId} className="text-base font-bold">
+                    <h3 id={labelId} className="text-title-medium">
                       {gName}
                     </h3>
-                    <span className="text-xs text-muted">{ruleText(g, inGroup.length)}</span>
+                    <span className="text-body-medium text-on-surface-variant">
+                      {ruleText(g, inGroup.length)}
+                    </span>
                   </div>
-                  <span className={cn('shrink-0 rounded-[7px] px-2 py-1 text-xs font-extrabold', badge.cls)}>
+                  <span
+                    className={cn(
+                      'flex shrink-0 items-center gap-1 rounded-sm px-2 py-1 text-label-medium',
+                      badge.cls,
+                    )}
+                  >
+                    {g.required ? <Icon name={groupOk ? 'check' : 'error'} size={16} /> : null}
                     {badge.text}
                   </span>
                 </div>
@@ -188,28 +196,29 @@ export function OptionSheet({
                           disabled={off && !on}
                           onClick={() => setSelected((s) => toggleOption(g, s, o.id))}
                           className={cn(
-                            'flex min-h-[52px] items-center gap-3 border-b border-[#F2F4F7] text-left text-[15px] last:border-b-0',
-                            off && !on && 'opacity-45',
+                            'flex min-h-14 items-center gap-4 border-b border-surface-container-highest text-left text-body-large last:border-b-0',
+                            off && !on && 'opacity-38',
                           )}
                         >
                           <span
                             aria-hidden
                             className={cn(
-                              'flex size-[22px] shrink-0 items-center justify-center border-2 text-white',
-                              single ? 'rounded-full' : 'rounded-md',
-                              on ? 'border-primary bg-primary' : 'border-[#98A2B3] bg-white',
+                              'flex size-6 shrink-0 items-center justify-center border-2',
+                              single ? 'rounded-full' : 'rounded-xs',
+                              on ? 'border-primary' : 'border-on-surface-variant',
+                              on && !single && 'bg-primary text-on-primary',
                             )}
                           >
                             {on ? (
                               single ? (
-                                <span className="size-2 rounded-full bg-white" />
+                                <span className="size-3 rounded-full bg-primary" />
                               ) : (
-                                <CheckIcon size={14} />
+                                <CheckIcon size={18} />
                               )
                             ) : null}
                           </span>
                           <span className="grow">{tl(o.name, lang)}</span>
-                          <span className="text-muted tabular-nums">
+                          <span className="text-body-medium text-on-surface-variant tabular-nums">
                             {!o.available
                               ? t('web.unavailableNow')
                               : o.priceDelta
@@ -224,9 +233,12 @@ export function OptionSheet({
             );
           })}
 
-          <section className="mt-2 flex flex-col gap-1.5 bg-white px-4 pb-4 pt-3">
-            <label htmlFor={noteId} className="font-bold">
-              {t('order.itemNote')} <span className="font-medium text-muted">{t('web.noteOptional')}</span>
+          <section className="group/field relative mx-4 my-3 flex rounded-xs border border-outline bg-surface-container-lowest focus-within:border-primary focus-within:outline-1 focus-within:outline-primary">
+            <label
+              htmlFor={noteId}
+              className="pointer-events-none absolute left-4 right-4 top-1.5 truncate text-label-medium text-on-surface-variant group-focus-within/field:text-primary"
+            >
+              {t('order.itemNote')} <span className="font-normal">{t('web.noteOptional')}</span>
             </label>
             <input
               id={noteId}
@@ -234,49 +246,36 @@ export function OptionSheet({
               maxLength={200}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t('web.itemNotePlaceholder')}
-              className="h-12 rounded-xl border border-line-strong px-3"
+              className="h-14 w-full bg-transparent px-4 pb-1.5 pt-6 text-body-large outline-none placeholder:text-on-surface-variant/70"
             />
           </section>
         </main>
 
-        <footer className="flex shrink-0 flex-col gap-2 border-t border-line bg-white px-3.5 pb-[max(14px,env(safe-area-inset-bottom))] pt-2.5">
+        <footer className="flex shrink-0 flex-col gap-2 bg-surface-container px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 medium:pb-4">
           {firstMissing ? (
-            <p className="text-center text-[13px] font-bold text-danger" role="status">
+            <p
+              className="flex items-center justify-center gap-1 text-center text-label-large text-error"
+              role="status"
+            >
+              <Icon name="error" size={18} />
               {t('web.chooseFirst', { name: tl(firstMissing.name, lang) })}
             </p>
           ) : null}
           <div className="flex items-center gap-2.5">
-            <div
-              className="flex h-14 items-center gap-1 rounded-[14px] border border-line-strong px-1"
-              role="group"
-              aria-label={t('web.qtyOf', { name })}
-            >
-              <button
-                type="button"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                disabled={qty <= 1}
-                aria-label={t('web.decItem', { name })}
-                className="flex h-12 w-10 items-center justify-center text-2xl font-extrabold disabled:opacity-40"
-              >
-                −
-              </button>
-              <b className="min-w-5 text-center text-[17px] tabular-nums" aria-live="polite">
-                {qty}
-              </b>
-              <button
-                type="button"
-                onClick={() => setQty((q) => Math.min(99, q + 1))}
-                aria-label={t('web.incItem', { name })}
-                className="flex h-12 w-10 items-center justify-center text-2xl font-extrabold"
-              >
-                +
-              </button>
-            </div>
+            <Stepper
+              value={qty}
+              onChange={setQty}
+              min={1}
+              max={99}
+              label={t('web.qtyOf', { name })}
+              decLabel={t('web.decItem', { name })}
+              incLabel={t('web.incItem', { name })}
+            />
             <button
               type="button"
               disabled={!canSubmit}
               onClick={() => onSubmit({ optionIds: selected, qty, note: note.trim() })}
-              className="h-14 min-w-0 grow rounded-[14px] bg-primary px-2 text-base font-extrabold text-white disabled:bg-[#E4E7EC] disabled:text-[#475467]"
+              className="state-layer h-14 min-w-0 grow truncate rounded-full bg-primary px-3 text-label-large text-on-primary disabled:bg-on-surface/12 disabled:text-on-surface/38"
             >
               {mode === 'edit'
                 ? t('web.saveItem', { price: money(total, currency) })

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { formatMoney, parseHHMM, tl, type DailyReport, type HourlyPoint } from '@pos/shared';
 import { AdminBar } from '../../components/admin/AdminBar';
 import { ErrorBlock, LoadingBlock, Screen } from '../../components/common';
-import { EmptyState } from '../../components/ui';
+import { EmptyState, cn } from '../../components/ui';
 import { api } from '../../lib/api';
 import { usePublicSettings } from '../../lib/data';
 
@@ -50,7 +50,7 @@ export default function DashboardPage() {
       <AdminBar
         title={t('dash.title')}
         right={
-          <label className="relative flex h-11 items-center rounded-xl border border-line-strong bg-white px-3 text-sm font-bold shadow-card">
+          <label className="relative flex h-11 items-center rounded-md border border-outline-variant bg-surface-container-lowest px-3 text-label-medium font-medium">
             <span aria-hidden>
               {isToday ? `${t('common.today')} · ` : ''}
               {dateLabel} ▾
@@ -102,30 +102,30 @@ export function DashboardBody({
   const chMax = Math.max(1, ...channels.map((c) => c.net));
   const labels = series.filter((_, i) => i % 4 === 0 || i === series.length - 1);
   const kpi = (label: string, value: string, sub?: string) => (
-    <div className="flex flex-col gap-0.5 rounded-[14px] bg-white p-3 shadow-card">
-      <span className="text-[13px] text-muted">{label}</span>
-      <b className="text-[21px] tabular-nums">{value}</b>
-      {sub ? <span className="text-xs text-muted">{sub}</span> : null}
+    <div className="flex flex-col gap-0.5 rounded-md bg-surface-container-lowest p-3">
+      <span className="text-label-medium text-on-surface-variant">{label}</span>
+      <b className="text-title-large tabular-nums">{value}</b>
+      {sub ? <span className="text-label-medium text-on-surface-variant">{sub}</span> : null}
     </div>
   );
   return (
     <>
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-4" data-testid="kpis">
+      <div className="grid grid-cols-2 gap-2 medium:grid-cols-4" data-testid="kpis">
         {kpi(t('admin.salesTotal'), fmt(r.totalSales), t('dash.shifts', { count: r.shifts.length }))}
         {kpi(t('admin.orderCount'), String(r.orderCount), t('dash.cancelled', { count: r.cancelledCount }))}
         {kpi(t('dash.average'), fmt(r.averageOrder))}
         {kpi(t('admin.expenses'), fmt(r.expensesTotal))}
       </div>
-      <section className="flex flex-col gap-1.5 rounded-[14px] bg-white p-3 shadow-card">
-        <h2 className="text-base font-extrabold">{t('dash.perHour')}</h2>
-        <span className="text-xs text-muted">
+      <section className="flex flex-col gap-1.5 rounded-md bg-surface-container-lowest p-3">
+        <h2 className="text-body-medium font-medium">{t('dash.perHour')}</h2>
+        <span className="text-label-medium text-on-surface-variant">
           {peak.total > 0
             ? `${t('dash.peak', { from: `${pad(peak.hour)}.00`, to: `${pad((peak.hour + 1) % 24)}.00` })} · `
             : ''}
           {t('dash.thousand', { symbol: r.currency === 'KHR' ? '៛' : r.currency })}
         </span>
         <div
-          className="flex h-[150px] items-end gap-[3px] border-b border-line-strong"
+          className="flex h-[150px] items-end gap-[3px] border-b border-outline-variant"
           role="img"
           aria-label={t('dash.perHour')}
         >
@@ -133,33 +133,33 @@ export function DashboardBody({
             <div
               key={s.hour}
               title={`${pad(s.hour)}.00 · ${fmt(s.total)}`}
-              className="flex-1 rounded-t"
-              style={{
-                height: `${Math.round((s.total / max) * 140)}px`,
-                background: s.total >= max * 0.8 && s.total > 0 ? '#047857' : '#A7F3D0',
-              }}
+              className={cn(
+                'flex-1 rounded-t-xs',
+                s.total >= max * 0.8 && s.total > 0 ? 'bg-primary' : 'bg-primary-container',
+              )}
+              style={{ height: `${Math.round((s.total / max) * 140)}px` }}
             />
           ))}
         </div>
-        <div className="flex justify-between text-[11px] text-muted">
+        <div className="flex justify-between text-label-medium text-on-surface-variant">
           {labels.map((s) => (
             <span key={s.hour}>{pad(s.hour)}</span>
           ))}
         </div>
       </section>
-      <div className="grid gap-3 md:grid-cols-2">
-        <section className="flex flex-col gap-2 rounded-[14px] bg-white p-3 shadow-card">
-          <h2 className="text-base font-extrabold">{t('dash.perChannel')}</h2>
+      <div className="grid gap-3 medium:grid-cols-2">
+        <section className="flex flex-col gap-2 rounded-md bg-surface-container-lowest p-3">
+          <h2 className="text-body-medium font-medium">{t('dash.perChannel')}</h2>
           {!channels.length ? <EmptyState title={t('common.empty')} /> : null}
           {channels.map((c) => (
             <div key={c.channel} className="flex flex-col gap-[3px]">
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-label-medium">
                 <span>
-                  {t(`channel.${c.channel}`)} <span className="text-muted">({c.count})</span>
+                  {t(`channel.${c.channel}`)} <span className="text-on-surface-variant">({c.count})</span>
                 </span>
                 <b className="tabular-nums">{fmt(c.net)}</b>
               </div>
-              <div className="h-2 rounded bg-[#F2F4F7]">
+              <div className="h-2 rounded bg-surface-container-high">
                 <div
                   className="h-2 rounded bg-primary"
                   style={{ width: `${Math.round((Math.max(0, c.net) / chMax) * 100)}%` }}
@@ -168,14 +168,14 @@ export function DashboardBody({
             </div>
           ))}
           {r.netSales !== r.totalSales ? (
-            <div className="flex justify-between border-t border-[#F2F4F7] pt-2 text-sm">
+            <div className="flex justify-between border-t border-surface-container-highest pt-2 text-label-medium">
               <span>{t('dash.net')}</span>
               <b className="tabular-nums">{fmt(r.netSales)}</b>
             </div>
           ) : null}
         </section>
-        <section className="flex flex-col gap-1 rounded-[14px] bg-white p-3 shadow-card">
-          <h2 className="mb-1 text-base font-extrabold">{t('admin.topItems')}</h2>
+        <section className="flex flex-col gap-1 rounded-md bg-surface-container-lowest p-3">
+          <h2 className="mb-1 text-body-medium font-medium">{t('admin.topItems')}</h2>
           {!r.topItems.length ? <EmptyState title={t('common.empty')} /> : null}
           {r.topItems.slice(0, 5).map((it, i) => (
             <div key={`${it.itemId}-${i}`} className="flex justify-between py-1">

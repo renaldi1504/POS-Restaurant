@@ -41,7 +41,7 @@ export default function TempBillPage() {
       )
     : null;
   return (
-    <Screen testId="temp-bill-screen" className="bg-[#EEF0F3]">
+    <Screen testId="temp-bill-screen" className="bg-surface-container-high">
       <TopBar
         back={{
           label: bill?.table.name ?? t('tables.title'),
@@ -49,7 +49,7 @@ export default function TempBillPage() {
         }}
         title={t('meja.notePreview')}
         right={
-          <span className="text-xs text-muted">
+          <span className="text-label-medium text-on-surface-variant">
             {prefs.paper === 58 ? t('printer.paper58') : t('printer.paper80')}
           </span>
         }
@@ -59,7 +59,7 @@ export default function TempBillPage() {
         {data ? <ReceiptPreview data={data} /> : null}
       </main>
       <ScreenFooter>
-        <span className="text-center text-xs text-muted">
+        <span className="text-center text-label-medium text-on-surface-variant">
           {print.status.connected
             ? t('print.statusOn', { name: print.status.name ?? '' })
             : t('printer.disconnected')}
@@ -68,12 +68,12 @@ export default function TempBillPage() {
           <button
             type="button"
             onClick={() => navigate(`/kasir/bayar?tableId=${tableId}`)}
-            className="h-14 w-[120px] rounded-[14px] border border-line-strong bg-white text-[15px] font-extrabold"
+            className="h-14 w-[120px] rounded-md border border-outline-variant bg-surface-container-lowest text-body-medium font-medium"
           >
             {t('meja.toPay')}
           </button>
           <Button
-            className="grow text-lg"
+            className="grow text-title-medium"
             disabled={!data}
             loading={print.status.busy}
             onClick={() => data && void print.printReceipt(data)}

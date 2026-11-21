@@ -45,10 +45,10 @@ export function CurrencyTabs({
     <div
       role="tablist"
       aria-label={t('payment.currency')}
-      className="grid gap-1 rounded-xl bg-[#EEF0F3] p-1"
+      className="grid overflow-hidden rounded-md border border-outline"
       style={{ gridTemplateColumns: `repeat(${currencies.length}, minmax(0, 1fr))` }}
     >
-      {currencies.map((c) => (
+      {currencies.map((c, i) => (
         <button
           key={c}
           type="button"
@@ -56,13 +56,15 @@ export function CurrencyTabs({
           aria-selected={value === c}
           onClick={() => onChange(c)}
           className={cn(
-            'min-h-12 rounded-[9px] px-1 py-1 text-sm leading-tight text-ink',
-            value === c ? 'bg-white font-extrabold shadow-[0_1px_3px_rgba(0,0,0,0.15)]' : 'font-semibold',
+            'state-layer flex min-h-14 flex-col items-center justify-center px-1 py-1 text-label-medium',
+            i > 0 && 'border-l border-outline',
+            value === c ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant',
           )}
         >
-          {CURRENCY_LABEL[c]}
-          <br />
-          {formatMoney(totals[c], c, { noSymbol: c === 'KHR' })}
+          <span>{CURRENCY_LABEL[c]}</span>
+          <span className="text-label-large tabular-nums">
+            {formatMoney(totals[c], c, { noSymbol: c === 'KHR' })}
+          </span>
         </button>
       ))}
     </div>
@@ -80,15 +82,20 @@ export function DenominationList({
 }) {
   const dens = [...DENOMINATIONS[currency]].sort((a, b) => b - a);
   return (
-    <section className="rounded-card bg-white px-3 py-0.5 shadow-card">
+    <section className="rounded-md bg-surface-container-low px-4 py-1">
       {dens.map((d) => {
         const n = counts[String(d)] ?? 0;
         const label = formatMoney(d, currency);
         return (
-          <div key={d} className="flex items-center gap-2 border-b border-[#F2F4F7] py-2 last:border-b-0">
+          <div
+            key={d}
+            className="flex items-center gap-2 border-b border-outline-variant/60 py-2 last:border-b-0"
+          >
             <div className="flex grow flex-col">
-              <b className="text-lg tabular-nums">{label}</b>
-              <span className="text-[13px] text-muted">= {formatMoney(d * n, currency)}</span>
+              <b className="text-title-medium tabular-nums">{label}</b>
+              <span className="text-label-medium text-on-surface-variant">
+                = {formatMoney(d * n, currency)}
+              </span>
             </div>
             <RoundStepper
               size={48}
@@ -114,7 +121,7 @@ export function ManualTotal({
 }) {
   const { t } = useTranslation();
   return (
-    <section className="rounded-card bg-white p-3 shadow-card">
+    <section className="rounded-md bg-surface-container-low p-4">
       <MoneyInput
         big
         currency={currency}

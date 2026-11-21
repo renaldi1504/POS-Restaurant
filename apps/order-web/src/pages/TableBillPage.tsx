@@ -43,7 +43,7 @@ export default function TableBillPage() {
         ) : (
           <TableBill bill={bill.data} />
         )}
-        <Button variant="outline" block onClick={() => navigate(customer.homePath)}>
+        <Button variant="outlined" block onClick={() => navigate(customer.homePath)}>
           {t('order.orderAgain')}
         </Button>
       </main>

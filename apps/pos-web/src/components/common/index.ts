@@ -2,7 +2,7 @@ export * from './Layout';
 export * from './States';
 export * from './Form';
 export * from './Dialogs';
-export * from './AppMenu';
+export * from './NavigationBar';
 export * from './CashCount';
 export * from './Receipt';
 export * from './OrderBits';
