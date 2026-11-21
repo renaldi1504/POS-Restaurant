@@ -18,7 +18,7 @@ import {
 } from '../../components/common';
 import { api, errorMessage, qk } from '../../lib/api';
 import { useMe } from '../../lib/auth';
-import { useAdminSettingsIfAllowed, useStaffMenu } from '../../lib/data';
+import { useStaffMenu, useStaffSettings } from '../../lib/data';
 import { setPrefs, usePrefs } from '../../lib/prefs';
 import { useRepeatingAlarm } from '../../lib/sound';
 import { useSocketEvent } from '../../lib/socket';
@@ -65,8 +65,7 @@ export default function KitchenPage() {
   const qc = useQueryClient();
   const toast = useToast();
   const { data: me } = useMe();
-  const admin = useAdminSettingsIfAllowed();
-  const lateMinutes = admin.data?.settings.kitchen.lateMinutes ?? 15;
+  const lateMinutes = useStaffSettings().kitchen.lateMinutes;
   const canUpdate = hasAnyPermission(me?.permissions, ['kitchen.update', 'order.create']);
   const canToggle = hasAnyPermission(me?.permissions, ['menu.toggle_available']);
   const [menuOpen, setMenuOpen] = useState(false);

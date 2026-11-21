@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router';
 import type { PermissionKey } from '@pos/shared';
 import { RequireAuth, UnauthorizedListener } from './lib/auth';
-import { RealtimeBridge } from './lib/data';
+import { RealtimeBridge, TextSizeSync } from './lib/data';
 import { reconnectPrinter } from './lib/printer';
 import LoginPage from './pages/LoginPage';
 
@@ -39,6 +39,7 @@ function Root() {
     <>
       <UnauthorizedListener />
       <RealtimeBridge />
+      <TextSizeSync />
       <Suspense
         fallback={
           <div className="p-6 text-muted" role="status">

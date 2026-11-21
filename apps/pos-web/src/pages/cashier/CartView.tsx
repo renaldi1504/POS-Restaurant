@@ -65,7 +65,7 @@ export function buildOrderBody(c: CartState): CreateOrderRequest {
         ...(c.delivery.landmark.trim() ? { landmark: c.delivery.landmark.trim() } : {}),
       }
     : undefined;
-  const note = [c.kind === 'telegram' ? 'Telegram' : '', c.note.trim()].filter(Boolean).join(' · ');
+  const note = c.note.trim();
   return {
     channel,
     type,
@@ -82,6 +82,9 @@ export function buildOrderBody(c: CartState): CreateOrderRequest {
       : delivery
         ? { customerName: delivery.name }
         : {}),
+    ...(!delivery && type !== 'dine_in' && c.customerPhone.trim()
+      ? { customerPhone: c.customerPhone.trim() }
+      : {}),
     ...(delivery ? { delivery, deliveryFee: Math.max(0, c.deliveryFee) } : {}),
     ...(c.promoId ? { promoId: c.promoId } : {}),
     ...(c.discount && c.discount.value > 0 && !c.promoId ? { discount: c.discount } : {}),
@@ -100,7 +103,7 @@ export function CartView() {
   const menu = useStaffMenu();
   const money = useMoney();
   const [extrasOpen, setExtrasOpen] = useState(
-    !!(cart.note || cart.discount || cart.promoId || cart.customerName),
+    !!(cart.note || cart.discount || cart.promoId || cart.customerName || cart.customerPhone),
   );
   const [feeOpen, setFeeOpen] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -129,6 +132,7 @@ export function CartView() {
           type: body.type,
           note: body.note ?? null,
           customerName: body.customerName ?? null,
+          ...(body.customerPhone ? { customerPhone: body.customerPhone } : {}),
           displayNo: body.displayNo ?? null,
           promoId: body.promoId ?? null,
           discount: body.discount ?? null,
@@ -186,7 +190,9 @@ export function CartView() {
                   role="radio"
                   aria-checked={active}
                   disabled={
-                    !!cart.editingOrderId && (k === 'grab' || k === 'foodpanda') !== isPlatformKind(cart.kind)
+                    // Channel order yang sudah ada tidak bisa diganti (harga & sumber ikut channel).
+                    !!cart.editingOrderId &&
+                    kindToChannelType(k).channel !== kindToChannelType(cart.kind).channel
                   }
                   onClick={() => setCart({ kind: k })}
                   className={cn(
@@ -333,12 +339,22 @@ export function CartView() {
           {extrasOpen ? (
             <div className="flex flex-col gap-3 pb-3">
               {cart.kind !== 'dine_in' && !isDeliveryKind(cart.kind) ? (
-                <TextField
-                  label={t('pesanan.customerName')}
-                  hint={`(${t('common.optional').toLowerCase()})`}
-                  value={cart.customerName}
-                  onChange={(e) => setCart({ customerName: e.target.value })}
-                />
+                <>
+                  <TextField
+                    label={t('pesanan.customerName')}
+                    hint={`(${t('common.optional').toLowerCase()})`}
+                    value={cart.customerName}
+                    onChange={(e) => setCart({ customerName: e.target.value })}
+                  />
+                  <TextField
+                    label={t('common.phone')}
+                    hint={`(${t('common.optional').toLowerCase()})`}
+                    type="tel"
+                    inputMode="tel"
+                    value={cart.customerPhone}
+                    onChange={(e) => setCart({ customerPhone: e.target.value })}
+                  />
+                </>
               ) : null}
               <TextField
                 label={t('pesanan.orderNote')}

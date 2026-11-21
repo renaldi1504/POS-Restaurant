@@ -54,6 +54,15 @@ export const ShiftSettings = z.object({
   /** Nama shift yang ditawarkan saat buka shift. */
   names: z.array(z.string().min(1).max(30)),
 });
+/** Rekening ABA untuk transfer pelanggan (ditampilkan di web pelanggan). */
+export const AbaAccount = z.object({
+  accountName: z.string().max(100),
+  accountNumber: z.string().max(50),
+  /** Gambar QR KHQR/ABA (opsional). */
+  qrImageUrl: z.string().max(500).nullable().optional(),
+});
+export type AbaAccount = z.infer<typeof AbaAccount>;
+export const PaymentSettings = z.object({ aba: AbaAccount });
 
 /**
  * Bentuk lengkap settings (tabel `settings`, satu baris per key).
@@ -71,6 +80,7 @@ export const Settings = z.object({
   commissions: CommissionSettings,
   ui: UiSettings,
   shift: ShiftSettings,
+  payment: PaymentSettings,
 });
 export type Settings = z.infer<typeof Settings>;
 export type SettingsKey = keyof Settings;
@@ -94,6 +104,7 @@ export const DEFAULT_SETTINGS: Settings = {
   commissions: { grab: 30, foodpanda: 30 },
   ui: { textSize: 'normal' },
   shift: { autoAvailableOnOpen: false, names: ['Pagi', 'Malam'] },
+  payment: { aba: { accountName: '', accountNumber: '', qrImageUrl: null } },
 };
 
 /** `PATCH /admin/settings` — setiap bagian opsional & parsial. */
@@ -108,6 +119,7 @@ export const SettingsPatch = z.object({
   commissions: CommissionSettings.partial().optional(),
   ui: UiSettings.partial().optional(),
   shift: ShiftSettings.partial().optional(),
+  payment: z.object({ aba: AbaAccount.partial() }).partial().optional(),
 });
 export type SettingsPatch = z.infer<typeof SettingsPatch>;
 
@@ -139,5 +151,23 @@ export const PublicSettingsResponse = z.object({
   delivery: z.object({ minOrder: NonNegMoney, defaultFee: NonNegMoney }),
   qrRequireAccept: z.boolean(),
   telegramBotUsername: z.string().nullable(),
+  /** Rekening ABA (null bila belum diisi admin). */
+  aba: AbaAccount.nullable(),
 });
 export type PublicSettingsResponse = z.infer<typeof PublicSettingsResponse>;
+
+/**
+ * `GET /settings/staff` — settings yang dibutuhkan semua staf (bukan hanya admin):
+ * ukuran teks default, batas terlambat dapur, nama shift, komisi, delivery, QR.
+ */
+export const StaffSettingsResponse = z.object({
+  settings: z.object({
+    ui: UiSettings,
+    kitchen: KitchenSettings,
+    shift: ShiftSettings,
+    commissions: CommissionSettings,
+    delivery: DeliverySettings,
+    qr: QrSettings,
+  }),
+});
+export type StaffSettingsResponse = z.infer<typeof StaffSettingsResponse>;

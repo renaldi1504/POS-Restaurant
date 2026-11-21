@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { fx } from '../test/fixtures';
+import { buildOrderBody } from '../pages/cashier/CartView';
+import { fx, makeOrder } from '../test/fixtures';
+import { isOnlineOrder } from './online';
 import {
   addLine,
   computeCart,
+  emptyCart,
   discountAmountOf,
   kindToChannelType,
   lineKey,
@@ -51,7 +54,7 @@ describe('keranjang', () => {
       10000,
     );
     expect(kindToChannelType('grab')).toEqual({ channel: 'grab', type: 'takeaway' });
-    expect(kindToChannelType('telegram')).toEqual({ channel: 'kasir', type: 'delivery' });
+    expect(kindToChannelType('telegram')).toEqual({ channel: 'telegram', type: 'delivery' });
     const sold = computeCart(
       {
         lines: addLine([], { itemId: 3, qty: 1, optionIds: [] }),
@@ -68,5 +71,42 @@ describe('keranjang', () => {
     expect(discountAmountOf(10000, { kind: 'amount', value: 25000 })).toBe(10000);
     expect(discountAmountOf(10000, { kind: 'pct', value: 150 })).toBe(10000);
     expect(discountAmountOf(10000, null)).toBe(0);
+  });
+});
+
+describe('body order kasir', () => {
+  it('Telegram → channel telegram + delivery dengan HP; tanpa catatan "Telegram" tempelan', () => {
+    const body = buildOrderBody({
+      ...emptyCart(),
+      kind: 'telegram',
+      lines: addLine([], { itemId: 4, qty: 1, optionIds: [] }),
+      delivery: { name: 'Pak Budi', phone: '012 345 678', addressText: 'Jl. Ekareach', landmark: '' },
+    });
+    expect(body).toMatchObject({
+      channel: 'telegram',
+      type: 'delivery',
+      customerName: 'Pak Budi',
+      delivery: { name: 'Pak Budi', phone: '012 345 678', addressText: 'Jl. Ekareach' },
+    });
+    expect(body.note).toBeUndefined();
+    expect(body.customerPhone).toBeUndefined();
+  });
+
+  it('bungkus mengirim nama & HP pelanggan', () => {
+    const body = buildOrderBody({
+      ...emptyCart(),
+      kind: 'takeaway',
+      lines: addLine([], { itemId: 4, qty: 1, optionIds: [] }),
+      customerName: 'Bu Sari',
+      customerPhone: ' 097 111 222 ',
+    });
+    expect(body).toMatchObject({ channel: 'kasir', customerName: 'Bu Sari', customerPhone: '097 111 222' });
+  });
+
+  it('order Telegram buatan kasir bukan "order online"', () => {
+    expect(isOnlineOrder(makeOrder({ channel: 'telegram', createdByStaff: true }))).toBe(false);
+    expect(isOnlineOrder(makeOrder({ channel: 'telegram', createdByStaff: false }))).toBe(true);
+    expect(isOnlineOrder(makeOrder({ channel: 'qr' }))).toBe(true);
+    expect(isOnlineOrder(makeOrder({ channel: 'kasir' }))).toBe(false);
   });
 });

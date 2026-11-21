@@ -20,7 +20,7 @@ import {
 } from '../../components/common';
 import { api, errorMessage, isApiError, qk } from '../../lib/api';
 import { homePathFor, useMe } from '../../lib/auth';
-import { useAdminSettingsIfAllowed, useCurrentShift, useMoney } from '../../lib/data';
+import { useCurrentShift, useMoney, useStaffSettings } from '../../lib/data';
 
 /** Nama shift default menurut jam (sebelum 15.00 = Pagi). */
 export function defaultShiftName(names: string[], now = new Date()): string {
@@ -34,8 +34,7 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
   const qc = useQueryClient();
   const toast = useToast();
   const money = useMoney();
-  const admin = useAdminSettingsIfAllowed();
-  const names = admin.data?.settings.shift.names ?? ['Pagi', 'Malam'];
+  const names = useStaffSettings().shift.names;
   const [name, setName] = useState<string | null>(null);
   const shiftName = name ?? defaultShiftName(names);
   const currencies = money.enabled;

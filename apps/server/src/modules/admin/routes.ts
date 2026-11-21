@@ -5,7 +5,7 @@ import { writeAudit } from '../../lib/audit';
 import { conflict, forbidden, notFound, validationError } from '../../lib/errors';
 import { hashPin } from '../../lib/pin';
 import { defineRoute } from '../../lib/route';
-import { patchSettings } from '../../lib/settings';
+import { getSettings, patchSettings } from '../../lib/settings';
 import { readImageUpload } from '../../lib/upload';
 import {
   adminSettings,
@@ -236,6 +236,20 @@ export default async function adminRoutes(app: FastifyInstance) {
   });
 
   // ---------- Settings ----------
+  defineRoute(app, 'staffSettings', async () => {
+    const s = await getSettings(app.db);
+    return {
+      settings: {
+        ui: s.ui,
+        kitchen: s.kitchen,
+        shift: s.shift,
+        commissions: s.commissions,
+        delivery: s.delivery,
+        qr: s.qr,
+      },
+    };
+  });
+
   defineRoute(app, 'adminSettingsGet', async () => adminSettings(app));
 
   defineRoute(app, 'adminSettingsUpdate', async ({ body, staff }) => {

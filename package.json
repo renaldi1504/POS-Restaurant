@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "pnpm --parallel --filter @pos/server --filter @pos/pos-web --filter @pos/order-web dev",
-    "build": "pnpm -r --filter './apps/*' build",
+    "build": "pnpm -r --filter './apps/*' build && node scripts/check-prod-bundle.mjs",
     "typecheck": "pnpm -r typecheck && tsc -p tsconfig.e2e.json",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",

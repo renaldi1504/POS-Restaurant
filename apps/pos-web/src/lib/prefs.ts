@@ -9,7 +9,8 @@ export type PaperWidth = 58 | 80;
 export type PrinterTransportKind = 'serial' | 'bluetooth' | 'none';
 
 export interface DevicePrefs {
-  textSize: TextSize;
+  /** null = ikut default toko (settings.ui.textSize). */
+  textSize: TextSize | null;
   muted: boolean;
   kitchenLang: Lang | null;
   driverLang: Lang | null;
@@ -25,7 +26,7 @@ export interface DevicePrefs {
 
 const KEY = 'pos.prefs';
 const DEFAULTS: DevicePrefs = {
-  textSize: 'normal',
+  textSize: null,
   muted: false,
   kitchenLang: null,
   driverLang: null,
@@ -87,4 +88,4 @@ export function applyTextSize(size: TextSize): void {
   else document.documentElement.dataset.textSize = size;
 }
 
-applyTextSize(state.textSize);
+applyTextSize(state.textSize ?? 'normal');

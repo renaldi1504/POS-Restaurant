@@ -1,11 +1,13 @@
-import type {
-  ClosingPreview,
-  DriverOrderDto,
-  OrderDto,
-  PublicSettingsResponse,
-  ShiftDto,
-  StaffMenuResponse,
-  StaffUser,
+import {
+  DEFAULT_SETTINGS,
+  type ClosingPreview,
+  type DriverOrderDto,
+  type OrderDto,
+  type PublicSettingsResponse,
+  type ShiftDto,
+  type StaffMenuResponse,
+  type StaffSettingsResponse,
+  type StaffUser,
 } from '@pos/shared';
 
 const cashier: StaffUser = {
@@ -51,6 +53,7 @@ const publicSettings: PublicSettingsResponse = {
   delivery: { minOrder: 0, defaultFee: 0 },
   qrRequireAccept: true,
   telegramBotUsername: null,
+  aba: null,
 };
 
 const shift: ShiftDto = {
@@ -212,6 +215,7 @@ export function makeOrder(over: Partial<OrderDto> = {}): OrderDto {
     payments: [],
     paidMain: 0,
     createdBy: { id: 2, name: 'Kasir Pagi' },
+    createdByStaff: !['website', 'telegram', 'qr'].includes(over.channel ?? 'kasir'),
     ...over,
   };
 }
@@ -281,4 +285,15 @@ export const closingPreview: ClosingPreview = {
   activeOrderCount: 0,
 };
 
-export const fx = { cashier, kitchen, driver, publicSettings, shift, menu };
+const staffSettings: StaffSettingsResponse = {
+  settings: {
+    ui: DEFAULT_SETTINGS.ui,
+    kitchen: DEFAULT_SETTINGS.kitchen,
+    shift: DEFAULT_SETTINGS.shift,
+    commissions: DEFAULT_SETTINGS.commissions,
+    delivery: DEFAULT_SETTINGS.delivery,
+    qr: DEFAULT_SETTINGS.qr,
+  },
+};
+
+export const fx = { cashier, kitchen, driver, publicSettings, staffSettings, shift, menu };

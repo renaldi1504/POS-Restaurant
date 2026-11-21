@@ -1,5 +1,5 @@
 /** Muat order lengkap (OrderDto) secara batch + konversi ke PublicOrderDto. */
-import { asc, eq, inArray, type SQL } from 'drizzle-orm';
+import { and, asc, eq, inArray, type SQL } from 'drizzle-orm';
 import type { OrderDto, PaymentDto, PublicOrderDto } from '@pos/shared';
 import { seq } from '../../lib/seq';
 import type { DbOrTx } from '../../db/client';
@@ -107,6 +107,17 @@ export async function hydrate(db: DbOrTx, rows: OrderRow[]): Promise<OrderDto[]>
         : Promise.resolve([]),
   );
   const visiblePays = pays.filter((p) => !p.voidedAt);
+  const creatorIds = [...new Set(rows.map((r) => r.createdBy).filter((x): x is number => !!x))];
+  const staffCreators = new Set(
+    creatorIds.length
+      ? (
+          await db
+            .select({ id: users.id })
+            .from(users)
+            .where(and(inArray(users.id, creatorIds), eq(users.system, false)))
+        ).map((u) => u.id)
+      : [],
+  );
   const names = await userNameMap(db, [
     ...rows.flatMap((r) => [r.driverId, r.createdBy]),
     ...visiblePays.flatMap((p) => [p.createdBy, p.verifiedBy]),
@@ -164,6 +175,7 @@ export async function hydrate(db: DbOrTx, rows: OrderRow[]): Promise<OrderDto[]>
       payments: myPays.map((p) => toPaymentDto(p, names)),
       paidMain: myPays.filter(paymentCounts).reduce((acc, p) => acc + netMain(p), 0),
       createdBy: r.createdBy ? { id: r.createdBy, name: names.get(r.createdBy) ?? '?' } : null,
+      createdByStaff: !!r.createdBy && staffCreators.has(r.createdBy),
       createdAt: r.createdAt.toISOString(),
       updatedAt: r.updatedAt.toISOString(),
       acceptedAt: iso(r.acceptedAt),

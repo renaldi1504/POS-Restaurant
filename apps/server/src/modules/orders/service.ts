@@ -48,6 +48,8 @@ export interface NewOrderArgs {
   tableId?: number | undefined;
   customerId?: number | null | undefined;
   customerName?: string | null | undefined;
+  /** No. HP yang diketik kasir (bungkus) — disimpan ke data pelanggan. */
+  customerPhone?: string | undefined;
   addressId?: number | null | undefined;
   delivery?: DeliveryInfoInput | undefined;
   deliveryFee?: number | undefined;
@@ -57,6 +59,8 @@ export interface NewOrderArgs {
   paymentMethod?: PaymentMethod | null | undefined;
   displayNo?: string | undefined;
   createdBy: number | null;
+  /** Dibuat staf (POST /orders): selalu langsung `accepted`, termasuk channel telegram. */
+  staffCreated?: boolean;
   /** Order staf wajib shift terbuka. */
   requireShift: boolean;
   /** Cek minimal order delivery (order pelanggan). */
@@ -124,21 +128,26 @@ export async function createOrder(app: FastifyInstance, args: NewOrderArgs): Pro
     let customerId = args.customerId ?? null;
     let addressId = args.addressId ?? null;
     let customerName = args.customerName ?? null;
-    if (args.type === 'delivery' && args.delivery && !addressId) {
-      if (!customerId && args.delivery.phone) {
-        const [c] = await tx
-          .insert(customers)
-          .values({ name: args.delivery.name, phone: args.delivery.phone })
-          .returning({ id: customers.id });
-        customerId = c!.id;
-      }
-      addressId = await insertDeliveryAddress(tx, customerId, args.delivery);
-      customerName = customerName ?? args.delivery.name;
+    const typedDelivery = args.type === 'delivery' && args.delivery && !addressId ? args.delivery : null;
+    const typedPhone = (typedDelivery ? typedDelivery.phone : args.customerPhone)?.trim() || null;
+    if (!customerId && typedPhone) {
+      // Nama/HP yang diketik kasir disimpan sebagai pelanggan → driver bisa menelepon.
+      const [c] = await tx
+        .insert(customers)
+        .values({ name: typedDelivery?.name ?? customerName, phone: typedPhone })
+        .returning({ id: customers.id });
+      customerId = c!.id;
+    }
+    if (typedDelivery) {
+      addressId = await insertDeliveryAddress(tx, customerId, typedDelivery);
+      customerName = customerName ?? typedDelivery.name;
     }
 
     const businessDate = shift?.businessDate ?? currentBusinessDate(settings, at);
     const number = await nextOrderNumber(tx, businessDate);
-    const status = initialStatusFor(args.channel, { qrRequireAccept: settings.qr.requireAccept });
+    const status: OrderStatus = args.staffCreated
+      ? 'accepted'
+      : initialStatusFor(args.channel, { qrRequireAccept: settings.qr.requireAccept });
     const [row] = await tx
       .insert(orders)
       .values({
@@ -399,6 +408,7 @@ export interface UpdateOrderArgs {
   type?: OrderType | undefined;
   displayNo?: string | null | undefined;
   customerName?: string | null | undefined;
+  customerPhone?: string | undefined;
   delivery?: DeliveryInfoInput | undefined;
   deliveryFee?: number | undefined;
   promoId?: number | null | undefined;
@@ -464,11 +474,22 @@ export async function updateOrder(
     const total = subtotal - discount + deliveryFee;
 
     let addressId = row.addressId;
+    let customerId = row.customerId;
     let customerName = body.customerName !== undefined ? body.customerName : row.customerName;
-    if (body.delivery) {
-      addressId = await insertDeliveryAddress(tx, row.customerId, body.delivery);
-      customerName = body.customerName ?? body.delivery.name;
+    if (body.delivery) customerName = body.customerName ?? body.delivery.name;
+    const phone = (body.delivery ? body.delivery.phone : body.customerPhone)?.trim() || null;
+    if (phone) {
+      if (customerId) {
+        await tx.update(customers).set({ phone }).where(eq(customers.id, customerId));
+      } else {
+        const [c] = await tx
+          .insert(customers)
+          .values({ name: customerName ?? null, phone })
+          .returning({ id: customers.id });
+        customerId = c!.id;
+      }
     }
+    if (body.delivery) addressId = await insertDeliveryAddress(tx, customerId, body.delivery);
     const set: Partial<typeof orders.$inferInsert> = {
       type,
       subtotal,
@@ -477,6 +498,7 @@ export async function updateOrder(
       deliveryFee,
       total,
       addressId,
+      customerId,
       customerName,
       updatedAt: now(),
     };

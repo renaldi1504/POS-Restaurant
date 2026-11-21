@@ -61,6 +61,8 @@ export const CreateOrderRequest = z
     /** Kode aplikasi Grab/foodpanda, mis. "GF-482". */
     displayNo: z.string().trim().min(1).max(20).optional(),
     customerName: z.string().trim().max(100).optional(),
+    /** No. HP pelanggan (bungkus); untuk delivery pakai `delivery.phone`. Disimpan ke data pelanggan. */
+    customerPhone: z.string().trim().max(50).optional(),
     delivery: DeliveryInfoInput.optional(),
     deliveryFee: NonNegMoney.optional(),
     promoId: Id.optional(),
@@ -70,6 +72,10 @@ export const CreateOrderRequest = z
   .refine((v) => v.type !== 'dine_in' || v.tableId !== undefined, {
     message: 'Meja wajib dipilih untuk makan di sini',
     path: ['tableId'],
+  })
+  .refine((v) => v.channel !== 'telegram' || v.type === 'delivery', {
+    message: 'Order Telegram selalu delivery',
+    path: ['type'],
   });
 export type CreateOrderRequest = z.input<typeof CreateOrderRequest>;
 
@@ -80,6 +86,7 @@ export const UpdateOrderRequest = z.object({
   type: OrderType.optional(),
   displayNo: z.string().trim().min(1).max(20).nullable().optional(),
   customerName: z.string().trim().max(100).nullable().optional(),
+  customerPhone: z.string().trim().max(50).optional(),
   delivery: DeliveryInfoInput.optional(),
   deliveryFee: NonNegMoney.optional(),
   promoId: Id.nullable().optional(),
@@ -190,6 +197,8 @@ export const OrderDto = OrderTimestamps.extend({
   /** Jumlah terbayar (mata uang utama). */
   paidMain: MoneyAmount,
   createdBy: UserRef.nullable(),
+  /** true = dibuat staf lewat `POST /orders` (bukan pelanggan/bot) — bukan "order online". */
+  createdByStaff: z.boolean(),
 });
 export type OrderDto = z.infer<typeof OrderDto>;
 

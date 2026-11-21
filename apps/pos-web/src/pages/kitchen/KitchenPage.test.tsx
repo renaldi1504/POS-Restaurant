@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { fx, makeOrder } from '../../test/fixtures';
@@ -52,6 +52,27 @@ describe('Layar dapur', () => {
       'cooking',
     );
     expect(kitchenTone({ status: 'cooking', acceptedAt: ago(18), createdAt: ago(18) }, 15, now)).toBe('late');
+  });
+
+  it('batas terlambat dibaca dari settings staf (bukan angka tertanam)', async () => {
+    const acceptedAt = new Date(Date.now() - 8 * 60_000).toISOString();
+    server.use(
+      http.get('*/api/auth/me', () => HttpResponse.json({ user: fx.kitchen })),
+      http.get('*/api/settings/staff', () =>
+        HttpResponse.json({
+          settings: { ...fx.staffSettings.settings, kitchen: { lateMinutes: 5 } },
+        }),
+      ),
+      http.get('*/api/orders', () =>
+        HttpResponse.json({
+          orders: [makeOrder({ status: 'cooking', acceptedAt })],
+          serverTime: new Date().toISOString(),
+        }),
+      ),
+    );
+    renderApp(<KitchenPage />);
+    const card = await screen.findByTestId('kitchen-card');
+    await waitFor(() => expect(card).toHaveAttribute('data-tone', 'late'));
   });
 
   it('Mulai masak mengirim status cooking', async () => {

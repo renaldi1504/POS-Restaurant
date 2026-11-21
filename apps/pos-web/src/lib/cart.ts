@@ -27,9 +27,10 @@ export function kindToChannelType(kind: CartKind): { channel: StaffOrderChannel;
     case 'takeaway':
       return { channel: 'kasir', type: 'takeaway' };
     case 'delivery':
-    case 'telegram':
-      // Kontrak staf tidak punya channel "telegram": order chat Telegram yang diketik kasir = delivery kasir.
       return { channel: 'kasir', type: 'delivery' };
+    case 'telegram':
+      // Order dari chat Telegram yang diketik kasir: channel telegram, selalu delivery.
+      return { channel: 'telegram', type: 'delivery' };
     case 'grab':
       return { channel: 'grab', type: 'takeaway' };
     case 'foodpanda':
@@ -72,6 +73,8 @@ export interface CartState {
   promoId: number | null;
   note: string;
   customerName: string;
+  /** No. HP pelanggan bungkus (opsional). */
+  customerPhone: string;
   delivery: DeliveryDraft;
   /** Delivery: driver menagih cash saat antar (order dikirim ke dapur tanpa dibayar dulu). */
   payOnDelivery: boolean;
@@ -93,6 +96,7 @@ export function emptyCart(): CartState {
     promoId: null,
     note: '',
     customerName: '',
+    customerPhone: '',
     delivery: { ...EMPTY_DELIVERY },
     payOnDelivery: false,
     editingOrderId: null,
@@ -274,6 +278,7 @@ export function cartFromOrder(o: OrderDto): CartState {
     deliveryFee: o.deliveryFee,
     note: o.note ?? '',
     customerName: o.customerName ?? '',
+    customerPhone: !o.address ? (o.customer?.phone ?? '') : '',
     delivery: o.address
       ? {
           name: o.customerName ?? '',

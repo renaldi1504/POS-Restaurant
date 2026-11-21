@@ -100,6 +100,13 @@ export default async function customersRoutes(app: FastifyInstance) {
       delivery: { minOrder: s.delivery.minOrder, defaultFee: s.delivery.defaultFee },
       qrRequireAccept: s.qr.requireAccept,
       telegramBotUsername: app.config.TELEGRAM_BOT_USERNAME ?? null,
+      aba: s.payment.aba.accountNumber.trim()
+        ? {
+            accountName: s.payment.aba.accountName,
+            accountNumber: s.payment.aba.accountNumber,
+            qrImageUrl: s.payment.aba.qrImageUrl ?? null,
+          }
+        : null,
     };
   });
 

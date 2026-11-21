@@ -71,6 +71,9 @@ describe('Keranjang & checkout', () => {
     await user.click(within(co).getByRole('radio', { name: /Bayar ABA/ }));
     const panel = within(co).getByTestId('aba-panel');
     expect(panel).toHaveTextContent('4.000 ៛');
+    // Rekening ABA dari settings publik (settings.payment.aba).
+    expect(within(panel).getByTestId('aba-account')).toHaveTextContent('RM BERKAT');
+    expect(within(panel).getByTestId('aba-account')).toHaveTextContent('000 111 222');
     const file = new File(['x'.repeat(2000)], 'bukti.png', { type: 'image/png' });
     await user.upload(within(panel).getByLabelText('Upload bukti transfer'), file);
     expect(await within(panel).findByRole('img', { name: 'Pratinjau bukti transfer' })).toBeInTheDocument();
@@ -95,6 +98,21 @@ describe('Keranjang & checkout', () => {
     });
     expect(db.calls.some((c) => c.path.endsWith('/proof') && c.body === 'multipart')).toBe(true);
     expect(cartStore.get()).toHaveLength(0);
+  });
+
+  it('ABA tanpa rekening di settings → petunjuk tanya kasir', async () => {
+    db.settings = makeSettings({ aba: null });
+    cartStore.add({ itemId: 9, qty: 1 });
+    checkoutStore.update({ name: 'Ani' });
+    const user = userEvent.setup();
+    renderApp('/keranjang');
+    await user.click(await screen.findByRole('radio', { name: 'Ambil sendiri' }));
+    await user.click(screen.getByRole('button', { name: /Lanjut ke pembayaran/ }));
+    const co = await screen.findByTestId('checkout-page');
+    await user.click(within(co).getByRole('radio', { name: /Bayar ABA/ }));
+    const panel = within(co).getByTestId('aba-panel');
+    expect(within(panel).queryByTestId('aba-account')).toBeNull();
+    expect(panel).toHaveTextContent('Tanya kasir: 012 888 999');
   });
 
   it('website: ambil sendiri wajib nama, cash di kasir', async () => {

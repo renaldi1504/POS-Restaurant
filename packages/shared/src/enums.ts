@@ -15,8 +15,11 @@ export type Currency = z.infer<typeof Currency>;
 export const ORDER_CHANNELS = ['kasir', 'website', 'telegram', 'qr', 'grab', 'foodpanda'] as const;
 export const OrderChannel = z.enum(ORDER_CHANNELS);
 export type OrderChannel = z.infer<typeof OrderChannel>;
-/** Channel yang boleh dibuat staf lewat `POST /orders`. */
-export const STAFF_ORDER_CHANNELS = ['kasir', 'grab', 'foodpanda'] as const;
+/**
+ * Channel yang boleh dibuat staf lewat `POST /orders`.
+ * `telegram` = order dari chat Telegram yang diketik kasir (selalu delivery, langsung diterima).
+ */
+export const STAFF_ORDER_CHANNELS = ['kasir', 'telegram', 'grab', 'foodpanda'] as const;
 export const StaffOrderChannel = z.enum(STAFF_ORDER_CHANNELS);
 export type StaffOrderChannel = z.infer<typeof StaffOrderChannel>;
 /** Channel online yang perlu diterima kasir (pending_accept). */

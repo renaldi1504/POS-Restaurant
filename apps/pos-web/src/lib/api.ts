@@ -42,6 +42,7 @@ export const qk = {
   driverAvailable: ['driver', 'available'] as const,
   driverMine: ['driver', 'mine'] as const,
   adminSettings: ['admin', 'settings'] as const,
+  staffSettings: ['settings', 'staff'] as const,
 };
 
 /** Pesan error siap tampil (pakai kamus `errors.*`). */

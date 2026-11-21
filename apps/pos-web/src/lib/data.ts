@@ -5,15 +5,16 @@ import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-quer
 import { useEffect } from 'react';
 import {
   DEFAULT_SETTINGS,
-  hasPermission,
   type Currency,
   type OrderDto,
   type PublicSettingsResponse,
   type Rates,
   type StaffMenuResponse,
+  type StaffSettingsResponse,
 } from '@pos/shared';
 import { api, qk } from './api';
 import { useMe } from './auth';
+import { applyTextSize, usePrefs } from './prefs';
 import { useResync, useSocketEvent } from './socket';
 
 export function usePublicSettings() {
@@ -56,19 +57,39 @@ export function useMoney(): MoneyCtx {
   return moneyCtxFrom(data);
 }
 
-/**
- * Settings admin lengkap (hanya bila user punya settings.manage). Untuk user lain → undefined
- * (pakai default — mis. kitchen.lateMinutes 15).
- */
-export function useAdminSettingsIfAllowed() {
+/** Settings yang dibaca semua staf (`GET /settings/staff`): dapur, shift, ukuran teks, komisi. */
+export function useStaffSettingsQuery() {
   const { data: me } = useMe();
-  const allowed = hasPermission(me?.permissions, 'settings.manage');
   return useQuery({
-    queryKey: qk.adminSettings,
-    queryFn: () => api.call('adminSettingsGet'),
-    enabled: allowed,
+    queryKey: qk.staffSettings,
+    queryFn: () => api.call('staffSettings'),
+    enabled: !!me,
     staleTime: 60_000,
   });
+}
+
+export type StaffSettings = StaffSettingsResponse['settings'];
+/** Selagi memuat: nilai default dari kontrak (`DEFAULT_SETTINGS`), bukan angka tertanam di layar. */
+export const STAFF_SETTINGS_FALLBACK: StaffSettings = {
+  ui: DEFAULT_SETTINGS.ui,
+  kitchen: DEFAULT_SETTINGS.kitchen,
+  shift: DEFAULT_SETTINGS.shift,
+  commissions: DEFAULT_SETTINGS.commissions,
+  delivery: DEFAULT_SETTINGS.delivery,
+  qr: DEFAULT_SETTINGS.qr,
+};
+
+export function useStaffSettings(): StaffSettings {
+  return useStaffSettingsQuery().data?.settings ?? STAFF_SETTINGS_FALLBACK;
+}
+
+/** Terapkan ukuran teks: pilihan perangkat, atau default toko bila belum dipilih. */
+export function TextSizeSync() {
+  const prefs = usePrefs();
+  const s = useStaffSettings();
+  const size = prefs.textSize ?? s.ui.textSize;
+  useEffect(() => applyTextSize(size), [size]);
+  return null;
 }
 
 export function useStaffMenu() {

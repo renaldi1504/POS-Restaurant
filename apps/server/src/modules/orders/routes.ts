@@ -44,7 +44,11 @@ export default async function ordersRoutes(app: FastifyInstance) {
   });
 
   defineRoute(app, 'orderCreate', async ({ body, staff }) => {
-    if (body.type === 'delivery' && body.channel === 'kasir' && !body.delivery)
+    if (
+      body.type === 'delivery' &&
+      (body.channel === 'kasir' || body.channel === 'telegram') &&
+      !body.delivery
+    )
       throw unprocessable('VALIDATION_ERROR', 'Alamat delivery wajib diisi', [{ path: ['delivery'] }]);
     const order = await createOrder(app, {
       channel: body.channel,
@@ -52,6 +56,7 @@ export default async function ordersRoutes(app: FastifyInstance) {
       items: body.items,
       tableId: body.tableId,
       customerName: body.customerName ?? body.delivery?.name ?? null,
+      customerPhone: body.customerPhone,
       delivery: body.delivery,
       deliveryFee: body.deliveryFee,
       promoId: body.promoId,
@@ -59,6 +64,7 @@ export default async function ordersRoutes(app: FastifyInstance) {
       note: body.note,
       displayNo: body.displayNo,
       createdBy: staff.id,
+      staffCreated: true,
       requireShift: true,
       enforceMinOrder: false,
     });

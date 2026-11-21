@@ -26,6 +26,7 @@ export function makeSettings(over: Partial<PublicSettingsResponse> = {}): Public
     delivery: { minOrder: 0, defaultFee: 0 },
     qrRequireAccept: true,
     telegramBotUsername: 'rmberkat_bot',
+    aba: { accountName: 'RM BERKAT', accountNumber: '000 111 222', qrImageUrl: null },
     ...over,
   };
 }

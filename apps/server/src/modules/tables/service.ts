@@ -235,6 +235,7 @@ export async function mergeTables(
   fromTableId: number,
   toTableId: number,
 ): Promise<{ target: SessionRow; fromSessionId: number; opened: boolean }> {
+  if (fromTableId === toTableId) throw unprocessable('BAD_REQUEST', 'Meja tujuan sama');
   const ids = [fromTableId, toTableId].sort((a, b) => a - b);
   const locked = await tx.select().from(dineTables).where(inArray(dineTables.id, ids)).for('update');
   if (locked.length !== 2) throw notFound('Meja tidak ditemukan');

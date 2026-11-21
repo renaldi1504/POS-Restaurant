@@ -21,7 +21,7 @@ import {
 } from '../../components/common';
 import { Badge, Button, Segmented, Sheet, useToast } from '../../components/ui';
 import { api, errorMessage, qk } from '../../lib/api';
-import { setPrefs, usePrefs } from '../../lib/prefs';
+import { setPrefs } from '../../lib/prefs';
 
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -51,7 +51,6 @@ export default function SettingsPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
-  const prefs = usePrefs();
   const q = useQuery({ queryKey: qk.adminSettings, queryFn: () => api.call('adminSettingsGet') });
   const tables = useQuery({ queryKey: ['admin', 'tables'], queryFn: () => api.call('adminTablesList') });
   const users = useQuery({ queryKey: ['admin', 'users'], queryFn: () => api.call('adminUsersList') });
@@ -66,6 +65,7 @@ export default function SettingsPage() {
     onSuccess: (r) => {
       qc.setQueryData(qk.adminSettings, r);
       void qc.invalidateQueries({ queryKey: qk.publicSettings });
+      void qc.invalidateQueries({ queryKey: qk.staffSettings });
       toast.success(t('setx.saved'));
     },
     onError: (e) => toast.error(errorMessage(e, t)),
@@ -105,7 +105,8 @@ export default function SettingsPage() {
   const drivers =
     users.data?.users.filter((u) => u.role.name.toLowerCase().includes('driver') && u.active).length ?? 0;
   const textSize = (s: TextSize) => {
-    setPrefs({ textSize: s });
+    // Default toko untuk semua perangkat staf; perangkat ini ikut default (hapus pilihan lokal).
+    setPrefs({ textSize: null });
     set('ui', { textSize: s });
   };
 
@@ -291,6 +292,45 @@ export default function SettingsPage() {
             onChange={(v) => set('shift', { autoAvailableOnOpen: v })}
             label={t('setx.autoAvailable')}
           />
+          <TextField
+            label={t('setx.shiftNames')}
+            hint={t('setx.shiftNamesHint')}
+            defaultValue={d.shift.names.join(', ')}
+            onBlur={(e) => {
+              const names = e.target.value
+                .split(',')
+                .map((x) => x.trim().slice(0, 30))
+                .filter(Boolean);
+              if (names.length) set('shift', { names });
+            }}
+          />
+        </Section>
+
+        <Section title={t('setx.abaTitle')}>
+          <TextField
+            label={t('setx.abaName')}
+            value={d.payment.aba.accountName}
+            maxLength={100}
+            onChange={(e) => set('payment', { aba: { ...d.payment.aba, accountName: e.target.value } })}
+          />
+          <TextField
+            label={t('setx.abaNumber')}
+            value={d.payment.aba.accountNumber}
+            maxLength={50}
+            inputMode="numeric"
+            onChange={(e) => set('payment', { aba: { ...d.payment.aba, accountNumber: e.target.value } })}
+          />
+          <TextField
+            label={t('setx.abaQr')}
+            hint={`(${t('common.optional').toLowerCase()})`}
+            value={d.payment.aba.qrImageUrl ?? ''}
+            maxLength={500}
+            type="url"
+            onChange={(e) =>
+              set('payment', { aba: { ...d.payment.aba, qrImageUrl: e.target.value.trim() || null } })
+            }
+          />
+          <span className="text-xs text-muted">{t('setx.abaHint')}</span>
         </Section>
 
         <Section title={t('setx.botAi')}>
@@ -331,7 +371,7 @@ export default function SettingsPage() {
         <Section title={t('admin.textSize')}>
           <Segmented
             label={t('admin.textSize')}
-            value={prefs.textSize}
+            value={d.ui.textSize}
             onChange={textSize}
             options={[
               { value: 'normal', label: t('admin.textNormal') },

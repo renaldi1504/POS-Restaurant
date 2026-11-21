@@ -3,6 +3,7 @@ import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import type { PublicPaymentMethod } from '@pos/shared';
+import { AbaAccountInfo } from '../components/AbaAccountInfo';
 import { CheckIcon } from '../components/Icons';
 import { ProofPicker } from '../components/ProofPicker';
 import { Page } from '../components/Shell';
@@ -196,11 +197,7 @@ export default function CheckoutPage() {
               <span className="text-sm">{t('web.abaAmount')}</span>
               <b className="text-xl tabular-nums">{money(total, currency)}</b>
             </div>
-            {/* Kontrak settings publik belum memuat info rekening ABA → tampilkan petunjuk umum. */}
-            <p className="text-sm text-muted">{t('web.abaNoInfo')}</p>
-            {settings?.phone ? (
-              <p className="text-sm font-semibold">{t('web.abaPhone', { phone: settings.phone })}</p>
-            ) : null}
+            <AbaAccountInfo settings={settings} />
             <ProofPicker value={proof} onChange={setProof} />
             {!proof ? <p className="text-xs text-muted">{t('web.proofLater')}</p> : null}
           </Card>

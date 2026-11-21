@@ -42,8 +42,9 @@ function useSeenVersion() {
 
 export const PENDING_FILTER = { status: 'pending_accept', active: 'true' } as const;
 
-export function isOnlineOrder(o: Pick<OrderDto, 'channel'>): boolean {
-  return ONLINE_CHANNELS.includes(o.channel);
+/** Order dari pelanggan (website / bot Telegram / QR meja) — bukan order Telegram yang diketik kasir. */
+export function isOnlineOrder(o: Pick<OrderDto, 'channel' | 'createdByStaff'>): boolean {
+  return ONLINE_CHANNELS.includes(o.channel) && !o.createdByStaff;
 }
 
 export function usePendingOnline() {

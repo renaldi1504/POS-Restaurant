@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 import { TERMINAL_ORDER_STATUSES, tl, type PublicOrderDto } from '@pos/shared';
+import { AbaAccountInfo } from '../components/AbaAccountInfo';
 import { ProofPicker } from '../components/ProofPicker';
 import { ErrorBlock, LoadingBlock, Page } from '../components/Shell';
 import { StatusSteps } from '../components/StatusSteps';
@@ -11,7 +12,7 @@ import { TableBill } from '../components/TableBill';
 import { Badge, Button, Card, HeaderBar, useToast } from '../components/ui';
 import { api, errorMessage, isApiError, qk, uploadProof } from '../lib/api';
 import { useCustomer } from '../lib/customer';
-import { money, typeLabelKey } from '../lib/menu';
+import { money, typeLabelKey, useSettings } from '../lib/menu';
 import { useSocketStatus } from '../lib/socket';
 import { useTableBill } from '../lib/table';
 
@@ -54,6 +55,7 @@ function StatusHero({ order }: { order: PublicOrderDto }) {
 }
 
 function ProofSection({ order }: { order: PublicOrderDto }) {
+  const { data: settings } = useSettings();
   const { t } = useTranslation();
   const toast = useToast();
   const qc = useQueryClient();
@@ -92,6 +94,7 @@ function ProofSection({ order }: { order: PublicOrderDto }) {
         <span className="text-sm">{t('web.abaAmount')}</span>
         <b className="text-xl tabular-nums">{money(order.total, order.currency)}</b>
       </div>
+      <AbaAccountInfo settings={settings} />
       <ProofPicker value={file} onChange={setFile} />
       {file ? (
         <Button block loading={up.isPending} onClick={() => up.mutate(file)}>

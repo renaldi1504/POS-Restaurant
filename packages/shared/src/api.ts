@@ -104,6 +104,14 @@ export const endpoints = {
     description: 'User staf yang sedang login',
   }),
 
+  staffSettings: def({
+    method: 'GET',
+    path: '/api/settings/staff',
+    auth: 'staff',
+    response: Cfg.StaffSettingsResponse,
+    description: 'Settings yang dibaca semua staf (ukuran teks, dapur, shift, komisi)',
+  }),
+
   // ================= Pelanggan (publik) =================
   publicSessionTelegram: def({
     method: 'POST',
