@@ -6,7 +6,16 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import type { AdminTableDto } from '@pos/shared';
 import { AdminBar } from '../../components/admin/AdminBar';
-import { ConfirmSheet, ErrorBlock, LoadingBlock, NumberBox, Screen, ScreenFooter, Switch, TextField } from '../../components/common';
+import {
+  ConfirmSheet,
+  ErrorBlock,
+  LoadingBlock,
+  NumberBox,
+  Screen,
+  ScreenFooter,
+  Switch,
+  TextField,
+} from '../../components/common';
 import { Button, Sheet, cn, useToast } from '../../components/ui';
 import { api, errorMessage, qk } from '../../lib/api';
 import { usePublicSettings } from '../../lib/data';
@@ -62,8 +71,13 @@ export default function TablesAdminPage() {
   const save = useMutation({
     mutationFn: (f: FormState) =>
       f.id
-        ? api.call('adminTableUpdate', { params: { id: f.id }, body: { name: f.name.trim(), area: f.area.trim(), seats: f.seats, active: f.active } })
-        : api.call('adminTableCreate', { body: { name: f.name.trim(), area: f.area.trim() || 'Dalam', seats: f.seats, active: f.active } }),
+        ? api.call('adminTableUpdate', {
+            params: { id: f.id },
+            body: { name: f.name.trim(), area: f.area.trim(), seats: f.seats, active: f.active },
+          })
+        : api.call('adminTableCreate', {
+            body: { name: f.name.trim(), area: f.area.trim() || 'Dalam', seats: f.seats, active: f.active },
+          }),
     onSuccess: (r) => {
       setForm(null);
       setSelId(r.table.id);
@@ -96,16 +110,26 @@ export default function TablesAdminPage() {
 
   return (
     <Screen testId="tables-admin-screen">
-      <AdminBar title={t('admin.tables')} back={{ label: t('admin.settings'), onClick: () => navigate('/admin/settings') }} />
+      <AdminBar
+        title={t('admin.tables')}
+        back={{ label: t('admin.settings'), onClick: () => navigate('/admin/settings') }}
+      />
       <main className="flex min-h-0 grow flex-col gap-2.5 overflow-y-auto p-3">
         {q.isLoading ? <LoadingBlock /> : null}
         {q.isError ? <ErrorBlock error={q.error} onRetry={() => void q.refetch()} /> : null}
         {sel ? (
           <section className="flex shrink-0 items-center gap-3 rounded-card bg-white p-3 shadow-card">
-            <div aria-label={t('mejaqr.sample', { name: sel.name })} className="flex w-[150px] shrink-0 flex-col items-center gap-1.5 rounded-xl border border-line bg-white p-2.5">
+            <div
+              aria-label={t('mejaqr.sample', { name: sel.name })}
+              className="flex w-[150px] shrink-0 flex-col items-center gap-1.5 rounded-xl border border-line bg-white p-2.5"
+            >
               <span className="text-[9px] font-bold uppercase text-muted">{settings.data?.name}</span>
               <b className="text-lg">{sel.name}</b>
-              {qr ? <img src={qr} alt={`QR ${sel.name}`} className="size-[110px]" data-testid="qr-preview" /> : <div className="size-[110px] bg-bg" />}
+              {qr ? (
+                <img src={qr} alt={`QR ${sel.name}`} className="size-[110px]" data-testid="qr-preview" />
+              ) : (
+                <div className="size-[110px] bg-bg" />
+              )}
               <span className="text-center text-[9px] leading-snug text-[#475467]">
                 Scan untuk pesan · Scan to order
                 <br />
@@ -118,7 +142,12 @@ export default function TablesAdminPage() {
               <Button size="md" className="min-h-11 text-sm" onClick={() => openPdf([sel.id])}>
                 {t('admin.printQr')}
               </Button>
-              <Button variant="outline" size="md" className="min-h-10 text-[13px]" onClick={() => setRegen(true)}>
+              <Button
+                variant="outline"
+                size="md"
+                className="min-h-10 text-[13px]"
+                onClick={() => setRegen(true)}
+              >
                 {t('admin.regenerateQr')}
               </Button>
             </div>
@@ -126,22 +155,47 @@ export default function TablesAdminPage() {
         ) : null}
         <section className="flex shrink-0 flex-col rounded-card bg-white px-3 py-1 shadow-card">
           {tables.map((m) => (
-            <div key={m.id} className={cn('flex min-h-[54px] items-center gap-2.5 rounded-lg border-b border-[#F2F4F7] px-1', sel?.id === m.id && 'bg-primary-tint')}>
-              <button type="button" onClick={() => setSelId(m.id)} aria-pressed={sel?.id === m.id} className="flex min-h-[54px] grow items-center gap-2.5 text-left">
+            <div
+              key={m.id}
+              className={cn(
+                'flex min-h-[54px] items-center gap-2.5 rounded-lg border-b border-[#F2F4F7] px-1',
+                sel?.id === m.id && 'bg-primary-tint',
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => setSelId(m.id)}
+                aria-pressed={sel?.id === m.id}
+                className="flex min-h-[54px] grow items-center gap-2.5 text-left"
+              >
                 <b className={cn('w-[76px] text-[15px]', !m.active && 'text-muted line-through')}>{m.name}</b>
                 <span className="grow text-[13px] text-muted">
                   {m.area} · {t('meja.seats', { count: m.seats })}
                 </span>
               </button>
-              <button type="button" onClick={() => setForm({ id: m.id, name: m.name, area: m.area, seats: m.seats, active: m.active })} className="rounded-lg px-2 py-1.5 text-xs font-bold text-primary">
+              <button
+                type="button"
+                onClick={() =>
+                  setForm({ id: m.id, name: m.name, area: m.area, seats: m.seats, active: m.active })
+                }
+                className="rounded-lg px-2 py-1.5 text-xs font-bold text-primary"
+              >
                 {t('common.edit')}
               </button>
-              <button type="button" onClick={() => openPdf([m.id])} className="rounded-lg border border-line-strong px-2.5 py-1.5 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => openPdf([m.id])}
+                className="rounded-lg border border-line-strong px-2.5 py-1.5 text-xs font-bold"
+              >
                 {t('admin.printQr')}
               </button>
             </div>
           ))}
-          <button type="button" onClick={() => setForm({ name: '', area: areas[0] ?? 'Dalam', seats: 4, active: true })} className="h-12 text-left text-[15px] font-extrabold text-primary">
+          <button
+            type="button"
+            onClick={() => setForm({ name: '', area: areas[0] ?? 'Dalam', seats: 4, active: true })}
+            className="h-12 text-left text-[15px] font-extrabold text-primary"
+          >
             + {t('mejaqr.add')}
           </button>
         </section>
@@ -161,11 +215,20 @@ export default function TablesAdminPage() {
         footer={
           <div className="flex gap-2">
             {form?.id ? (
-              <Button variant="outline" className="text-danger" onClick={() => setDel(tables.find((x) => x.id === form.id) ?? null)}>
+              <Button
+                variant="outline"
+                className="text-danger"
+                onClick={() => setDel(tables.find((x) => x.id === form.id) ?? null)}
+              >
                 {t('common.delete')}
               </Button>
             ) : null}
-            <Button className="grow" disabled={!form?.name.trim()} loading={save.isPending} onClick={() => form && save.mutate(form)}>
+            <Button
+              className="grow"
+              disabled={!form?.name.trim()}
+              loading={save.isPending}
+              onClick={() => form && save.mutate(form)}
+            >
               {t('common.save')}
             </Button>
           </div>
@@ -173,20 +236,60 @@ export default function TablesAdminPage() {
       >
         {form ? (
           <div className="flex flex-col gap-3">
-            <TextField label={t('common.name')} value={form.name} maxLength={50} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Meja 7" />
-            <TextField label={t('tables.area')} value={form.area} maxLength={50} list="areas" onChange={(e) => setForm({ ...form, area: e.target.value })} />
+            <TextField
+              label={t('common.name')}
+              value={form.name}
+              maxLength={50}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Meja 7"
+            />
+            <TextField
+              label={t('tables.area')}
+              value={form.area}
+              maxLength={50}
+              list="areas"
+              onChange={(e) => setForm({ ...form, area: e.target.value })}
+            />
             <datalist id="areas">
               {areas.map((a) => (
                 <option key={a} value={a} />
               ))}
             </datalist>
-            <NumberBox label={t('tables.seats')} value={form.seats} min={0} max={50} onChange={(v) => setForm({ ...form, seats: v })} />
-            <Switch checked={form.active} onChange={(v) => setForm({ ...form, active: v })} label={t('admin.active')} />
+            <NumberBox
+              label={t('tables.seats')}
+              value={form.seats}
+              min={0}
+              max={50}
+              onChange={(v) => setForm({ ...form, seats: v })}
+            />
+            <Switch
+              checked={form.active}
+              onChange={(v) => setForm({ ...form, active: v })}
+              label={t('admin.active')}
+            />
           </div>
         ) : null}
       </Sheet>
-      <ConfirmSheet open={regen} title={t('admin.regenerateQr')} message={t('mejaqr.regenWarn')} confirmLabel={t('admin.regenerateQr')} danger loading={regenerate.isPending} onClose={() => setRegen(false)} onConfirm={() => sel && regenerate.mutate(sel.id)} />
-      <ConfirmSheet open={!!del} title={t('mejaqr.delete')} message={del?.name} confirmLabel={t('common.delete')} danger loading={remove.isPending} onClose={() => setDel(null)} onConfirm={() => del && remove.mutate(del.id)} />
+      <ConfirmSheet
+        open={regen}
+        title={t('admin.regenerateQr')}
+        message={t('mejaqr.regenWarn')}
+        confirmLabel={t('admin.regenerateQr')}
+        danger
+        loading={regenerate.isPending}
+        onClose={() => setRegen(false)}
+        onConfirm={() => sel && regenerate.mutate(sel.id)}
+      />
+      <ConfirmSheet
+        open={!!del}
+        title={t('mejaqr.delete')}
+        message={del?.name}
+        confirmLabel={t('common.delete')}
+        danger
+        loading={remove.isPending}
+        onClose={() => setDel(null)}
+        onConfirm={() => del && remove.mutate(del.id)}
+      />
     </Screen>
   );
 }

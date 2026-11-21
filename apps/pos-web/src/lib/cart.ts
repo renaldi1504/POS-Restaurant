@@ -124,7 +124,13 @@ export interface ComputedLine extends CartLine {
   unitPrice: number | null;
   optionsDelta: number;
   lineTotal: number;
-  options: { groupId: number; optionId: number; groupName: OptionGroupDto['name']; name: OptionGroupDto['name']; priceDelta: number }[];
+  options: {
+    groupId: number;
+    optionId: number;
+    groupName: OptionGroupDto['name'];
+    name: OptionGroupDto['name'];
+    priceDelta: number;
+  }[];
 }
 
 export interface CartTotals {
@@ -145,7 +151,8 @@ export function priceFor(item: MenuItemDto, channel: OrderChannel): number | nul
 
 export function discountAmountOf(subtotal: number, discount: ManualDiscount | null): number {
   if (!discount || discount.value <= 0) return 0;
-  const v = discount.kind === 'pct' ? percentOf(subtotal, Math.min(100, discount.value)) : Math.round(discount.value);
+  const v =
+    discount.kind === 'pct' ? percentOf(subtotal, Math.min(100, discount.value)) : Math.round(discount.value);
   return Math.max(0, Math.min(subtotal, v));
 }
 
@@ -156,7 +163,8 @@ export function computeCart(
   const { channel } = kindToChannelType(state.kind);
   const items = new Map(menu?.items.map((i) => [i.id, i]) ?? []);
   const optIndex = new Map<number, { group: OptionGroupDto; option: OptionGroupDto['options'][number] }>();
-  for (const g of menu?.optionGroups ?? []) for (const o of g.options) optIndex.set(o.id, { group: g, option: o });
+  for (const g of menu?.optionGroups ?? [])
+    for (const o of g.options) optIndex.set(o.id, { group: g, option: o });
 
   let invalid = false;
   const lines: ComputedLine[] = state.lines.map((l) => {
@@ -165,7 +173,15 @@ export function computeCart(
     const options = l.optionIds.flatMap((id) => {
       const hit = optIndex.get(id);
       return hit
-        ? [{ groupId: hit.group.id, optionId: id, groupName: hit.group.name, name: hit.option.name, priceDelta: hit.option.priceDelta }]
+        ? [
+            {
+              groupId: hit.group.id,
+              optionId: id,
+              groupName: hit.group.name,
+              name: hit.option.name,
+              priceDelta: hit.option.priceDelta,
+            },
+          ]
         : [];
     });
     const optionsDelta = options.reduce((a, o) => a + o.priceDelta, 0);
@@ -177,7 +193,15 @@ export function computeCart(
   const count = lines.reduce((a, l) => a + l.qty, 0);
   const discountAmount = discountAmountOf(subtotal, state.discount);
   const fee = isDeliveryKind(state.kind) ? Math.max(0, state.deliveryFee) : 0;
-  return { lines, count, subtotal, discountAmount, deliveryFee: fee, total: subtotal - discountAmount + fee, invalid };
+  return {
+    lines,
+    count,
+    subtotal,
+    discountAmount,
+    deliveryFee: fee,
+    total: subtotal - discountAmount + fee,
+    invalid,
+  };
 }
 
 /** Jumlah per menu di keranjang (badge kartu menu). */
@@ -251,7 +275,12 @@ export function cartFromOrder(o: OrderDto): CartState {
     note: o.note ?? '',
     customerName: o.customerName ?? '',
     delivery: o.address
-      ? { name: o.customerName ?? '', phone: o.customer?.phone ?? '', addressText: o.address.text, landmark: o.address.landmark ?? '' }
+      ? {
+          name: o.customerName ?? '',
+          phone: o.customer?.phone ?? '',
+          addressText: o.address.text,
+          landmark: o.address.landmark ?? '',
+        }
       : { ...EMPTY_DELIVERY },
     promoId: o.promoId,
     discount: o.discount > 0 && !o.promoId ? { kind: 'amount', value: o.discount } : null,

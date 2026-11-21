@@ -4,23 +4,54 @@ import { buildReceipt, renderEscPos, renderText, type ReceiptData } from './rece
 
 describe('EscPos encoder', () => {
   it('menghasilkan byte perintah yang benar', () => {
-    const bytes = new EscPos(32).init().align('center').bold(true).text('AB').bold(false).double(true).line('C').double(false).feed(2).cut(3).encode();
+    const bytes = new EscPos(32)
+      .init()
+      .align('center')
+      .bold(true)
+      .text('AB')
+      .bold(false)
+      .double(true)
+      .line('C')
+      .double(false)
+      .feed(2)
+      .cut(3)
+      .encode();
     expect(Array.from(bytes)).toEqual([
-      0x1b, 0x40, // ESC @
-      0x1b, 0x61, 0x01, // ESC a 1 (tengah)
-      0x1b, 0x45, 0x01, // ESC E 1
-      0x41, 0x42, // "AB"
-      0x1b, 0x45, 0x00,
-      0x1d, 0x21, 0x11, // GS ! 0x11 (2x lebar & tinggi)
-      0x43, 0x0a, // "C\n"
-      0x1d, 0x21, 0x00,
-      0x1b, 0x64, 0x02, // ESC d 2
-      0x1d, 0x56, 0x42, 0x03, // GS V 66 3
+      0x1b,
+      0x40, // ESC @
+      0x1b,
+      0x61,
+      0x01, // ESC a 1 (tengah)
+      0x1b,
+      0x45,
+      0x01, // ESC E 1
+      0x41,
+      0x42, // "AB"
+      0x1b,
+      0x45,
+      0x00,
+      0x1d,
+      0x21,
+      0x11, // GS ! 0x11 (2x lebar & tinggi)
+      0x43,
+      0x0a, // "C\n"
+      0x1d,
+      0x21,
+      0x00,
+      0x1b,
+      0x64,
+      0x02, // ESC d 2
+      0x1d,
+      0x56,
+      0x42,
+      0x03, // GS V 66 3
     ]);
   });
 
   it('align kiri/kanan dan ukuran dibatasi 1–8', () => {
-    expect(Array.from(new EscPos().align('left').align('right').encode())).toEqual([0x1b, 0x61, 0, 0x1b, 0x61, 2]);
+    expect(Array.from(new EscPos().align('left').align('right').encode())).toEqual([
+      0x1b, 0x61, 0, 0x1b, 0x61, 2,
+    ]);
     expect(Array.from(new EscPos().size(9, 0).encode())).toEqual([0x1d, 0x21, 0x70]);
   });
 
@@ -62,7 +93,12 @@ const data: ReceiptData = {
   table: 'Meja 5',
   orderNo: '#18',
   groups: [
-    { items: [{ qty: 2, name: 'Ayam Goreng', options: ['Paha atas', 'Tidak pedas'], total: 20000 }, { qty: 1, name: 'Pempek Kapal Selam', options: [], note: 'cuko dipisah', total: 14000 }] },
+    {
+      items: [
+        { qty: 2, name: 'Ayam Goreng', options: ['Paha atas', 'Tidak pedas'], total: 20000 },
+        { qty: 1, name: 'Pempek Kapal Selam', options: [], note: 'cuko dipisah', total: 14000 },
+      ],
+    },
   ],
   subtotal: 34000,
   discount: 4000,
@@ -100,9 +136,15 @@ describe('template struk', () => {
   });
 
   it('nota sementara memuat label & sisa, berbahasa Inggris bila dipilih', () => {
-    const id = renderText(buildReceipt({ ...data, kind: 'provisional', payments: undefined, change: undefined }, 32), 32).join('\n');
+    const id = renderText(
+      buildReceipt({ ...data, kind: 'provisional', payments: undefined, change: undefined }, 32),
+      32,
+    ).join('\n');
     expect(id).toContain('NOTA SEMENTARA - BELUM BAYAR');
-    const en = renderText(buildReceipt({ ...data, kind: 'provisional', lang: 'en', payments: undefined }, 48), 48).join('\n');
+    const en = renderText(
+      buildReceipt({ ...data, kind: 'provisional', lang: 'en', payments: undefined }, 48),
+      48,
+    ).join('\n');
     expect(en).toContain('PROVISIONAL BILL - UNPAID');
     expect(en).toContain('Thank you!');
   });

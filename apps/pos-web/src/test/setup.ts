@@ -17,7 +17,12 @@ beforeAll(() => {
   // API client memakai URL relatif ('/api/...'); fetch Node butuh URL absolut.
   const patched = globalThis.fetch;
   globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) =>
-    patched(typeof input === 'string' && input.startsWith('/') ? new URL(input, window.location.origin).toString() : input, init)) as typeof fetch;
+    patched(
+      typeof input === 'string' && input.startsWith('/')
+        ? new URL(input, window.location.origin).toString()
+        : input,
+      init,
+    )) as typeof fetch;
 });
 afterEach(() => {
   cleanup();

@@ -29,7 +29,11 @@ describe('crop → canvas', () => {
   it('menggambar area potong ke canvas 4:3 dan mengekspor JPEG 0.85', async () => {
     const canvas = fakeCanvas();
     const img = {} as CanvasImageSource;
-    const res = await cropToBlob(img, { x: 100, y: 50, width: 2400, height: 1800 }, { makeCanvas: () => canvas });
+    const res = await cropToBlob(
+      img,
+      { x: 100, y: 50, width: 2400, height: 1800 },
+      { makeCanvas: () => canvas },
+    );
     expect(res.width).toBe(1200);
     expect(res.height).toBe(900);
     expect(res.width / res.height).toBeCloseTo(4 / 3);
@@ -43,7 +47,11 @@ describe('crop → canvas', () => {
 
   it('bisa memaksa WebP', async () => {
     const canvas = fakeCanvas();
-    const res = await cropToBlob({} as CanvasImageSource, { x: 0, y: 0, width: 500, height: 500 }, { makeCanvas: () => canvas, type: 'image/webp' });
+    const res = await cropToBlob(
+      {} as CanvasImageSource,
+      { x: 0, y: 0, width: 500, height: 500 },
+      { makeCanvas: () => canvas, type: 'image/webp' },
+    );
     expect(res).toMatchObject({ width: 500, height: 500, type: 'image/webp' });
   });
 });

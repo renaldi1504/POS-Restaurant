@@ -41,7 +41,13 @@ export interface ChangeResult {
   enough: boolean;
 }
 
-export function computeChange(dueMain: number, received: number | null, currency: Currency, main: Currency, rates: Rates): ChangeResult {
+export function computeChange(
+  dueMain: number,
+  received: number | null,
+  currency: Currency,
+  main: Currency,
+  rates: Rates,
+): ChangeResult {
   const receivedMain = received ? convertMoney(received, currency, main, rates) : 0;
   const diff = receivedMain - dueMain;
   return {
@@ -60,9 +66,21 @@ export interface SplitLine {
 }
 
 /** Sisa yang belum ditutup oleh baris split (mata uang utama, ≥ 0) & kembalian (bila cash berlebih). */
-export function splitRemaining(dueMain: number, lines: SplitLine[], main: Currency, rates: Rates): { paidMain: number; remainingMain: number; changeMain: number } {
-  const paidMain = lines.reduce((a, l) => a + (l.amount ? convertMoney(l.amount, l.currency, main, rates) : 0), 0);
-  return { paidMain, remainingMain: Math.max(0, dueMain - paidMain), changeMain: Math.max(0, paidMain - dueMain) };
+export function splitRemaining(
+  dueMain: number,
+  lines: SplitLine[],
+  main: Currency,
+  rates: Rates,
+): { paidMain: number; remainingMain: number; changeMain: number } {
+  const paidMain = lines.reduce(
+    (a, l) => a + (l.amount ? convertMoney(l.amount, l.currency, main, rates) : 0),
+    0,
+  );
+  return {
+    paidMain,
+    remainingMain: Math.max(0, dueMain - paidMain),
+    changeMain: Math.max(0, paidMain - dueMain),
+  };
 }
 
 /** Bagi rata: bagian per orang (dibulatkan ke atas ke 100 riel), orang terakhir menutup sisa. */

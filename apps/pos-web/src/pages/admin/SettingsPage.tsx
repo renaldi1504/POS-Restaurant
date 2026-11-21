@@ -5,7 +5,20 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { CURRENCIES, type Currency, type Settings, type SettingsPatch, type TextSize } from '@pos/shared';
 import { AdminBar } from '../../components/admin/AdminBar';
-import { usePhotoPicker, CURRENCY_LABEL, ConfirmSheet, ErrorBlock, LoadingBlock, MoneyInput, NumberBox, Screen, ScreenFooter, Section, Switch, TextField } from '../../components/common';
+import {
+  usePhotoPicker,
+  CURRENCY_LABEL,
+  ConfirmSheet,
+  ErrorBlock,
+  LoadingBlock,
+  MoneyInput,
+  NumberBox,
+  Screen,
+  ScreenFooter,
+  Section,
+  Switch,
+  TextField,
+} from '../../components/common';
 import { Badge, Button, Segmented, Sheet, useToast } from '../../components/ui';
 import { api, errorMessage, qk } from '../../lib/api';
 import { setPrefs, usePrefs } from '../../lib/prefs';
@@ -15,13 +28,18 @@ const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 /** Bagian settings yang berubah (untuk PATCH parsial). */
 export function settingsDiff(orig: Settings, draft: Settings): SettingsPatch {
   const out: Record<string, unknown> = {};
-  for (const k of Object.keys(draft) as (keyof Settings)[]) if (JSON.stringify(orig[k]) !== JSON.stringify(draft[k])) out[k] = draft[k];
+  for (const k of Object.keys(draft) as (keyof Settings)[])
+    if (JSON.stringify(orig[k]) !== JSON.stringify(draft[k])) out[k] = draft[k];
   return out as SettingsPatch;
 }
 
 function LinkRow({ label, onClick, last }: { label: ReactNode; onClick: () => void; last?: boolean }) {
   return (
-    <button type="button" onClick={onClick} className={`flex h-[52px] w-full items-center justify-between text-left font-semibold ${last ? '' : 'border-b border-[#F2F4F7]'}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex h-[52px] w-full items-center justify-between text-left font-semibold ${last ? '' : 'border-b border-[#F2F4F7]'}`}
+    >
       <span>{label}</span>
       <span aria-hidden>›</span>
     </button>
@@ -82,8 +100,10 @@ export default function SettingsPage() {
   const patch = settingsDiff(q.data.settings, d);
   const dirty = Object.keys(patch).length > 0;
   const hoursOk = HHMM.test(d.hours.open) && HHMM.test(d.hours.close);
-  const set = <K extends keyof Settings>(k: K, v: Partial<Settings[K]>) => setD({ ...d, [k]: { ...d[k], ...v } });
-  const drivers = users.data?.users.filter((u) => u.role.name.toLowerCase().includes('driver') && u.active).length ?? 0;
+  const set = <K extends keyof Settings>(k: K, v: Partial<Settings[K]>) =>
+    setD({ ...d, [k]: { ...d[k], ...v } });
+  const drivers =
+    users.data?.users.filter((u) => u.role.name.toLowerCase().includes('driver') && u.active).length ?? 0;
   const textSize = (s: TextSize) => {
     setPrefs({ textSize: s });
     set('ui', { textSize: s });
@@ -91,34 +111,84 @@ export default function SettingsPage() {
 
   return (
     <Screen testId="settings-screen">
-      <AdminBar title={t('admin.settings')} right={<span className="text-xs text-muted">{t('setx.adminOnly')}</span>} />
+      <AdminBar
+        title={t('admin.settings')}
+        right={<span className="text-xs text-muted">{t('setx.adminOnly')}</span>}
+      />
       <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto p-3">
         <Section title={t('setx.profileLogo')}>
           <div className="flex items-center gap-2.5">
             {d.profile.logoUrl ? (
-              <img src={d.profile.logoUrl} alt={t('admin.logo')} className="size-16 shrink-0 rounded-[14px] object-cover" />
+              <img
+                src={d.profile.logoUrl}
+                alt={t('admin.logo')}
+                className="size-16 shrink-0 rounded-[14px] object-cover"
+              />
             ) : (
-              <div className="flex size-16 shrink-0 items-center justify-center rounded-[14px] border-2 border-dashed border-line-strong bg-[#F2F4F7] text-[10px] font-bold text-muted">LOGO</div>
+              <div className="flex size-16 shrink-0 items-center justify-center rounded-[14px] border-2 border-dashed border-line-strong bg-[#F2F4F7] text-[10px] font-bold text-muted">
+                LOGO
+              </div>
             )}
             {logoPicker.element}
             <Button variant="outline" size="md" loading={logo.isPending} onClick={logoPicker.open}>
               {t('setx.uploadLogo')}
             </Button>
           </div>
-          <TextField label={t('setx.shopName')} value={d.profile.name} onChange={(e) => set('profile', { name: e.target.value })} />
-          <TextField label={t('common.address')} value={d.profile.address} onChange={(e) => set('profile', { address: e.target.value })} />
-          <TextField label={t('common.phone')} type="tel" value={d.profile.phone} onChange={(e) => set('profile', { phone: e.target.value })} />
+          <TextField
+            label={t('setx.shopName')}
+            value={d.profile.name}
+            onChange={(e) => set('profile', { name: e.target.value })}
+          />
+          <TextField
+            label={t('common.address')}
+            value={d.profile.address}
+            onChange={(e) => set('profile', { address: e.target.value })}
+          />
+          <TextField
+            label={t('common.phone')}
+            type="tel"
+            value={d.profile.phone}
+            onChange={(e) => set('profile', { phone: e.target.value })}
+          />
           <div className="grid grid-cols-2 gap-2">
-            <TextField label={t('setx.lat')} inputMode="decimal" value={d.profile.lat ?? ''} onChange={(e) => set('profile', { lat: e.target.value === '' ? null : Number(e.target.value) })} />
-            <TextField label={t('setx.lng')} inputMode="decimal" value={d.profile.lng ?? ''} onChange={(e) => set('profile', { lng: e.target.value === '' ? null : Number(e.target.value) })} />
+            <TextField
+              label={t('setx.lat')}
+              inputMode="decimal"
+              value={d.profile.lat ?? ''}
+              onChange={(e) => set('profile', { lat: e.target.value === '' ? null : Number(e.target.value) })}
+            />
+            <TextField
+              label={t('setx.lng')}
+              inputMode="decimal"
+              value={d.profile.lng ?? ''}
+              onChange={(e) => set('profile', { lng: e.target.value === '' ? null : Number(e.target.value) })}
+            />
           </div>
           <span className="text-xs text-muted">{t('setx.latLngHint')}</span>
         </Section>
 
         <Section title={t('admin.hours')}>
           <div className="grid grid-cols-2 gap-2">
-            <TextField label={t('setx.open')} value={d.hours.open} inputMode="numeric" placeholder="08:00" maxLength={5} inputClassName="h-[50px] text-[22px] font-extrabold" onChange={(e) => set('hours', { open: e.target.value.replace('.', ':') })} error={HHMM.test(d.hours.open) ? null : 'HH:MM'} />
-            <TextField label={t('setx.close')} value={d.hours.close} inputMode="numeric" placeholder="03:00" maxLength={5} inputClassName="h-[50px] text-[22px] font-extrabold" onChange={(e) => set('hours', { close: e.target.value.replace('.', ':') })} error={HHMM.test(d.hours.close) ? null : 'HH:MM'} />
+            <TextField
+              label={t('setx.open')}
+              value={d.hours.open}
+              inputMode="numeric"
+              placeholder="08:00"
+              maxLength={5}
+              inputClassName="h-[50px] text-[22px] font-extrabold"
+              onChange={(e) => set('hours', { open: e.target.value.replace('.', ':') })}
+              error={HHMM.test(d.hours.open) ? null : 'HH:MM'}
+            />
+            <TextField
+              label={t('setx.close')}
+              value={d.hours.close}
+              inputMode="numeric"
+              placeholder="03:00"
+              maxLength={5}
+              inputClassName="h-[50px] text-[22px] font-extrabold"
+              onChange={(e) => set('hours', { close: e.target.value.replace('.', ':') })}
+              error={HHMM.test(d.hours.close) ? null : 'HH:MM'}
+            />
           </div>
           <span className="text-xs text-muted">{t('setx.hoursHint')}</span>
         </Section>
@@ -132,14 +202,26 @@ export default function SettingsPage() {
                   className="size-5 accent-primary"
                   checked={d.currency.enabled.includes(c)}
                   disabled={c === d.currency.main}
-                  onChange={(e) => set('currency', { enabled: e.target.checked ? [...d.currency.enabled, c] : d.currency.enabled.filter((x) => x !== c) })}
+                  onChange={(e) =>
+                    set('currency', {
+                      enabled: e.target.checked
+                        ? [...d.currency.enabled, c]
+                        : d.currency.enabled.filter((x) => x !== c),
+                    })
+                  }
                 />
                 {CURRENCY_LABEL[c]} {c === 'KHR' ? '៛' : c === 'USD' ? '$' : 'Rp'}
               </label>
               {d.currency.main === c ? (
-                <span className="rounded-lg bg-ink px-2.5 py-1 text-xs font-bold text-white">{t('setx.main')}</span>
+                <span className="rounded-lg bg-ink px-2.5 py-1 text-xs font-bold text-white">
+                  {t('setx.main')}
+                </span>
               ) : d.currency.enabled.includes(c) ? (
-                <button type="button" className="rounded-lg border border-line-strong px-2.5 py-1 text-xs font-bold" onClick={() => set('currency', { main: c })}>
+                <button
+                  type="button"
+                  className="rounded-lg border border-line-strong px-2.5 py-1 text-xs font-bold"
+                  onClick={() => set('currency', { main: c })}
+                >
                   {t('setx.makeMain')}
                 </button>
               ) : null}
@@ -147,48 +229,101 @@ export default function SettingsPage() {
           ))}
           <div className="flex h-[52px] items-center gap-2 border-b border-[#F2F4F7]">
             <b className="grow">$1 =</b>
-            <MoneyInput ariaLabel={t('setx.rateUsd')} className="w-28" currency="KHR" value={d.currency.rates.USD} onChange={(v) => v && set('currency', { rates: { ...d.currency.rates, USD: v } })} />
+            <MoneyInput
+              ariaLabel={t('setx.rateUsd')}
+              className="w-28"
+              currency="KHR"
+              value={d.currency.rates.USD}
+              onChange={(v) => v && set('currency', { rates: { ...d.currency.rates, USD: v } })}
+            />
             <span>៛</span>
           </div>
           <div className="flex h-[52px] items-center gap-2">
             <b className="grow">Rp1.000 =</b>
-            <MoneyInput ariaLabel={t('setx.rateIdr')} className="w-28" currency="KHR" value={Math.round(d.currency.rates.IDR * 1000)} onChange={(v) => v && set('currency', { rates: { ...d.currency.rates, IDR: v / 1000 } })} />
+            <MoneyInput
+              ariaLabel={t('setx.rateIdr')}
+              className="w-28"
+              currency="KHR"
+              value={Math.round(d.currency.rates.IDR * 1000)}
+              onChange={(v) => v && set('currency', { rates: { ...d.currency.rates, IDR: v / 1000 } })}
+            />
             <span>៛</span>
           </div>
-          {d.currency.main !== 'KHR' ? <span className="text-xs text-warn-dark">{t('setx.mainWarn')}</span> : null}
+          {d.currency.main !== 'KHR' ? (
+            <span className="text-xs text-warn-dark">{t('setx.mainWarn')}</span>
+          ) : null}
         </Section>
 
         <Section title={t('setx.delivery')}>
           <div className="grid grid-cols-2 gap-2">
-            <MoneyInput label={t('admin.minOrder')} currency={d.currency.main} value={d.delivery.minOrder} onChange={(v) => set('delivery', { minOrder: v ?? 0 })} />
-            <MoneyInput label={t('setx.defaultFee')} currency={d.currency.main} value={d.delivery.defaultFee} onChange={(v) => set('delivery', { defaultFee: v ?? 0 })} />
+            <MoneyInput
+              label={t('admin.minOrder')}
+              currency={d.currency.main}
+              value={d.delivery.minOrder}
+              onChange={(v) => set('delivery', { minOrder: v ?? 0 })}
+            />
+            <MoneyInput
+              label={t('setx.defaultFee')}
+              currency={d.currency.main}
+              value={d.delivery.defaultFee}
+              onChange={(v) => set('delivery', { defaultFee: v ?? 0 })}
+            />
           </div>
           <span className="text-xs text-muted">{t('setx.deliveryHint')}</span>
         </Section>
 
         <Section title={t('setx.operations')}>
-          <NumberBox label={t('setx.lateMinutes')} value={d.kitchen.lateMinutes} min={1} max={240} onChange={(v) => set('kitchen', { lateMinutes: v })} />
-          <Switch checked={d.qr.requireAccept} onChange={(v) => set('qr', { requireAccept: v })} label={t('setx.qrAccept')} description={t('setx.qrAcceptHint')} />
-          <Switch checked={d.shift.autoAvailableOnOpen} onChange={(v) => set('shift', { autoAvailableOnOpen: v })} label={t('setx.autoAvailable')} />
+          <NumberBox
+            label={t('setx.lateMinutes')}
+            value={d.kitchen.lateMinutes}
+            min={1}
+            max={240}
+            onChange={(v) => set('kitchen', { lateMinutes: v })}
+          />
+          <Switch
+            checked={d.qr.requireAccept}
+            onChange={(v) => set('qr', { requireAccept: v })}
+            label={t('setx.qrAccept')}
+            description={t('setx.qrAcceptHint')}
+          />
+          <Switch
+            checked={d.shift.autoAvailableOnOpen}
+            onChange={(v) => set('shift', { autoAvailableOnOpen: v })}
+            label={t('setx.autoAvailable')}
+          />
         </Section>
 
         <Section title={t('setx.botAi')}>
           <div className="flex items-center justify-between">
             <span>{t('admin.telegramBot')}</span>
-            <Badge tone={integ.telegram ? 'primary' : 'warn'}>{integ.telegram ? `${t('setx.connected')}${integ.telegramBotUsername ? ` · @${integ.telegramBotUsername}` : ''}` : t('admin.integrationOff')}</Badge>
+            <Badge tone={integ.telegram ? 'primary' : 'warn'}>
+              {integ.telegram
+                ? `${t('setx.connected')}${integ.telegramBotUsername ? ` · @${integ.telegramBotUsername}` : ''}`
+                : t('admin.integrationOff')}
+            </Badge>
           </div>
-          <Switch checked={d.ai.enabled} onChange={(v) => set('ai', { enabled: v })} label={t('setx.aiAnswers')} />
+          <Switch
+            checked={d.ai.enabled}
+            onChange={(v) => set('ai', { enabled: v })}
+            label={t('setx.aiAnswers')}
+          />
           <div className="flex items-center justify-between">
             <span>{t('admin.gemini')}</span>
-            <Badge tone={integ.gemini ? 'primary' : 'warn'}>{integ.gemini ? t('admin.integrationOn') : t('admin.integrationOff')}</Badge>
+            <Badge tone={integ.gemini ? 'primary' : 'warn'}>
+              {integ.gemini ? t('admin.integrationOn') : t('admin.integrationOff')}
+            </Badge>
           </div>
           <div className="flex items-center justify-between">
             <span>Google Maps</span>
-            <Badge tone={integ.maps ? 'primary' : 'warn'}>{integ.maps ? t('admin.integrationOn') : t('admin.integrationOff')}</Badge>
+            <Badge tone={integ.maps ? 'primary' : 'warn'}>
+              {integ.maps ? t('admin.integrationOn') : t('admin.integrationOff')}
+            </Badge>
           </div>
           <div className="flex items-center justify-between">
             <span>Cloudflare R2</span>
-            <Badge tone={integ.r2 ? 'primary' : 'warn'}>{integ.r2 ? t('admin.integrationOn') : t('admin.integrationOff')}</Badge>
+            <Badge tone={integ.r2 ? 'primary' : 'warn'}>
+              {integ.r2 ? t('admin.integrationOn') : t('admin.integrationOff')}
+            </Badge>
           </div>
           <span className="text-xs text-muted">{t('setx.keysHint')}</span>
         </Section>
@@ -208,8 +343,14 @@ export default function SettingsPage() {
         </Section>
 
         <section className="shrink-0 rounded-card bg-white px-3 py-1 shadow-card">
-          <LinkRow label={t('setx.tablesLink', { count: tables.data?.tables.length ?? 0 })} onClick={() => navigate('/admin/meja')} />
-          <LinkRow label={t('setx.driversLink', { count: drivers })} onClick={() => navigate('/admin/pengguna')} />
+          <LinkRow
+            label={t('setx.tablesLink', { count: tables.data?.tables.length ?? 0 })}
+            onClick={() => navigate('/admin/meja')}
+          />
+          <LinkRow
+            label={t('setx.driversLink', { count: drivers })}
+            onClick={() => navigate('/admin/pengguna')}
+          />
           <LinkRow label={t('setx.promoLink')} onClick={() => navigate('/admin/promo')} />
           <LinkRow label={t('admin.users')} onClick={() => navigate('/admin/pengguna')} />
           <LinkRow label={t('admin.expenseCategories')} onClick={() => setCatsOpen(true)} />
@@ -219,7 +360,13 @@ export default function SettingsPage() {
       </main>
       {dirty ? (
         <ScreenFooter>
-          <Button size="lg" block disabled={!hoursOk} loading={save.isPending} onClick={() => save.mutate(patch)}>
+          <Button
+            size="lg"
+            block
+            disabled={!hoursOk}
+            loading={save.isPending}
+            onClick={() => save.mutate(patch)}
+          >
             {t('setx.saveChanges')}
           </Button>
         </ScreenFooter>
@@ -233,13 +380,20 @@ function ExpenseCategoriesSheet({ open, onClose }: { open: boolean; onClose: () 
   const { t } = useTranslation();
   const qc = useQueryClient();
   const toast = useToast();
-  const cats = useQuery({ queryKey: ['expense-categories'], queryFn: () => api.call('expenseCategories'), enabled: open });
+  const cats = useQuery({
+    queryKey: ['expense-categories'],
+    queryFn: () => api.call('expenseCategories'),
+    enabled: open,
+  });
   const [name, setName] = useState('');
   const [editId, setEditId] = useState<number | null>(null);
   const [delId, setDelId] = useState<number | null>(null);
   const done = () => void qc.invalidateQueries({ queryKey: ['expense-categories'] });
   const save = useMutation({
-    mutationFn: () => (editId ? api.call('adminExpenseCategoryUpdate', { params: { id: editId }, body: { name: name.trim() } }) : api.call('adminExpenseCategoryCreate', { body: { name: name.trim() } })),
+    mutationFn: () =>
+      editId
+        ? api.call('adminExpenseCategoryUpdate', { params: { id: editId }, body: { name: name.trim() } })
+        : api.call('adminExpenseCategoryCreate', { body: { name: name.trim() } }),
     onSuccess: () => {
       setName('');
       setEditId(null);
@@ -260,7 +414,14 @@ function ExpenseCategoriesSheet({ open, onClose }: { open: boolean; onClose: () 
       {cats.data?.categories.map((c) => (
         <div key={c.id} className="flex min-h-12 items-center gap-2 border-b border-[#F2F4F7]">
           <span className="grow font-semibold">{c.name}</span>
-          <Button variant="ghost" size="md" onClick={() => { setEditId(c.id); setName(c.name); }}>
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={() => {
+              setEditId(c.id);
+              setName(c.name);
+            }}
+          >
             {t('common.edit')}
           </Button>
           <Button variant="ghost" size="md" className="text-danger" onClick={() => setDelId(c.id)}>
@@ -269,12 +430,26 @@ function ExpenseCategoriesSheet({ open, onClose }: { open: boolean; onClose: () 
         </div>
       ))}
       <div className="flex items-end gap-2 pt-3">
-        <TextField className="grow" label={editId ? t('common.edit') : t('common.add')} value={name} onChange={(e) => setName(e.target.value)} />
+        <TextField
+          className="grow"
+          label={editId ? t('common.edit') : t('common.add')}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
         <Button size="md" disabled={!name.trim()} loading={save.isPending} onClick={() => save.mutate()}>
           {t('common.save')}
         </Button>
       </div>
-      <ConfirmSheet open={delId !== null} title={t('common.delete')} message={cats.data?.categories.find((c) => c.id === delId)?.name} confirmLabel={t('common.delete')} danger loading={remove.isPending} onClose={() => setDelId(null)} onConfirm={() => delId && remove.mutate(delId)} />
+      <ConfirmSheet
+        open={delId !== null}
+        title={t('common.delete')}
+        message={cats.data?.categories.find((c) => c.id === delId)?.name}
+        confirmLabel={t('common.delete')}
+        danger
+        loading={remove.isPending}
+        onClose={() => setDelId(null)}
+        onConfirm={() => delId && remove.mutate(delId)}
+      />
     </Sheet>
   );
 }

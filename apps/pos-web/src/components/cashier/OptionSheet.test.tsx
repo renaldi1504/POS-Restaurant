@@ -9,7 +9,16 @@ const groups = fx.menu.optionGroups;
 
 function setup() {
   const onAdd = vi.fn();
-  render(<OptionSheet item={item} groups={groups} basePrice={10000} currency="KHR" onClose={() => {}} onAdd={onAdd} />);
+  render(
+    <OptionSheet
+      item={item}
+      groups={groups}
+      basePrice={10000}
+      currency="KHR"
+      onClose={() => {}}
+      onAdd={onAdd}
+    />,
+  );
   const addBtn = () => screen.getByRole('button', { name: /^Tambah · / });
   return { onAdd, addBtn };
 }

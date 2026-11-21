@@ -35,7 +35,12 @@ export function ConfirmSheet({
           <Button variant="outline" className="w-28" onClick={onClose}>
             {t('common.cancel')}
           </Button>
-          <Button variant={danger ? 'danger' : 'primary'} className="grow" loading={loading} onClick={onConfirm}>
+          <Button
+            variant={danger ? 'danger' : 'primary'}
+            className="grow"
+            loading={loading}
+            onClick={onConfirm}
+          >
             {confirmLabel}
           </Button>
         </div>
@@ -127,24 +132,42 @@ export function ReasonSheet({
 export function PinPad({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const { t } = useTranslation();
   const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-  const key = 'h-14 rounded-2xl border border-line-strong bg-white text-2xl font-bold shadow-card active:bg-bg';
+  const key =
+    'h-14 rounded-2xl border border-line-strong bg-white text-2xl font-bold shadow-card active:bg-bg';
   return (
     <div className="flex flex-col items-center gap-3">
-      <div role="status" aria-label={t('auth.pinDots', { count: value.length })} className="flex h-6 items-center gap-4">
+      <div
+        role="status"
+        aria-label={t('auth.pinDots', { count: value.length })}
+        className="flex h-6 items-center gap-4"
+      >
         {[0, 1, 2, 3].map((i) => (
           <span
             key={i}
-            className={i < value.length ? 'size-5 rounded-full bg-ink' : 'size-4 rounded-full border-[1.5px] border-[#98A2B3]'}
+            className={
+              i < value.length
+                ? 'size-5 rounded-full bg-ink'
+                : 'size-4 rounded-full border-[1.5px] border-[#98A2B3]'
+            }
           />
         ))}
       </div>
       <div className="grid w-full grid-cols-3 gap-2">
         {keys.map((k) => (
-          <button key={k} type="button" className={key} onClick={() => value.length < 4 && onChange(value + k)}>
+          <button
+            key={k}
+            type="button"
+            className={key}
+            onClick={() => value.length < 4 && onChange(value + k)}
+          >
             {k}
           </button>
         ))}
-        <button type="button" className={`${key} text-base text-danger`} onClick={() => onChange(value.slice(0, -1))}>
+        <button
+          type="button"
+          className={`${key} text-base text-danger`}
+          onClick={() => onChange(value.slice(0, -1))}
+        >
           {t('auth.clear')}
         </button>
         <button type="button" className={key} onClick={() => value.length < 4 && onChange(value + '0')}>

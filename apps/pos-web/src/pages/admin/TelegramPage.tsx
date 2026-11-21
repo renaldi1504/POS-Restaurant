@@ -14,7 +14,10 @@ export default function TelegramPage() {
   const integ = q.data?.integrations;
   return (
     <Screen testId="telegram-screen">
-      <AdminBar title={t('admin.telegramBot')} back={{ label: t('admin.settings'), onClick: () => navigate('/admin/settings') }} />
+      <AdminBar
+        title={t('admin.telegramBot')}
+        back={{ label: t('admin.settings'), onClick: () => navigate('/admin/settings') }}
+      />
       <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto p-3">
         {q.isLoading ? <LoadingBlock /> : null}
         {q.isError ? <ErrorBlock error={q.error} onRetry={() => void q.refetch()} /> : null}
@@ -23,16 +26,29 @@ export default function TelegramPage() {
             <Section title={t('tg.status')}>
               <div className="flex items-center justify-between">
                 <span>{t('admin.telegramBot')}</span>
-                <Badge tone={integ.telegram ? 'primary' : 'warn'}>{integ.telegram ? t('setx.connected') : t('admin.integrationOff')}</Badge>
+                <Badge tone={integ.telegram ? 'primary' : 'warn'}>
+                  {integ.telegram ? t('setx.connected') : t('admin.integrationOff')}
+                </Badge>
               </div>
               {integ.telegramBotUsername ? (
-                <a href={`https://t.me/${integ.telegramBotUsername}`} target="_blank" rel="noreferrer" className="flex h-12 items-center justify-center rounded-xl bg-primary font-extrabold text-white">
+                <a
+                  href={`https://t.me/${integ.telegramBotUsername}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex h-12 items-center justify-center rounded-xl bg-primary font-extrabold text-white"
+                >
                   @{integ.telegramBotUsername} ›
                 </a>
               ) : null}
               <div className="flex items-center justify-between">
                 <span>{t('setx.aiAnswers')}</span>
-                <Badge tone={integ.gemini && q.data?.settings.ai.enabled ? 'primary' : 'warn'}>{integ.gemini ? (q.data?.settings.ai.enabled ? t('admin.integrationOn') : t('tg.aiOff')) : t('admin.integrationOff')}</Badge>
+                <Badge tone={integ.gemini && q.data?.settings.ai.enabled ? 'primary' : 'warn'}>
+                  {integ.gemini
+                    ? q.data?.settings.ai.enabled
+                      ? t('admin.integrationOn')
+                      : t('tg.aiOff')
+                    : t('admin.integrationOff')}
+                </Badge>
               </div>
             </Section>
             <Section title={t('tg.how')}>

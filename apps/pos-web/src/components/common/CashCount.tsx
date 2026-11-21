@@ -115,7 +115,13 @@ export function ManualTotal({
   const { t } = useTranslation();
   return (
     <section className="rounded-card bg-white p-3 shadow-card">
-      <MoneyInput big currency={currency} value={value} onChange={onChange} label={`${t('shift.totalOnly')} · ${CURRENCY_LABEL[currency]}`} />
+      <MoneyInput
+        big
+        currency={currency}
+        value={value}
+        onChange={onChange}
+        label={`${t('shift.totalOnly')} · ${CURRENCY_LABEL[currency]}`}
+      />
     </section>
   );
 }

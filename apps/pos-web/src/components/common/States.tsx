@@ -25,7 +25,10 @@ export function LoadingBlock({ label }: { label?: string }) {
 export function ErrorBlock({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   const { t } = useTranslation();
   return (
-    <div role="alert" className="flex flex-col items-center gap-3 rounded-card bg-danger-tint px-4 py-6 text-center">
+    <div
+      role="alert"
+      className="flex flex-col items-center gap-3 rounded-card bg-danger-tint px-4 py-6 text-center"
+    >
       <p className="text-base font-bold text-danger">{errorMessage(error, t)}</p>
       {onRetry ? (
         <Button variant="outline" size="md" onClick={onRetry}>

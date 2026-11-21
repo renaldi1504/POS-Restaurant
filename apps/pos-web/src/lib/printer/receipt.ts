@@ -127,7 +127,8 @@ export function buildReceipt(data: ReceiptData, cols: number): DocLine[] {
   const { date, time } = formatReceiptDate(data.date);
   pre(twoCol(date, time, cols));
   const right = data.table ? `${t.table} ${data.table}`.toUpperCase() : data.orderNo ? `${data.orderNo}` : '';
-  if (data.cashier || right) pre(twoCol(data.cashier ? `${t.cashier}: ${data.cashier}` : '', right, cols), { bold: false });
+  if (data.cashier || right)
+    pre(twoCol(data.cashier ? `${t.cashier}: ${data.cashier}` : '', right, cols), { bold: false });
   if (data.table && data.orderNo) pre(twoCol(`${t.order} ${data.orderNo}`, data.orderTypeLabel ?? '', cols));
   else if (data.orderTypeLabel) pre(twoCol(data.orderTypeLabel, '', cols));
   if (data.kind === 'provisional') {
@@ -144,7 +145,8 @@ export function buildReceipt(data: ReceiptData, cols: number): DocLine[] {
     for (const it of g.items) {
       count += it.qty;
       pre(twoCol(`${it.qty} ${it.name}`, moneyAscii(it.total, cur, true), cols));
-      if (it.options.length) wrap(it.options.join(', '), cols - 2).forEach((l) => push(`  ${l}`, { pre: true }));
+      if (it.options.length)
+        wrap(it.options.join(', '), cols - 2).forEach((l) => push(`  ${l}`, { pre: true }));
       if (it.note) wrap(`${t.note}: ${it.note}`, cols - 2).forEach((l) => push(`  ${l}`, { pre: true }));
     }
   }
@@ -160,7 +162,8 @@ export function buildReceipt(data: ReceiptData, cols: number): DocLine[] {
   if (data.payments?.length) {
     push(rule(cols), { pre: true });
     for (const p of data.payments) pre(twoCol(p.label, moneyAscii(p.amount, p.currency), cols));
-    if (data.change && data.change > 0) pre(twoCol(t.change, moneyAscii(data.change, cur), cols), { bold: true });
+    if (data.change && data.change > 0)
+      pre(twoCol(t.change, moneyAscii(data.change, cur), cols), { bold: true });
   }
   if (data.paid !== undefined && data.paid > 0) pre(twoCol(t.paid, moneyAscii(data.paid, cur), cols));
   if (data.remaining !== undefined && data.remaining > 0)
@@ -177,7 +180,8 @@ export function previewLines(doc: DocLine[], cols: number): { text: string; bold
     const lines = l.pre ? [toAscii(l.text)] : wrap(l.text, l.big ? Math.floor(cols / 2) : cols);
     return lines.map((x) => {
       let text = x;
-      if (!l.pre && l.align === 'center') text = (center(x, l.big ? Math.floor(cols / 2) : cols)[0] ?? x).trimEnd();
+      if (!l.pre && l.align === 'center')
+        text = (center(x, l.big ? Math.floor(cols / 2) : cols)[0] ?? x).trimEnd();
       else if (!l.pre && l.align === 'right') text = x.padStart(cols, ' ');
       return { text, bold: !!l.bold, big: !!l.big };
     });
@@ -219,6 +223,7 @@ export function receiptItemsFromOrder(o: OrderDto, lang: ReceiptLang): ReceiptIt
 }
 
 export function paymentLabel(p: Pick<PaymentDto, 'method' | 'currency'>, lang: ReceiptLang): string {
-  const m = p.method === 'cash' ? 'Cash' : p.method === 'aba' ? 'ABA' : lang === 'id' ? 'Aplikasi' : 'Platform';
+  const m =
+    p.method === 'cash' ? 'Cash' : p.method === 'aba' ? 'ABA' : lang === 'id' ? 'Aplikasi' : 'Platform';
   return `${m} ${p.currency}`;
 }

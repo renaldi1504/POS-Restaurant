@@ -12,7 +12,16 @@ import PaymentPage, { CashPanel } from './PaymentPage';
 function Host({ due }: { due: number }) {
   const [cur, setCur] = useState<Currency>('KHR');
   const [rec, setRec] = useState<number | null>(null);
-  return <CashPanel dueMain={due} money={moneyCtxFrom(fx.publicSettings)} currency={cur} onCurrency={setCur} received={rec} onReceived={setRec} />;
+  return (
+    <CashPanel
+      dueMain={due}
+      money={moneyCtxFrom(fx.publicSettings)}
+      currency={cur}
+      onCurrency={setCur}
+      received={rec}
+      onReceived={setRec}
+    />
+  );
 }
 
 describe('Bayar – kembalian tunai', () => {
@@ -53,9 +62,32 @@ describe('Bayar – kembalian tunai', () => {
           subtotal: 42000,
           paymentStatus: 'paid',
           paidMain: 42000,
-          payments: [{ id: 1, orderId: order.id, tableSessionId: null, method: 'cash', currency: 'KHR', amount: 50000, amountMain: 50000, changeMain: 8000, proofUrl: null, verifiedBy: null, verifiedAt: null, createdBy: null, createdAt: order.createdAt }],
+          payments: [
+            {
+              id: 1,
+              orderId: order.id,
+              tableSessionId: null,
+              method: 'cash',
+              currency: 'KHR',
+              amount: 50000,
+              amountMain: 50000,
+              changeMain: 8000,
+              proofUrl: null,
+              verifiedBy: null,
+              verifiedAt: null,
+              createdBy: null,
+              createdAt: order.createdAt,
+            },
+          ],
         });
-        return HttpResponse.json({ payments: paid.payments, paidMain: 50000, changeMain: 8000, remainingMain: 0, order: paid, session: null });
+        return HttpResponse.json({
+          payments: paid.payments,
+          paidMain: 50000,
+          changeMain: 8000,
+          remainingMain: 0,
+          order: paid,
+          session: null,
+        });
       }),
     );
     renderApp(<PaymentPage />, { route: `/kasir/bayar/${order.id}`, path: '/kasir/bayar/:orderId' });
@@ -65,7 +97,13 @@ describe('Bayar – kembalian tunai', () => {
     await userEvent.click(screen.getByRole('button', { name: '50.000 ៛' }));
     await userEvent.click(finish);
     expect(await screen.findByTestId('done-change')).toHaveTextContent('8.000 ៛');
-    expect(body).toEqual({ orderId: order.id, lines: [{ method: 'cash', currency: 'KHR', amount: 50000 }], partial: false });
-    await waitFor(() => expect(screen.getByTestId('receipt-preview')).toHaveTextContent(/Kembalian\s+8\.000 KHR/));
+    expect(body).toEqual({
+      orderId: order.id,
+      lines: [{ method: 'cash', currency: 'KHR', amount: 50000 }],
+      partial: false,
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId('receipt-preview')).toHaveTextContent(/Kembalian\s+8\.000 KHR/),
+    );
   });
 });

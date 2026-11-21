@@ -16,7 +16,12 @@ describe('Aplikasi driver – alur Ambil', () => {
       http.get('*/api/auth/me', () => HttpResponse.json({ user: { ...fx.driver, lang: 'id' } })),
       http.get('*/api/driver/available', () => HttpResponse.json({ orders: available })),
       http.get('*/api/driver/mine', () =>
-        HttpResponse.json({ orders: mine, navigateAllUrl: null, cashCarried: mine.length ? 0 : collected ? 42000 : 0, deliveredCount: 0 }),
+        HttpResponse.json({
+          orders: mine,
+          navigateAllUrl: null,
+          cashCarried: mine.length ? 0 : collected ? 42000 : 0,
+          deliveredCount: 0,
+        }),
       ),
       http.post('*/api/driver/orders/:id/take', () => {
         const o = { ...available[0]!, driver: { id: 5, name: 'Driver' } };
@@ -45,9 +50,15 @@ describe('Aplikasi driver – alur Ambil', () => {
 
     expect(await screen.findByRole('tab', { name: 'Antaran saya (1)', selected: true })).toBeInTheDocument();
     const mineCard = await screen.findByTestId('driver-card');
-    expect(within(mineCard).getByRole('link', { name: 'Navigasi' })).toHaveAttribute('href', 'https://www.google.com/maps/dir/?api=1&destination=10.64,103.51');
+    expect(within(mineCard).getByRole('link', { name: 'Navigasi' })).toHaveAttribute(
+      'href',
+      'https://www.google.com/maps/dir/?api=1&destination=10.64,103.51',
+    );
     expect(within(mineCard).getByRole('link', { name: 'Telepon' })).toHaveAttribute('href', 'tel:012999888');
-    expect(within(mineCard).getByRole('link', { name: 'Chat Telegram' })).toHaveAttribute('href', 'https://t.me/sokha');
+    expect(within(mineCard).getByRole('link', { name: 'Chat Telegram' })).toHaveAttribute(
+      'href',
+      'https://t.me/sokha',
+    );
     await userEvent.click(within(mineCard).getByRole('button', { name: 'Sudah diambil' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Sudah sampai' }));
     const dialog = await screen.findByRole('dialog');
@@ -61,8 +72,12 @@ describe('Aplikasi driver – alur Ambil', () => {
     server.use(
       http.get('*/api/auth/me', () => HttpResponse.json({ user: { ...fx.driver, lang: 'id' } })),
       http.get('*/api/driver/available', () => HttpResponse.json({ orders: [makeDriverOrder()] })),
-      http.get('*/api/driver/mine', () => HttpResponse.json({ orders: [], navigateAllUrl: null, cashCarried: 0, deliveredCount: 0 })),
-      http.post('*/api/driver/orders/:id/take', () => HttpResponse.json({ error: { code: 'ALREADY_TAKEN', message: 'taken' } }, { status: 409 })),
+      http.get('*/api/driver/mine', () =>
+        HttpResponse.json({ orders: [], navigateAllUrl: null, cashCarried: 0, deliveredCount: 0 }),
+      ),
+      http.post('*/api/driver/orders/:id/take', () =>
+        HttpResponse.json({ error: { code: 'ALREADY_TAKEN', message: 'taken' } }, { status: 409 }),
+      ),
     );
     renderApp(<DriverPage />);
     await userEvent.click(await screen.findByRole('button', { name: 'Ambil antaran ini' }));
@@ -73,7 +88,9 @@ describe('Aplikasi driver – alur Ambil', () => {
     server.use(
       http.get('*/api/auth/me', () => HttpResponse.json({ user: fx.driver })),
       http.get('*/api/driver/available', () => HttpResponse.json({ orders: [] })),
-      http.get('*/api/driver/mine', () => HttpResponse.json({ orders: [], navigateAllUrl: null, cashCarried: 0, deliveredCount: 0 })),
+      http.get('*/api/driver/mine', () =>
+        HttpResponse.json({ orders: [], navigateAllUrl: null, cashCarried: 0, deliveredCount: 0 }),
+      ),
     );
     renderApp(<DriverPage />);
     expect(await screen.findByRole('heading', { name: 'ការដឹកជញ្ជូន' })).toBeInTheDocument();

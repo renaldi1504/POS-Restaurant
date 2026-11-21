@@ -11,10 +11,30 @@ import { setCart } from '../../lib/cart';
 import { useMoney } from '../../lib/data';
 
 export const TABLE_STYLE: Record<TableStatus, { key: string; dot: string; card: string; text: string }> = {
-  empty: { key: 'tables.empty', dot: 'bg-line-strong', card: 'bg-white border border-line', text: 'text-muted' },
-  eating: { key: 'tables.eating', dot: 'bg-info', card: 'bg-info-tint border-[1.5px] border-[#84ADFF]', text: 'text-info-dark' },
-  bill_requested: { key: 'tables.billRequested', dot: 'bg-warn', card: 'bg-warn-tint border-2 border-warn', text: 'text-warn-dark' },
-  qr_new: { key: 'tables.qrNew', dot: 'bg-primary', card: 'bg-primary-tint border-2 border-primary', text: 'text-primary-dark' },
+  empty: {
+    key: 'tables.empty',
+    dot: 'bg-line-strong',
+    card: 'bg-white border border-line',
+    text: 'text-muted',
+  },
+  eating: {
+    key: 'tables.eating',
+    dot: 'bg-info',
+    card: 'bg-info-tint border-[1.5px] border-[#84ADFF]',
+    text: 'text-info-dark',
+  },
+  bill_requested: {
+    key: 'tables.billRequested',
+    dot: 'bg-warn',
+    card: 'bg-warn-tint border-2 border-warn',
+    text: 'text-warn-dark',
+  },
+  qr_new: {
+    key: 'tables.qrNew',
+    dot: 'bg-primary',
+    card: 'bg-primary-tint border-2 border-primary',
+    text: 'text-primary-dark',
+  },
 };
 
 export default function TablesPage() {
@@ -40,7 +60,11 @@ export default function TablesPage() {
       <TopBar
         back={{ label: t('cashier.title'), onClick: () => navigate('/kasir') }}
         title={t('tables.title')}
-        right={<span className="text-[13px] text-muted">{t('meja.filled', { n: filled, total: tables.length })}</span>}
+        right={
+          <span className="text-[13px] text-muted">
+            {t('meja.filled', { n: filled, total: tables.length })}
+          </span>
+        }
       >
         {areas.length > 1 ? (
           <Tabs
@@ -72,7 +96,10 @@ export default function TablesPage() {
                 key={tb.id}
                 type="button"
                 onClick={() => open(tb)}
-                className={cn('flex min-h-[104px] flex-col gap-1 rounded-card p-3 text-left text-ink shadow-[0_1px_2px_rgba(16,24,40,0.05)]', st.card)}
+                className={cn(
+                  'flex min-h-[104px] flex-col gap-1 rounded-card p-3 text-left text-ink shadow-[0_1px_2px_rgba(16,24,40,0.05)]',
+                  st.card,
+                )}
               >
                 <div className="flex w-full items-center justify-between">
                   <b className="text-lg">{tb.name}</b>
@@ -84,8 +111,16 @@ export default function TablesPage() {
                 </span>
                 <span className="grow" />
                 <div className="flex w-full items-baseline justify-between">
-                  <b className="text-base tabular-nums">{tb.status !== 'empty' ? formatMoney(tb.runningTotal, money.main) : ''}</b>
-                  <span className="text-xs text-muted">{tb.status === 'qr_new' && tb.orderCount <= tb.pendingQrCount ? t('meja.new') : tb.session ? t('common.minutes', { count: mins }) : ''}</span>
+                  <b className="text-base tabular-nums">
+                    {tb.status !== 'empty' ? formatMoney(tb.runningTotal, money.main) : ''}
+                  </b>
+                  <span className="text-xs text-muted">
+                    {tb.status === 'qr_new' && tb.orderCount <= tb.pendingQrCount
+                      ? t('meja.new')
+                      : tb.session
+                        ? t('common.minutes', { count: mins })
+                        : ''}
+                  </span>
                 </div>
               </button>
             );

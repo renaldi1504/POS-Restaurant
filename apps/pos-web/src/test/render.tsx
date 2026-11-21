@@ -5,11 +5,20 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { ToastProvider } from '../components/ui';
 
 export function newQueryClient() {
-  return new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity }, mutations: { retry: false } } });
+  return new QueryClient({
+    defaultOptions: { queries: { retry: false, staleTime: Infinity }, mutations: { retry: false } },
+  });
 }
 
 /** Render dengan QueryClient baru + Toast + router memori. `path` = pola route, `route` = URL awal. */
-export function renderApp(ui: ReactElement, { route = '/', path = '*', qc = newQueryClient() }: { route?: string; path?: string; qc?: QueryClient } = {}) {
+export function renderApp(
+  ui: ReactElement,
+  {
+    route = '/',
+    path = '*',
+    qc = newQueryClient(),
+  }: { route?: string; path?: string; qc?: QueryClient } = {},
+) {
   const utils = render(
     <QueryClientProvider client={qc}>
       <ToastProvider>

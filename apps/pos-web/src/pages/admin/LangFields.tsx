@@ -5,7 +5,12 @@ import { LANGS, type Lang, type LocalizedText } from '@pos/shared';
 import { useToast } from '../../components/ui';
 import { api, errorMessage } from '../../lib/api';
 
-export const LANG_FIELD_LABEL: Record<Lang, string> = { id: 'Indonesia', en: 'English', kh: 'ខ្មែរ (Khmer)', zh: '中文 (Mandarin)' };
+export const LANG_FIELD_LABEL: Record<Lang, string> = {
+  id: 'Indonesia',
+  en: 'English',
+  kh: 'ខ្មែរ (Khmer)',
+  zh: '中文 (Mandarin)',
+};
 
 export type Loc = { id: string; en?: string; kh?: string; zh?: string };
 
@@ -17,10 +22,13 @@ export function useAutoTranslate() {
     mutationFn: async (entries: { key: string; text: Loc }[]) => {
       const valid = entries.filter((e) => e.text.id.trim());
       if (!valid.length) return { map: new Map<string, LocalizedText>(), provider: 'mock' as const };
-      const res = await api.call('adminTranslate', { body: { entries: valid.map((e) => ({ key: e.key, text: { ...e.text, id: e.text.id.trim() } })) } });
+      const res = await api.call('adminTranslate', {
+        body: { entries: valid.map((e) => ({ key: e.key, text: { ...e.text, id: e.text.id.trim() } })) },
+      });
       return { map: new Map(res.entries.map((e) => [e.key, e.text])), provider: res.provider };
     },
-    onSuccess: (r) => toast.success(r.provider === 'mock' ? t('menux.translatedMock') : t('menux.translated')),
+    onSuccess: (r) =>
+      toast.success(r.provider === 'mock' ? t('menux.translatedMock') : t('menux.translated')),
     onError: (e) => toast.error(errorMessage(e, t)),
   });
 }
@@ -60,7 +68,9 @@ export function LangInputs({
         <div key={l} className="flex flex-col gap-1">
           <label htmlFor={`${idPrefix}-${l}`} className="text-[13px] font-bold text-muted">
             {LANG_FIELD_LABEL[l]}
-            {l !== 'id' && auto.includes(l) ? <span className="font-semibold text-info"> · {t('menux.auto')}</span> : null}
+            {l !== 'id' && auto.includes(l) ? (
+              <span className="font-semibold text-info"> · {t('menux.auto')}</span>
+            ) : null}
           </label>
           <input
             id={`${idPrefix}-${l}`}

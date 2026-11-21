@@ -12,7 +12,12 @@ describe('Layar dapur', () => {
     server.use(
       http.get('*/api/auth/me', () => HttpResponse.json({ user: fx.kitchen })),
       http.get('*/api/orders', () =>
-        HttpResponse.json({ orders: [makeOrder({ status: 'accepted', acceptedAt, type: 'dine_in', table: { id: 2, name: 'Meja 2' } })], serverTime: new Date().toISOString() }),
+        HttpResponse.json({
+          orders: [
+            makeOrder({ status: 'accepted', acceptedAt, type: 'dine_in', table: { id: 2, name: 'Meja 2' } }),
+          ],
+          serverTime: new Date().toISOString(),
+        }),
       ),
     );
     renderApp(<KitchenPage />);
@@ -43,7 +48,9 @@ describe('Layar dapur', () => {
     const now = Date.now();
     const ago = (m: number) => new Date(now - m * 60_000).toISOString();
     expect(kitchenTone({ status: 'accepted', acceptedAt: ago(2), createdAt: ago(2) }, 15, now)).toBe('new');
-    expect(kitchenTone({ status: 'cooking', acceptedAt: ago(9), createdAt: ago(9) }, 15, now)).toBe('cooking');
+    expect(kitchenTone({ status: 'cooking', acceptedAt: ago(9), createdAt: ago(9) }, 15, now)).toBe(
+      'cooking',
+    );
     expect(kitchenTone({ status: 'cooking', acceptedAt: ago(18), createdAt: ago(18) }, 15, now)).toBe('late');
   });
 
@@ -52,7 +59,12 @@ describe('Layar dapur', () => {
     let status: 'accepted' | 'cooking' = 'accepted';
     server.use(
       http.get('*/api/auth/me', () => HttpResponse.json({ user: fx.kitchen })),
-      http.get('*/api/orders', () => HttpResponse.json({ orders: [makeOrder({ status, acceptedAt: new Date().toISOString() })], serverTime: new Date().toISOString() })),
+      http.get('*/api/orders', () =>
+        HttpResponse.json({
+          orders: [makeOrder({ status, acceptedAt: new Date().toISOString() })],
+          serverTime: new Date().toISOString(),
+        }),
+      ),
       http.post('*/api/orders/:id/status', async ({ request }) => {
         sent = await request.json();
         status = 'cooking';

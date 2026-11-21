@@ -10,10 +10,14 @@ import { api } from '../../lib/api';
 import { usePublicSettings } from '../../lib/data';
 
 /** Urutan jam operasional (mis. 08 → 02 untuk buka 08.00 tutup 03.00), nilai 0 bila kosong. */
-export function hourSeries(byHour: HourlyPoint[], open = '08:00', close = '03:00'): { hour: number; total: number }[] {
+export function hourSeries(
+  byHour: HourlyPoint[],
+  open = '08:00',
+  close = '03:00',
+): { hour: number; total: number }[] {
   const start = Math.floor(parseHHMM(open) / 60);
   const end = Math.ceil(parseHHMM(close) / 60);
-  const span = ((end - start + 24) % 24) || 24;
+  const span = (end - start + 24) % 24 || 24;
   const map = new Map(byHour.map((p) => [p.hour, p.total]));
   // jam di luar jam buka yang tetap ada penjualan ikut ditampilkan
   const hours = Array.from({ length: span }, (_, i) => (start + i) % 24);
@@ -34,7 +38,12 @@ export default function DashboardPage() {
   const r = q.data;
   const isToday = !date || date === settings.data?.businessDate;
   const shownDate = r?.date ?? settings.data?.businessDate ?? '';
-  const dateLabel = shownDate ? new Date(`${shownDate}T00:00:00`).toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'id-ID', { day: 'numeric', month: 'short' }) : '';
+  const dateLabel = shownDate
+    ? new Date(`${shownDate}T00:00:00`).toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'id-ID', {
+        day: 'numeric',
+        month: 'short',
+      })
+    : '';
 
   return (
     <Screen wide testId="admin-screen">
@@ -60,13 +69,30 @@ export default function DashboardPage() {
       <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto p-3">
         {q.isLoading ? <LoadingBlock /> : null}
         {q.isError ? <ErrorBlock error={q.error} onRetry={() => void q.refetch()} /> : null}
-        {r ? <DashboardBody r={r} lang={i18n.language} open={settings.data?.hours.open} close={settings.data?.hours.close} /> : null}
+        {r ? (
+          <DashboardBody
+            r={r}
+            lang={i18n.language}
+            open={settings.data?.hours.open}
+            close={settings.data?.hours.close}
+          />
+        ) : null}
       </main>
     </Screen>
   );
 }
 
-export function DashboardBody({ r, lang, open, close }: { r: DailyReport; lang: string; open?: string; close?: string }) {
+export function DashboardBody({
+  r,
+  lang,
+  open,
+  close,
+}: {
+  r: DailyReport;
+  lang: string;
+  open?: string;
+  close?: string;
+}) {
   const { t } = useTranslation();
   const fmt = (v: number) => formatMoney(v, r.currency);
   const series = hourSeries(r.byHour, open, close);
@@ -93,16 +119,25 @@ export function DashboardBody({ r, lang, open, close }: { r: DailyReport; lang: 
       <section className="flex flex-col gap-1.5 rounded-[14px] bg-white p-3 shadow-card">
         <h2 className="text-base font-extrabold">{t('dash.perHour')}</h2>
         <span className="text-xs text-muted">
-          {peak.total > 0 ? `${t('dash.peak', { from: `${pad(peak.hour)}.00`, to: `${pad((peak.hour + 1) % 24)}.00` })} · ` : ''}
+          {peak.total > 0
+            ? `${t('dash.peak', { from: `${pad(peak.hour)}.00`, to: `${pad((peak.hour + 1) % 24)}.00` })} · `
+            : ''}
           {t('dash.thousand', { symbol: r.currency === 'KHR' ? '៛' : r.currency })}
         </span>
-        <div className="flex h-[150px] items-end gap-[3px] border-b border-line-strong" role="img" aria-label={t('dash.perHour')}>
+        <div
+          className="flex h-[150px] items-end gap-[3px] border-b border-line-strong"
+          role="img"
+          aria-label={t('dash.perHour')}
+        >
           {series.map((s) => (
             <div
               key={s.hour}
               title={`${pad(s.hour)}.00 · ${fmt(s.total)}`}
               className="flex-1 rounded-t"
-              style={{ height: `${Math.round((s.total / max) * 140)}px`, background: s.total >= max * 0.8 && s.total > 0 ? '#047857' : '#A7F3D0' }}
+              style={{
+                height: `${Math.round((s.total / max) * 140)}px`,
+                background: s.total >= max * 0.8 && s.total > 0 ? '#047857' : '#A7F3D0',
+              }}
             />
           ))}
         </div>
@@ -125,7 +160,10 @@ export function DashboardBody({ r, lang, open, close }: { r: DailyReport; lang: 
                 <b className="tabular-nums">{fmt(c.net)}</b>
               </div>
               <div className="h-2 rounded bg-[#F2F4F7]">
-                <div className="h-2 rounded bg-primary" style={{ width: `${Math.round((Math.max(0, c.net) / chMax) * 100)}%` }} />
+                <div
+                  className="h-2 rounded bg-primary"
+                  style={{ width: `${Math.round((Math.max(0, c.net) / chMax) * 100)}%` }}
+                />
               </div>
             </div>
           ))}

@@ -72,13 +72,21 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
     .join(' + ');
   const rateNote = currencies
     .filter((c) => c !== money.main && totals[c] > 0)
-    .map((c) => (c === 'USD' ? `$1 = ${formatMoney(money.rates.USD, 'KHR', { noSymbol: true })}` : `Rp1.000 = ${formatMoney(Math.round(money.rates.IDR * 1000), 'KHR', { noSymbol: true })}`))
+    .map((c) =>
+      c === 'USD'
+        ? `$1 = ${formatMoney(money.rates.USD, 'KHR', { noSymbol: true })}`
+        : `Rp1.000 = ${formatMoney(Math.round(money.rates.IDR * 1000), 'KHR', { noSymbol: true })}`,
+    )
     .join(', ');
 
   return (
     <>
       <header className="flex shrink-0 flex-col gap-0.5 border-b border-line bg-white px-3.5 py-3">
-        {embedded ? <span className="text-xs font-bold uppercase tracking-wide text-warn-dark">{t('shift.noShift')}</span> : null}
+        {embedded ? (
+          <span className="text-xs font-bold uppercase tracking-wide text-warn-dark">
+            {t('shift.noShift')}
+          </span>
+        ) : null}
         <h2 className="text-xl font-extrabold">{t('shiftx.openTitle', { name: shiftName })}</h2>
         <span className="text-sm text-muted">{t('shiftx.countFirst')}</span>
       </header>
@@ -105,14 +113,24 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
         />
         <CurrencyTabs currencies={currencies} value={cur} onChange={setCur} totals={totals} />
         {mode === 'denom' ? (
-          <DenominationList currency={cur} counts={counts[cur] ?? {}} onChange={(next) => setCounts((c) => ({ ...c, [cur]: next }))} />
+          <DenominationList
+            currency={cur}
+            counts={counts[cur] ?? {}}
+            onChange={(next) => setCounts((c) => ({ ...c, [cur]: next }))}
+          />
         ) : (
-          <ManualTotal currency={cur} value={manual[cur] ?? null} onChange={(v) => setManual((m) => ({ ...m, [cur]: v }))} />
+          <ManualTotal
+            currency={cur}
+            value={manual[cur] ?? null}
+            onChange={(v) => setManual((m) => ({ ...m, [cur]: v }))}
+          />
         )}
       </main>
       <ScreenFooter className="gap-2.5">
         <div className="flex items-baseline justify-between">
-          <span className="text-[15px] text-muted">{t('shiftx.totalIn', { currency: money.main === 'KHR' ? 'Riel' : money.main })}</span>
+          <span className="text-[15px] text-muted">
+            {t('shiftx.totalIn', { currency: money.main === 'KHR' ? 'Riel' : money.main })}
+          </span>
           <b className="text-[28px] text-primary-dark tabular-nums" data-testid="opening-total">
             {formatMoney(totalMain, money.main)}
           </b>

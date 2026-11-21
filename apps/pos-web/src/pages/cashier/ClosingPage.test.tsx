@@ -10,7 +10,15 @@ const money = moneyCtxFrom(fx.publicSettings);
 describe('Closing – langkah 3 (hasil)', () => {
   it('menampilkan selisih kurang, rumus modal + jual − keluar, dan catatan wajib', () => {
     renderApp(
-      <ClosingResultView preview={closingPreview} money={money} actualCash={{ KHR: 1033000, USD: 2000, IDR: 0 }} abaMain={555000} note="" onNote={() => {}} noteError />,
+      <ClosingResultView
+        preview={closingPreview}
+        money={money}
+        actualCash={{ KHR: 1033000, USD: 2000, IDR: 0 }}
+        abaMain={555000}
+        note=""
+        onNote={() => {}}
+        noteError
+      />,
     );
     const cash = screen.getByTestId('cash-result');
     expect(cash).toHaveTextContent('Kurang 5.000 ៛');
@@ -30,7 +38,17 @@ describe('Closing – langkah 3 (hasil)', () => {
   });
 
   it('cash lebih & ABA kurang', () => {
-    renderApp(<ClosingResultView preview={closingPreview} money={money} actualCash={{ KHR: 1130000, USD: 0, IDR: 0 }} abaMain={550000} note="x" onNote={() => {}} noteError={false} />);
+    renderApp(
+      <ClosingResultView
+        preview={closingPreview}
+        money={money}
+        actualCash={{ KHR: 1130000, USD: 0, IDR: 0 }}
+        abaMain={550000}
+        note="x"
+        onNote={() => {}}
+        noteError={false}
+      />,
+    );
     expect(screen.getByTestId('cash-result')).toHaveTextContent('Lebih 10.000 ៛');
     expect(screen.getByTestId('aba-result')).toHaveTextContent('Kurang 5.000 ៛');
   });

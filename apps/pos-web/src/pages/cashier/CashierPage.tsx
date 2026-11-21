@@ -8,7 +8,15 @@ import { ErrorBlock, LoadingBlock, Screen } from '../../components/common';
 import { CashierActions } from '../../components/cashier/CashierHeader';
 import { OptionSheet } from '../../components/cashier/OptionSheet';
 import { useMe } from '../../lib/auth';
-import { addLine, computeCart, kindToChannelType, priceFor, qtyByItem, setCart, useCart } from '../../lib/cart';
+import {
+  addLine,
+  computeCart,
+  kindToChannelType,
+  priceFor,
+  qtyByItem,
+  setCart,
+  useCart,
+} from '../../lib/cart';
 import { useCurrentShift, useMoney, usePublicSettings, useStaffMenu } from '../../lib/data';
 import { OpenShiftForm } from '../shift/OpenShiftPage';
 
@@ -19,7 +27,12 @@ export default function CashierPage() {
 
   let body: React.ReactNode;
   if (shift.isLoading) body = <LoadingBlock />;
-  else if (shift.isError) body = <div className="p-4"><ErrorBlock error={shift.error} onRetry={() => void shift.refetch()} /></div>;
+  else if (shift.isError)
+    body = (
+      <div className="p-4">
+        <ErrorBlock error={shift.error} onRetry={() => void shift.refetch()} />
+      </div>
+    );
   else if (!shift.data)
     body = hasPermission(me?.permissions, 'shift.manage') ? (
       <OpenShiftForm embedded />
@@ -62,7 +75,10 @@ function MenuGrid({ shiftName, lang }: { shiftName: string; lang: string }) {
     return list
       .filter((i) => (cat === 'all' ? true : i.categoryId === cat))
       .filter((i) => matchesLocalized(q, i.name, catById.get(i.categoryId)?.name))
-      .sort((a, b) => (catById.get(a.categoryId)?.sort ?? 0) - (catById.get(b.categoryId)?.sort ?? 0) || a.sort - b.sort);
+      .sort(
+        (a, b) =>
+          (catById.get(a.categoryId)?.sort ?? 0) - (catById.get(b.categoryId)?.sort ?? 0) || a.sort - b.sort,
+      );
   }, [menu.data, cat, q, catById]);
   const groupsFor = (item: MenuItemDto) =>
     item.optionGroupIds
@@ -86,7 +102,11 @@ function MenuGrid({ shiftName, lang }: { shiftName: string; lang: string }) {
       <header className="flex shrink-0 flex-col gap-2.5 border-b border-line bg-white px-3.5 py-2.5">
         <div className="flex items-center gap-2.5">
           {settings.data?.logoUrl ? (
-            <img src={settings.data.logoUrl} alt="" className="size-10 shrink-0 rounded-[10px] object-cover" />
+            <img
+              src={settings.data.logoUrl}
+              alt=""
+              className="size-10 shrink-0 rounded-[10px] object-cover"
+            />
           ) : (
             <div className="flex size-10 shrink-0 items-center justify-center rounded-[10px] border-2 border-dashed border-line-strong bg-[#F2F4F7] text-[9px] font-bold text-muted">
               LOGO
@@ -94,12 +114,24 @@ function MenuGrid({ shiftName, lang }: { shiftName: string; lang: string }) {
           )}
           <div className="flex min-w-0 grow flex-col">
             <b className="truncate text-xl leading-tight">{title}</b>
-            <span className="truncate text-[13px] text-muted">{t('cashier.shiftBy', { shift: shiftName, name: me?.name ?? '' })}</span>
+            <span className="truncate text-[13px] text-muted">
+              {t('cashier.shiftBy', { shift: shiftName, name: me?.name ?? '' })}
+            </span>
           </div>
           <CashierActions />
         </div>
         <div className="relative">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2.2" strokeLinecap="round" aria-hidden className="absolute left-3 top-3">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#667085"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            aria-hidden
+            className="absolute left-3 top-3"
+          >
             <circle cx="11" cy="11" r="7" />
             <path d="m20 20-3.5-3.5" />
           </svg>
@@ -152,7 +184,17 @@ function MenuGrid({ shiftName, lang }: { shiftName: string; lang: string }) {
                   {m.photoUrl ? (
                     <img src={m.photoUrl} alt="" loading="lazy" className="size-full object-cover" />
                   ) : (
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
                       <path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
                     </svg>
                   )}
@@ -160,17 +202,26 @@ function MenuGrid({ shiftName, lang }: { shiftName: string; lang: string }) {
                 <div className="flex w-full flex-col gap-0.5 px-2.5 pb-2.5 pt-2">
                   <span className="text-base font-bold leading-tight">{tl(m.name, lang)}</span>
                   <span className="text-[17px] font-extrabold">
-                    {price !== null ? formatMoney(price, money.main) : <span className="text-sm text-muted">{t('kasir.notOnChannel')}</span>}
+                    {price !== null ? (
+                      formatMoney(price, money.main)
+                    ) : (
+                      <span className="text-sm text-muted">{t('kasir.notOnChannel')}</span>
+                    )}
                   </span>
                 </div>
                 {qty ? (
-                  <span aria-hidden className="absolute right-2 top-2 flex size-[34px] items-center justify-center rounded-full bg-primary text-[17px] font-extrabold text-white">
+                  <span
+                    aria-hidden
+                    className="absolute right-2 top-2 flex size-[34px] items-center justify-center rounded-full bg-primary text-[17px] font-extrabold text-white"
+                  >
                     {qty}
                   </span>
                 ) : null}
                 {soldOut ? (
                   <span aria-hidden className="absolute inset-x-0 top-[30px] text-center">
-                    <span className="rounded-lg bg-danger px-3.5 py-[5px] text-base font-extrabold text-white">{t('common.soldOut')}</span>
+                    <span className="rounded-lg bg-danger px-3.5 py-[5px] text-base font-extrabold text-white">
+                      {t('common.soldOut')}
+                    </span>
                   </span>
                 ) : null}
               </button>
@@ -202,7 +253,8 @@ function MenuGrid({ shiftName, lang }: { shiftName: string; lang: string }) {
         currency={money.main}
         onClose={() => setSheetItem(null)}
         onAdd={({ optionIds, qty, note }) => {
-          if (sheetItem) setCart((c) => ({ lines: addLine(c.lines, { itemId: sheetItem.id, qty, optionIds, note }) }));
+          if (sheetItem)
+            setCart((c) => ({ lines: addLine(c.lines, { itemId: sheetItem.id, qty, optionIds, note }) }));
           setSheetItem(null);
         }}
       />

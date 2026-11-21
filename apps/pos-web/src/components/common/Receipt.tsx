@@ -1,7 +1,13 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { buildReceipt, previewLines, usePrinterStatus, type DocLine, type ReceiptData } from '../../lib/printer';
+import {
+  buildReceipt,
+  previewLines,
+  usePrinterStatus,
+  type DocLine,
+  type ReceiptData,
+} from '../../lib/printer';
 import { paperCols, printDoc, printReceipt } from '../../lib/print';
 import { getPrefs } from '../../lib/prefs';
 import { useToast } from '../ui';

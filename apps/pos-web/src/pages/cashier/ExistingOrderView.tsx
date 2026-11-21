@@ -28,10 +28,18 @@ import { receiptFromOrder } from '../../lib/receiptData';
 import { kindLabel } from './CartView';
 import { kindFromOrder } from '../../lib/cart';
 
-
-
 /** Batalkan order: alasan wajib; sudah dibayar & tanpa hak → PIN admin. */
-export function CancelOrderSheet({ order, open, onClose, onDone }: { order: OrderDto; open: boolean; onClose: () => void; onDone?: (o: OrderDto) => void }) {
+export function CancelOrderSheet({
+  order,
+  open,
+  onClose,
+  onDone,
+}: {
+  order: OrderDto;
+  open: boolean;
+  onClose: () => void;
+  onDone?: (o: OrderDto) => void;
+}) {
   const { t } = useTranslation();
   const toast = useToast();
   const qc = useQueryClient();
@@ -41,7 +49,10 @@ export function CancelOrderSheet({ order, open, onClose, onDone }: { order: Orde
   const [pinNeeded, setPinNeeded] = useState(needPin);
   const cancel = useMutation({
     mutationFn: (reason: string) =>
-      api.call('orderCancel', { params: { id: order.id }, body: { reason, ...(pinNeeded && pin.length === 4 ? { adminPin: pin } : {}) } }),
+      api.call('orderCancel', {
+        params: { id: order.id },
+        body: { reason, ...(pinNeeded && pin.length === 4 ? { adminPin: pin } : {}) },
+      }),
     onSuccess: (res) => {
       qc.setQueryData(qk.order(order.id), res);
       void qc.invalidateQueries({ queryKey: ['orders'] });
@@ -96,7 +107,10 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [proofOpen, setProofOpen] = useState(false);
-  const q = useQuery({ queryKey: qk.order(orderId), queryFn: () => api.call('orderGet', { params: { id: orderId } }) });
+  const q = useQuery({
+    queryKey: qk.order(orderId),
+    queryFn: () => api.call('orderGet', { params: { id: orderId } }),
+  });
   const order = q.data?.order;
 
   const onOrder = (res: { order: OrderDto }) => {
@@ -130,7 +144,10 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
   if (q.isError || !order)
     return (
       <Screen>
-        <TopBar back={{ label: t('cashier.title'), onClick: () => navigate(-1) }} title={t('cashier.orderDetail')} />
+        <TopBar
+          back={{ label: t('cashier.title'), onClick: () => navigate(-1) }}
+          title={t('cashier.orderDetail')}
+        />
         <div className="p-4">
           <ErrorBlock error={q.error} onRetry={() => void q.refetch()} />
         </div>
@@ -157,7 +174,15 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
           title={
             <span className="flex items-center gap-2">
               <SourceBadge channel={order.channel} />
-              <Badge tone={order.paymentStatus === 'paid' ? 'primary' : order.paymentStatus === 'pending_verification' ? 'warn' : 'danger'}>
+              <Badge
+                tone={
+                  order.paymentStatus === 'paid'
+                    ? 'primary'
+                    : order.paymentStatus === 'pending_verification'
+                      ? 'warn'
+                      : 'danger'
+                }
+              >
                 {t(`paymentStatus.${order.paymentStatus}`)}
               </Badge>
             </span>
@@ -175,22 +200,45 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
               {order.address.landmark ? ` · ${t('order.landmark')}: ${order.address.landmark}` : ''}
             </div>
           ) : null}
-          {order.driver ? <div className="text-sm">{t('order.driverName', { name: order.driver.name })}</div> : null}
-          {order.note ? <div className="text-sm font-bold text-danger">{t('common.note')}: {order.note}</div> : null}
-          {order.rejectReason ? <div className="text-sm font-bold text-danger">{t('common.reason')}: {order.rejectReason}</div> : null}
-          {order.cancelReason ? <div className="text-sm font-bold text-danger">{t('common.reason')}: {order.cancelReason}</div> : null}
+          {order.driver ? (
+            <div className="text-sm">{t('order.driverName', { name: order.driver.name })}</div>
+          ) : null}
+          {order.note ? (
+            <div className="text-sm font-bold text-danger">
+              {t('common.note')}: {order.note}
+            </div>
+          ) : null}
+          {order.rejectReason ? (
+            <div className="text-sm font-bold text-danger">
+              {t('common.reason')}: {order.rejectReason}
+            </div>
+          ) : null}
+          {order.cancelReason ? (
+            <div className="text-sm font-bold text-danger">
+              {t('common.reason')}: {order.cancelReason}
+            </div>
+          ) : null}
         </Section>
         <Section>
           <OrderItemsList order={order} lang={lang} />
           <div className="mt-1 flex flex-col gap-1 border-t border-[#F2F4F7] pt-2 text-[15px]">
             <Row label={t('common.subtotal')} value={formatMoney(order.subtotal, order.currency)} />
-            {order.discount ? <Row label={t('common.discount')} value={`-${formatMoney(order.discount, order.currency)}`} /> : null}
-            {order.deliveryFee ? <Row label={t('common.deliveryFee')} value={formatMoney(order.deliveryFee, order.currency)} /> : null}
+            {order.discount ? (
+              <Row label={t('common.discount')} value={`-${formatMoney(order.discount, order.currency)}`} />
+            ) : null}
+            {order.deliveryFee ? (
+              <Row label={t('common.deliveryFee')} value={formatMoney(order.deliveryFee, order.currency)} />
+            ) : null}
             <div className="flex items-baseline justify-between">
               <b className="text-lg">{t('common.total')}</b>
               <b className="text-2xl tabular-nums">{formatMoney(order.total, order.currency)}</b>
             </div>
-            {order.paidMain > 0 && unpaid ? <Row label={t('payment.remaining')} value={formatMoney(order.total - order.paidMain, order.currency)} /> : null}
+            {order.paidMain > 0 && unpaid ? (
+              <Row
+                label={t('payment.remaining')}
+                value={formatMoney(order.total - order.paidMain, order.currency)}
+              />
+            ) : null}
           </div>
         </Section>
         {order.payments.length ? (
@@ -199,7 +247,9 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
               <div key={p.id} className="flex justify-between text-[15px]">
                 <span>
                   {t(`paymentMethod.${p.method}`)} · {timeHM(p.createdAt)}
-                  {p.method === 'aba' && p.proofUrl && !p.verifiedAt ? <span className="ml-1 font-bold text-warn-dark">({t('payment.verify')})</span> : null}
+                  {p.method === 'aba' && p.proofUrl && !p.verifiedAt ? (
+                    <span className="ml-1 font-bold text-warn-dark">({t('payment.verify')})</span>
+                  ) : null}
                 </span>
                 <b className="tabular-nums">{formatMoney(p.amount, p.currency)}</b>
               </div>
@@ -215,7 +265,16 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
           <Button
             variant="outline"
             size="md"
-            onClick={() => void print.printReceipt(receiptFromOrder(order, { shop: settings.data, money, lang: getPrefs().receiptLang, cashier: me?.name }))}
+            onClick={() =>
+              void print.printReceipt(
+                receiptFromOrder(order, {
+                  shop: settings.data,
+                  money,
+                  lang: getPrefs().receiptLang,
+                  cashier: me?.name,
+                }),
+              )
+            }
           >
             {unpaid ? t('tables.printTemp') : t('payment.printReceipt')}
           </Button>
@@ -232,7 +291,12 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
             </Button>
           ) : null}
           {!terminal && hasPermission(me?.permissions, 'order.create') ? (
-            <Button variant="outline" size="md" className="border-2 border-[#F04438] text-danger" onClick={() => setCancelOpen(true)}>
+            <Button
+              variant="outline"
+              size="md"
+              className="border-2 border-[#F04438] text-danger"
+              onClick={() => setCancelOpen(true)}
+            >
               {t('cashier.cancelOrder')}
             </Button>
           ) : null}
@@ -242,7 +306,11 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
         <ScreenFooter>
           {order.status === 'pending_accept' ? (
             <div className="flex gap-2">
-              <button type="button" onClick={() => setRejectOpen(true)} className="h-14 w-[104px] rounded-[14px] border-2 border-[#F04438] bg-white text-base font-extrabold text-danger shadow-card">
+              <button
+                type="button"
+                onClick={() => setRejectOpen(true)}
+                className="h-14 w-[104px] rounded-[14px] border-2 border-[#F04438] bg-white text-base font-extrabold text-danger shadow-card"
+              >
                 {t('cashier.reject')}
               </button>
               <Button className="grow text-xl" loading={accept.isPending} onClick={() => accept.mutate()}>
@@ -252,7 +320,13 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
           ) : (
             <div className="flex gap-2">
               {cashierNext.map((s) => (
-                <Button key={s} variant="secondary" className="grow" loading={status.isPending} onClick={() => status.mutate(s)}>
+                <Button
+                  key={s}
+                  variant="secondary"
+                  className="grow"
+                  loading={status.isPending}
+                  onClick={() => status.mutate(s)}
+                >
                   {s === 'served' ? t('cashier.markServed') : t('cashier.markDone')}
                 </Button>
               ))}
@@ -276,8 +350,15 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
         onClose={() => setRejectOpen(false)}
         onConfirm={(r) => reject.mutate(r)}
       />
-      <Sheet open={proofOpen} onClose={() => setProofOpen(false)} title={t('payment.proof')} closeLabel={t('common.close')}>
-        {order.proofUrl ? <img src={order.proofUrl} alt={t('payment.proof')} className="w-full rounded-xl" /> : null}
+      <Sheet
+        open={proofOpen}
+        onClose={() => setProofOpen(false)}
+        title={t('payment.proof')}
+        closeLabel={t('common.close')}
+      >
+        {order.proofUrl ? (
+          <img src={order.proofUrl} alt={t('payment.proof')} className="w-full rounded-xl" />
+        ) : null}
       </Sheet>
     </Screen>
   );

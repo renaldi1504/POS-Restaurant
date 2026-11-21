@@ -5,7 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { formatMoney, type Currency, type ExpenseSource } from '@pos/shared';
 import { Button, useToast } from '../../components/ui';
-import { CURRENCY_SHORT, ChoiceButton, ErrorBlock, LoadingBlock, MoneyInput, Screen, ScreenFooter, TextField, TopBar, timeHM } from '../../components/common';
+import {
+  CURRENCY_SHORT,
+  ChoiceButton,
+  ErrorBlock,
+  LoadingBlock,
+  MoneyInput,
+  Screen,
+  ScreenFooter,
+  TextField,
+  TopBar,
+  timeHM,
+} from '../../components/common';
 import { api, errorMessage, qk } from '../../lib/api';
 import { useMoney } from '../../lib/data';
 import { cn } from '../../components/ui';
@@ -16,7 +27,11 @@ export default function ExpensesPage() {
   const qc = useQueryClient();
   const toast = useToast();
   const money = useMoney();
-  const cats = useQuery({ queryKey: ['expense-categories'], queryFn: () => api.call('expenseCategories'), staleTime: 5 * 60_000 });
+  const cats = useQuery({
+    queryKey: ['expense-categories'],
+    queryFn: () => api.call('expenseCategories'),
+    staleTime: 5 * 60_000,
+  });
   const list = useQuery({ queryKey: qk.expenses, queryFn: () => api.call('expensesList') });
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [amount, setAmount] = useState<number | null>(null);
@@ -39,7 +54,14 @@ export default function ExpensesPage() {
   const save = useMutation({
     mutationFn: () =>
       api.call('expenseCreate', {
-        body: { categoryId: categoryId!, amount: amount!, currency, source, ...(note.trim() ? { note: note.trim() } : {}), ...(photo ? { photoUrl: photo.url } : {}) },
+        body: {
+          categoryId: categoryId!,
+          amount: amount!,
+          currency,
+          source,
+          ...(note.trim() ? { note: note.trim() } : {}),
+          ...(photo ? { photoUrl: photo.url } : {}),
+        },
       }),
     onSuccess: () => {
       toast.success(t('keluar.saved'));
@@ -75,17 +97,40 @@ export default function ExpensesPage() {
           {cats.isError ? <ErrorBlock error={cats.error} onRetry={() => void cats.refetch()} /> : null}
           <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('expense.category')}>
             {cats.data?.categories.map((c) => (
-              <ChoiceButton key={c.id} role="radio" aria-checked={categoryId === c.id} selected={categoryId === c.id} onClick={() => setCategoryId(c.id)} className="h-[54px]">
+              <ChoiceButton
+                key={c.id}
+                role="radio"
+                aria-checked={categoryId === c.id}
+                selected={categoryId === c.id}
+                onClick={() => setCategoryId(c.id)}
+                className="h-[54px]"
+              >
                 {c.name}
               </ChoiceButton>
             ))}
           </div>
-          {showErr && !categoryId ? <span className="text-sm font-bold text-danger">{t('keluar.pickCategory')}</span> : null}
+          {showErr && !categoryId ? (
+            <span className="text-sm font-bold text-danger">{t('keluar.pickCategory')}</span>
+          ) : null}
         </section>
         <section className="flex flex-col gap-2">
-          <MoneyInput big id="jml" label={`2. ${t('keluar.howMuch')}`} currency={currency} value={amount} onChange={setAmount} />
-          {showErr && !amount ? <span className="text-sm font-bold text-danger">{t('keluar.fillAmount')}</span> : null}
-          <div role="radiogroup" aria-label={t('payment.currency')} className="grid gap-1 rounded-xl bg-[#EEF0F3] p-1" style={{ gridTemplateColumns: `repeat(${money.enabled.length}, minmax(0,1fr))` }}>
+          <MoneyInput
+            big
+            id="jml"
+            label={`2. ${t('keluar.howMuch')}`}
+            currency={currency}
+            value={amount}
+            onChange={setAmount}
+          />
+          {showErr && !amount ? (
+            <span className="text-sm font-bold text-danger">{t('keluar.fillAmount')}</span>
+          ) : null}
+          <div
+            role="radiogroup"
+            aria-label={t('payment.currency')}
+            className="grid gap-1 rounded-xl bg-[#EEF0F3] p-1"
+            style={{ gridTemplateColumns: `repeat(${money.enabled.length}, minmax(0,1fr))` }}
+          >
             {money.enabled.map((c) => (
               <button
                 key={c}
@@ -96,7 +141,12 @@ export default function ExpensesPage() {
                   setCurrency(c);
                   setAmount(null);
                 }}
-                className={cn('h-[42px] rounded-[9px] text-[15px]', currency === c ? 'bg-white font-extrabold shadow-[0_1px_3px_rgba(0,0,0,0.15)]' : 'font-semibold')}
+                className={cn(
+                  'h-[42px] rounded-[9px] text-[15px]',
+                  currency === c
+                    ? 'bg-white font-extrabold shadow-[0_1px_3px_rgba(0,0,0,0.15)]'
+                    : 'font-semibold',
+                )}
               >
                 {CURRENCY_SHORT[c]}
               </button>
@@ -106,18 +156,49 @@ export default function ExpensesPage() {
         <section className="flex flex-col gap-2">
           <b>3. {t('keluar.fromWhere')}</b>
           <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('expense.source')}>
-            <ChoiceButton role="radio" aria-checked={source === 'cash'} selected={source === 'cash'} onClick={() => setSource('cash')} className="h-[54px]">
+            <ChoiceButton
+              role="radio"
+              aria-checked={source === 'cash'}
+              selected={source === 'cash'}
+              onClick={() => setSource('cash')}
+              className="h-[54px]"
+            >
               {t('keluar.cashDrawer')}
             </ChoiceButton>
-            <ChoiceButton role="radio" aria-checked={source === 'aba'} selected={source === 'aba'} onClick={() => setSource('aba')} className="h-[54px]">
+            <ChoiceButton
+              role="radio"
+              aria-checked={source === 'aba'}
+              selected={source === 'aba'}
+              onClick={() => setSource('aba')}
+              className="h-[54px]"
+            >
               {t('keluar.abaTransfer')}
             </ChoiceButton>
           </div>
         </section>
         <section className="flex flex-col gap-2">
-          <TextField label={t('keluar.noteOptional')} value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} inputClassName="h-[52px] text-[17px]" />
-          <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" aria-label={t('expense.photo')} onChange={(e) => e.target.files?.[0] && upload.mutate(e.target.files[0])} />
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={upload.isPending} className="h-12 rounded-[14px] border-[1.5px] border-dashed border-[#98A2B3] text-[15px] font-bold">
+          <TextField
+            label={t('keluar.noteOptional')}
+            value={note}
+            maxLength={300}
+            onChange={(e) => setNote(e.target.value)}
+            inputClassName="h-[52px] text-[17px]"
+          />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            aria-label={t('expense.photo')}
+            onChange={(e) => e.target.files?.[0] && upload.mutate(e.target.files[0])}
+          />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={upload.isPending}
+            className="h-12 rounded-[14px] border-[1.5px] border-dashed border-[#98A2B3] text-[15px] font-bold"
+          >
             {upload.isPending ? t('common.loading') : photo ? `✓ ${photo.name}` : t('expense.photo')}
           </button>
         </section>
@@ -125,7 +206,10 @@ export default function ExpensesPage() {
           <section className="flex flex-col gap-1 rounded-card bg-white p-3 shadow-card">
             <b>{t('expense.list')}</b>
             {list.data.expenses.map((e) => (
-              <div key={e.id} className="flex justify-between gap-2 border-b border-[#F2F4F7] py-1.5 text-[15px] last:border-0">
+              <div
+                key={e.id}
+                className="flex justify-between gap-2 border-b border-[#F2F4F7] py-1.5 text-[15px] last:border-0"
+              >
                 <span className="flex flex-col">
                   <span className="font-semibold">
                     {e.category.name} · {e.source === 'cash' ? t('keluar.cashDrawer') : 'ABA'}

@@ -23,7 +23,11 @@ describe('kamus i18n', () => {
   it('menemukan kunci', () => expect(keys.size).toBeGreaterThan(200));
   for (const lng of ['id', 'en'] as const) {
     it(`semua kunci ada di ${lng}`, () => {
-      const missing = [...keys].filter((k) => !i18n.exists(k, { lng, fallbackLng: false } as never) && !i18n.exists(`${k}_other`, { lng, fallbackLng: false } as never));
+      const missing = [...keys].filter(
+        (k) =>
+          !i18n.exists(k, { lng, fallbackLng: false } as never) &&
+          !i18n.exists(`${k}_other`, { lng, fallbackLng: false } as never),
+      );
       expect(missing).toEqual([]);
     });
   }

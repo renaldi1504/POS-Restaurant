@@ -34,14 +34,24 @@ export function SourceBadge({ channel, size = 'sm' }: { channel: OrderChannel; s
   const s = SOURCE[channel];
   const label = s.key.startsWith('cashier.') ? t(s.key) : t(`online.${s.key}`);
   return (
-    <span className={`${s.cls} rounded-md font-extrabold ${size === 'md' ? 'rounded-lg px-2.5 py-1 text-[13px]' : 'px-[7px] py-0.5 text-[11px]'}`}>
+    <span
+      className={`${s.cls} rounded-md font-extrabold ${size === 'md' ? 'rounded-lg px-2.5 py-1 text-[13px]' : 'px-[7px] py-0.5 text-[11px]'}`}
+    >
       {label}
     </span>
   );
 }
 
 /** Daftar item order: "2 × Ayam Goreng" + opsi/catatan + harga. */
-export function OrderItemsList({ order, lang, compact }: { order: Pick<OrderDto, 'items' | 'currency'>; lang: string; compact?: boolean }) {
+export function OrderItemsList({
+  order,
+  lang,
+  compact,
+}: {
+  order: Pick<OrderDto, 'items' | 'currency'>;
+  lang: string;
+  compact?: boolean;
+}) {
   return (
     <div className="flex flex-col">
       {order.items.map((it) => {

@@ -10,7 +10,19 @@ import { blobToFile, cropToBlob, loadImage } from '../../lib/crop';
 
 export const MENU_PHOTO_ASPECT = 4 / 3;
 
-export function PhotoCropSheet({ src, aspect, onCancel, onDone, round }: { src: string; aspect: number; onCancel: () => void; onDone: (file: File, previewUrl: string) => void; round?: boolean }) {
+export function PhotoCropSheet({
+  src,
+  aspect,
+  onCancel,
+  onDone,
+  round,
+}: {
+  src: string;
+  aspect: number;
+  onCancel: () => void;
+  onDone: (file: File, previewUrl: string) => void;
+  round?: boolean;
+}) {
   const { t } = useTranslation();
   const toast = useToast();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -37,18 +49,44 @@ export function PhotoCropSheet({ src, aspect, onCancel, onDone, round }: { src: 
     }
   };
   return (
-    <div role="dialog" aria-modal="true" aria-label={t('crop.title')} className="fixed inset-0 z-[70] flex flex-col bg-ink text-white">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('crop.title')}
+      className="fixed inset-0 z-[70] flex flex-col bg-ink text-white"
+    >
       <div className="flex shrink-0 items-center justify-between px-4 py-3">
         <h2 className="text-lg font-extrabold">{t('crop.title')}</h2>
         <span className="text-sm text-[#D0D5DD]">{t('crop.hint')}</span>
       </div>
       <div className="relative min-h-0 grow" data-testid="crop-area">
-        <Cropper image={src} crop={crop} zoom={zoom} minZoom={1} maxZoom={4} aspect={aspect} cropShape={round ? 'round' : 'rect'} onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={onComplete} showGrid />
+        <Cropper
+          image={src}
+          crop={crop}
+          zoom={zoom}
+          minZoom={1}
+          maxZoom={4}
+          aspect={aspect}
+          cropShape={round ? 'round' : 'rect'}
+          onCropChange={setCrop}
+          onZoomChange={setZoom}
+          onCropComplete={onComplete}
+          showGrid
+        />
       </div>
       <div className="flex shrink-0 flex-col gap-3 bg-ink px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3">
         <label className="flex items-center gap-3 text-sm font-bold">
           <span>{t('crop.zoom')}</span>
-          <input type="range" min={1} max={4} step={0.05} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="h-8 grow accent-primary" aria-label={t('crop.zoom')} />
+          <input
+            type="range"
+            min={1}
+            max={4}
+            step={0.05}
+            value={zoom}
+            onChange={(e) => setZoom(Number(e.target.value))}
+            className="h-8 grow accent-primary"
+            aria-label={t('crop.zoom')}
+          />
         </label>
         <div className="flex gap-2.5">
           <Button variant="outline" size="xl" className="w-32" onClick={onCancel}>
@@ -64,7 +102,11 @@ export function PhotoCropSheet({ src, aspect, onCancel, onDone, round }: { src: 
 }
 
 /** Tombol + input file + lembar potong. `children(open)` menggambar tombol pemicu. */
-export function usePhotoPicker(aspect: number, onPicked: (file: File, previewUrl: string) => void, opts: { round?: boolean } = {}) {
+export function usePhotoPicker(
+  aspect: number,
+  onPicked: (file: File, previewUrl: string) => void,
+  opts: { round?: boolean } = {},
+) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [src, setSrc] = useState<string | null>(null);
   const close = useCallback(() => {

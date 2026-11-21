@@ -1,5 +1,12 @@
 /** Cetak struk / nota sementara / laporan dengan preferensi printer perangkat. */
-import { PAPER_COLUMNS, buildReceipt, printBytes, renderEscPos, type DocLine, type ReceiptData } from './printer';
+import {
+  PAPER_COLUMNS,
+  buildReceipt,
+  printBytes,
+  renderEscPos,
+  type DocLine,
+  type ReceiptData,
+} from './printer';
 import { getPrefs } from './prefs';
 
 export function paperCols(): number {

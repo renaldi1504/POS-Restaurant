@@ -10,7 +10,8 @@ let ctx: AudioContext | null = null;
 function audio(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   const Ctor =
-    window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!Ctor) return null;
   if (!ctx) ctx = new Ctor();
   if (ctx.state === 'suspended') void ctx.resume().catch(() => undefined);
@@ -53,7 +54,11 @@ export function beep(kind: 'order' | 'kitchen' | 'ok' = 'order', force = false):
 }
 
 /** Bunyi berulang selama `active` (interval ms). Berhenti otomatis saat bisu. */
-export function useRepeatingAlarm(active: boolean, kind: 'order' | 'kitchen' = 'order', intervalMs = 4000): void {
+export function useRepeatingAlarm(
+  active: boolean,
+  kind: 'order' | 'kitchen' = 'order',
+  intervalMs = 4000,
+): void {
   const { muted } = usePrefs();
   useEffect(() => {
     if (!active || muted) return;

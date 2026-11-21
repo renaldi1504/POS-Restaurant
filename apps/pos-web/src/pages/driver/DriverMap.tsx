@@ -42,7 +42,17 @@ export function layoutPins(pins: MapPin[], center: { lat: number; lng: number } 
   };
 }
 
-export function DriverMap({ pins, center, restoLabel, label }: { pins: MapPin[]; center: { lat: number; lng: number } | null; restoLabel: string; label: string }) {
+export function DriverMap({
+  pins,
+  center,
+  restoLabel,
+  label,
+}: {
+  pins: MapPin[];
+  center: { lat: number; lng: number } | null;
+  restoLabel: string;
+  label: string;
+}) {
   const key = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   if (key)
     return (
@@ -54,7 +64,12 @@ export function DriverMap({ pins, center, restoLabel, label }: { pins: MapPin[];
     );
   const lay = layoutPins(pins, center);
   return (
-    <div role="img" aria-label={label} className="relative h-[210px] shrink-0 overflow-hidden bg-[#E8EDE4]" data-testid="placeholder-map">
+    <div
+      role="img"
+      aria-label={label}
+      className="relative h-[210px] shrink-0 overflow-hidden bg-[#E8EDE4]"
+      data-testid="placeholder-map"
+    >
       <div className="absolute -inset-x-5 top-[60px] h-3 -rotate-[8deg] bg-white" />
       <div className="absolute -inset-x-5 top-[150px] h-[9px] rotate-[5deg] bg-white" />
       <div className="absolute -inset-y-5 left-[28%] w-[11px] rotate-[10deg] bg-white" />
@@ -68,12 +83,26 @@ export function DriverMap({ pins, center, restoLabel, label }: { pins: MapPin[];
         </div>
       ) : null}
       {lay.pins.map((p) => (
-        <div key={p.id} className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center" style={{ left: `${p.x}%`, top: `${p.y}%` }} data-testid="map-pin">
-          <span className={cn('whitespace-nowrap rounded-lg px-2 py-1 text-xs font-extrabold text-white shadow-[0_2px_6px_rgba(0,0,0,0.2)]', p.mine ? 'bg-info' : 'bg-warn')}>{p.label}</span>
+        <div
+          key={p.id}
+          className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center"
+          style={{ left: `${p.x}%`, top: `${p.y}%` }}
+          data-testid="map-pin"
+        >
+          <span
+            className={cn(
+              'whitespace-nowrap rounded-lg px-2 py-1 text-xs font-extrabold text-white shadow-[0_2px_6px_rgba(0,0,0,0.2)]',
+              p.mine ? 'bg-info' : 'bg-warn',
+            )}
+          >
+            {p.label}
+          </span>
           <span className={cn('h-2.5 w-0.5', p.mine ? 'bg-info' : 'bg-warn')} />
         </div>
       ))}
-      <span className="absolute right-2.5 top-2.5 rounded-md bg-white/90 px-2 py-1 text-[11px] text-muted">Peta (mode uji)</span>
+      <span className="absolute right-2.5 top-2.5 rounded-md bg-white/90 px-2 py-1 text-[11px] text-muted">
+        Peta (mode uji)
+      </span>
     </div>
   );
 }

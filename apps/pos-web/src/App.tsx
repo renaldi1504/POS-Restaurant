@@ -39,7 +39,13 @@ function Root() {
     <>
       <UnauthorizedListener />
       <RealtimeBridge />
-      <Suspense fallback={<div className="p-6 text-muted" role="status">…</div>}>
+      <Suspense
+        fallback={
+          <div className="p-6 text-muted" role="status">
+            …
+          </div>
+        }
+      >
         <Outlet />
       </Suspense>
     </>

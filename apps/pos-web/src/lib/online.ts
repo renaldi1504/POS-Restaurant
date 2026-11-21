@@ -51,7 +51,8 @@ export function usePendingOnline() {
   const allowed = hasPermission(me?.permissions, 'order.accept');
   return useQuery({
     queryKey: qk.orders(PENDING_FILTER),
-    queryFn: async () => (await api.call('ordersList', { query: PENDING_FILTER })).orders.filter(isOnlineOrder),
+    queryFn: async () =>
+      (await api.call('ordersList', { query: PENDING_FILTER })).orders.filter(isOnlineOrder),
     enabled: allowed,
     refetchInterval: 20_000,
   });

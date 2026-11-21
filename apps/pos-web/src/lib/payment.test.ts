@@ -5,7 +5,12 @@ const rates = { USD: 4100, IDR: 0.25 };
 
 describe('hitungan bayar', () => {
   it('kembalian dalam Riel dari uang KHR / USD / IDR', () => {
-    expect(computeChange(42000, 100000, 'KHR', 'KHR', rates)).toEqual({ receivedMain: 100000, changeMain: 58000, shortMain: 0, enough: true });
+    expect(computeChange(42000, 100000, 'KHR', 'KHR', rates)).toEqual({
+      receivedMain: 100000,
+      changeMain: 58000,
+      shortMain: 0,
+      enough: true,
+    });
     expect(computeChange(42000, 2000, 'USD', 'KHR', rates).changeMain).toBe(40000); // $20 = 82.000
     expect(computeChange(42000, 200000, 'IDR', 'KHR', rates).changeMain).toBe(8000); // Rp200.000 = 50.000
     const short = computeChange(42000, 20000, 'KHR', 'KHR', rates);
@@ -27,12 +32,20 @@ describe('hitungan bayar', () => {
   });
 
   it('split: sisa & kembalian', () => {
-    const r = splitRemaining(42000, [
-      { id: 1, method: 'cash', currency: 'KHR', amount: 20000 },
-      { id: 2, method: 'aba', currency: 'KHR', amount: null },
-    ], 'KHR', rates);
+    const r = splitRemaining(
+      42000,
+      [
+        { id: 1, method: 'cash', currency: 'KHR', amount: 20000 },
+        { id: 2, method: 'aba', currency: 'KHR', amount: null },
+      ],
+      'KHR',
+      rates,
+    );
     expect(r.remainingMain).toBe(22000);
-    expect(splitRemaining(42000, [{ id: 1, method: 'cash', currency: 'USD', amount: 1100 }], 'KHR', rates).changeMain).toBe(3100);
+    expect(
+      splitRemaining(42000, [{ id: 1, method: 'cash', currency: 'USD', amount: 1100 }], 'KHR', rates)
+        .changeMain,
+    ).toBe(3100);
   });
 
   it('bagi rata: jumlah bagian = total', () => {

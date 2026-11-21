@@ -6,7 +6,16 @@ import { useTranslation } from 'react-i18next';
 import { LANGS, hasAnyPermission, tl, type Lang, type OrderDto, type OrderStatus } from '@pos/shared';
 import { LANG_FONT_CLASS } from '@pos/shared/i18n';
 import { EmptyState, Sheet, cn, useToast } from '../../components/ui';
-import { AppMenuSheet, ErrorBlock, LoadingBlock, MenuIcon, Screen, Switch, Tabs, minutesSince } from '../../components/common';
+import {
+  AppMenuSheet,
+  ErrorBlock,
+  LoadingBlock,
+  MenuIcon,
+  Screen,
+  Switch,
+  Tabs,
+  minutesSince,
+} from '../../components/common';
 import { api, errorMessage, qk } from '../../lib/api';
 import { useMe } from '../../lib/auth';
 import { useAdminSettingsIfAllowed, useStaffMenu } from '../../lib/data';
@@ -19,7 +28,11 @@ export const KITCHEN_FILTER = { status: 'accepted,cooking', active: 'true' } as 
 const LANG_LABEL: Record<Lang, string> = { id: 'ID', en: 'EN', kh: 'ខ្មែរ', zh: '中文' };
 
 export type KitchenTone = 'new' | 'cooking' | 'late';
-export function kitchenTone(o: Pick<OrderDto, 'status' | 'acceptedAt' | 'createdAt'>, lateMinutes: number, now = Date.now()): KitchenTone {
+export function kitchenTone(
+  o: Pick<OrderDto, 'status' | 'acceptedAt' | 'createdAt'>,
+  lateMinutes: number,
+  now = Date.now(),
+): KitchenTone {
   if (minutesSince(o.acceptedAt ?? o.createdAt, now) > lateMinutes) return 'late';
   return o.status === 'accepted' ? 'new' : 'cooking';
 }
@@ -45,7 +58,9 @@ export function kitchenRecap(orders: OrderDto[], lang: Lang): { name: string; qt
 export default function KitchenPage() {
   const { i18n } = useTranslation();
   const prefs = usePrefs();
-  const lang: Lang = prefs.kitchenLang ?? ((LANGS as readonly string[]).includes(i18n.language) ? (i18n.language as Lang) : 'id');
+  const lang: Lang =
+    prefs.kitchenLang ??
+    ((LANGS as readonly string[]).includes(i18n.language) ? (i18n.language as Lang) : 'id');
   const t = useMemo(() => i18n.getFixedT(lang), [i18n, lang]);
   const qc = useQueryClient();
   const toast = useToast();
@@ -69,14 +84,17 @@ export default function KitchenPage() {
   });
   const orders = useMemo(() => {
     const list = (q.data?.orders ?? []).filter((o) => o.status === 'accepted' || o.status === 'cooking');
-    return list.sort((a, b) => (a.status === b.status ? a.createdAt.localeCompare(b.createdAt) : a.status === 'accepted' ? -1 : 1));
+    return list.sort((a, b) =>
+      a.status === b.status ? a.createdAt.localeCompare(b.createdAt) : a.status === 'accepted' ? -1 : 1,
+    );
   }, [q.data]);
   const newCount = orders.filter((o) => o.status === 'accepted').length;
   useSocketEvent('order.created', (p) => p.order.status === 'accepted' && beep('kitchen'));
   useRepeatingAlarm(newCount > 0, 'kitchen', 8000);
 
   const status = useMutation({
-    mutationFn: (v: { id: string; status: OrderStatus }) => api.call('orderStatus', { params: { id: v.id }, body: { status: v.status } }),
+    mutationFn: (v: { id: string; status: OrderStatus }) =>
+      api.call('orderStatus', { params: { id: v.id }, body: { status: v.status } }),
     onMutate: async (v) => {
       // Optimistis: kartu langsung berubah/hilang.
       const key = qk.orders(KITCHEN_FILTER);
@@ -85,7 +103,10 @@ export default function KitchenPage() {
       if (prev)
         qc.setQueryData(key, {
           ...prev,
-          orders: v.status === 'ready' ? prev.orders.filter((o) => o.id !== v.id) : prev.orders.map((o) => (o.id === v.id ? { ...o, status: v.status } : o)),
+          orders:
+            v.status === 'ready'
+              ? prev.orders.filter((o) => o.id !== v.id)
+              : prev.orders.map((o) => (o.id === v.id ? { ...o, status: v.status } : o)),
         });
       return { prev };
     },
@@ -113,7 +134,11 @@ export default function KitchenPage() {
           <span className="text-base text-[#D0D5DD]">{t('dapur.activeCount', { count: orders.length })}</span>
           <div className="grow" />
           {canToggle ? (
-            <button type="button" onClick={() => setAvailOpen(true)} className="h-11 rounded-[10px] border border-[#344054] bg-[#1D2939] px-3 text-sm font-bold">
+            <button
+              type="button"
+              onClick={() => setAvailOpen(true)}
+              className="h-11 rounded-[10px] border border-[#344054] bg-[#1D2939] px-3 text-sm font-bold"
+            >
               {t('dapur.soldOutBtn')}
             </button>
           ) : null}
@@ -125,7 +150,12 @@ export default function KitchenPage() {
           >
             {prefs.muted ? t('dapur.soundOff') : t('dapur.soundOn')}
           </button>
-          <button type="button" aria-label={t('cashier.moreMenu')} onClick={() => setMenuOpen(true)} className="flex size-11 items-center justify-center rounded-[10px] border border-[#344054] bg-[#1D2939]">
+          <button
+            type="button"
+            aria-label={t('cashier.moreMenu')}
+            onClick={() => setMenuOpen(true)}
+            className="flex size-11 items-center justify-center rounded-[10px] border border-[#344054] bg-[#1D2939]"
+          >
             <MenuIcon />
           </button>
         </div>
@@ -151,7 +181,10 @@ export default function KitchenPage() {
       </header>
       <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-3 pb-6 pt-3">
         {recap.length ? (
-          <section className="flex shrink-0 flex-col gap-2 rounded-card border border-line bg-white px-3.5 py-3 shadow-card" data-testid="kitchen-recap">
+          <section
+            className="flex shrink-0 flex-col gap-2 rounded-card border border-line bg-white px-3.5 py-3 shadow-card"
+            data-testid="kitchen-recap"
+          >
             <h2 className="text-lg font-extrabold">{t('kitchen.toMake')}</h2>
             <div className="flex flex-wrap gap-1.5">
               {recap.map((r) => (
@@ -172,11 +205,18 @@ export default function KitchenPage() {
             const mins = minutesSince(o.acceptedAt ?? o.createdAt, now);
             const isNew = o.status === 'accepted';
             return (
-              <article key={o.id} className={cn('flex flex-col overflow-hidden rounded-card bg-white shadow-card', tc.border)} data-testid="kitchen-card" data-tone={tone}>
+              <article
+                key={o.id}
+                className={cn('flex flex-col overflow-hidden rounded-card bg-white shadow-card', tc.border)}
+                data-testid="kitchen-card"
+                data-tone={tone}
+              >
                 <div className={cn('flex items-center justify-between gap-2 px-3.5 py-2.5', tc.head)}>
                   <span className="text-[30px] font-extrabold">{o.displayNo}</span>
                   <span className={cn('text-right text-base font-extrabold', tc.time)}>
-                    {isNew ? `${t('kitchen.new')} · ${t('dapur.min', { count: mins })}` : `${t('dapur.min', { count: mins })} · ${t('dapur.cooking')}`}
+                    {isNew
+                      ? `${t('kitchen.new')} · ${t('dapur.min', { count: mins })}`
+                      : `${t('dapur.min', { count: mins })} · ${t('dapur.cooking')}`}
                     {tone === 'late' ? ` · ${t('kitchen.late')}` : ''}
                   </span>
                 </div>
@@ -189,8 +229,12 @@ export default function KitchenPage() {
                         <b className="shrink-0 text-[22px]">{it.qty}×</b>
                         <div className="flex flex-col gap-0.5">
                           <span className="text-[19px] font-semibold leading-snug">{tl(it.name, lang)}</span>
-                          {opts.length ? <span className="text-[15px] font-bold text-danger">{opts.join(' · ')}</span> : null}
-                          {it.note ? <span className="text-[15px] font-bold text-danger">{it.note}</span> : null}
+                          {opts.length ? (
+                            <span className="text-[15px] font-bold text-danger">{opts.join(' · ')}</span>
+                          ) : null}
+                          {it.note ? (
+                            <span className="text-[15px] font-bold text-danger">{it.note}</span>
+                          ) : null}
                         </div>
                       </div>
                     );
@@ -206,7 +250,10 @@ export default function KitchenPage() {
                     type="button"
                     disabled={status.isPending && status.variables?.id === o.id}
                     onClick={() => status.mutate({ id: o.id, status: isNew ? 'cooking' : 'ready' })}
-                    className={cn('mt-auto h-[58px] text-xl font-extrabold disabled:opacity-60', isNew ? 'bg-warn text-ink' : 'bg-primary text-white')}
+                    className={cn(
+                      'mt-auto h-[58px] text-xl font-extrabold disabled:opacity-60',
+                      isNew ? 'bg-warn text-ink' : 'bg-primary text-white',
+                    )}
                   >
                     {isNew ? t('kitchen.startCooking') : t('kitchen.markReady')}
                   </button>
@@ -223,7 +270,17 @@ export default function KitchenPage() {
 }
 
 /** Pintasan Tersedia/Habis untuk menu & pilihan opsi. */
-export function AvailabilitySheet({ open, onClose, lang, t }: { open: boolean; onClose: () => void; lang: Lang; t: TFunction }) {
+export function AvailabilitySheet({
+  open,
+  onClose,
+  lang,
+  t,
+}: {
+  open: boolean;
+  onClose: () => void;
+  lang: Lang;
+  t: TFunction;
+}) {
   const qc = useQueryClient();
   const toast = useToast();
   const menu = useStaffMenu();
@@ -238,7 +295,13 @@ export function AvailabilitySheet({ open, onClose, lang, t }: { open: boolean; o
         old
           ? v.kind === 'item'
             ? { ...old, items: old.items.map((i) => (i.id === v.id ? { ...i, available: v.available } : i)) }
-            : { ...old, optionGroups: old.optionGroups.map((g) => ({ ...g, options: g.options.map((o) => (o.id === v.id ? { ...o, available: v.available } : o)) })) }
+            : {
+                ...old,
+                optionGroups: old.optionGroups.map((g) => ({
+                  ...g,
+                  options: g.options.map((o) => (o.id === v.id ? { ...o, available: v.available } : o)),
+                })),
+              }
           : old,
       );
     },
@@ -248,19 +311,44 @@ export function AvailabilitySheet({ open, onClose, lang, t }: { open: boolean; o
     },
   });
   return (
-    <Sheet open={open} onClose={onClose} title={t('kitchen.toggleAvailability')} closeLabel={t('common.close')}>
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title={t('kitchen.toggleAvailability')}
+      closeLabel={t('common.close')}
+    >
       <div className="flex flex-col gap-2">
-        <Tabs label={t('kitchen.toggleAvailability')} value={tab} onChange={setTab} tabs={[{ value: 'items', label: t('common.menu') }, { value: 'options', label: t('admin.optionGroups') }]} />
+        <Tabs
+          label={t('kitchen.toggleAvailability')}
+          value={tab}
+          onChange={setTab}
+          tabs={[
+            { value: 'items', label: t('common.menu') },
+            { value: 'options', label: t('admin.optionGroups') },
+          ]}
+        />
         {menu.isLoading ? <LoadingBlock /> : null}
         {tab === 'items'
           ? menu.data?.items.map((i) => (
-              <Switch key={i.id} checked={i.available} onChange={(v) => toggle.mutate({ kind: 'item', id: i.id, available: v })} label={tl(i.name, lang)} description={i.available ? t('common.available') : t('common.soldOut')} />
+              <Switch
+                key={i.id}
+                checked={i.available}
+                onChange={(v) => toggle.mutate({ kind: 'item', id: i.id, available: v })}
+                label={tl(i.name, lang)}
+                description={i.available ? t('common.available') : t('common.soldOut')}
+              />
             ))
           : menu.data?.optionGroups.map((g) => (
               <div key={g.id} className="flex flex-col">
                 <b className="mt-2 text-sm text-muted">{tl(g.name, lang)}</b>
                 {g.options.map((o) => (
-                  <Switch key={o.id} checked={o.available} onChange={(v) => toggle.mutate({ kind: 'option', id: o.id, available: v })} label={tl(o.name, lang)} description={o.available ? t('common.available') : t('common.soldOut')} />
+                  <Switch
+                    key={o.id}
+                    checked={o.available}
+                    onChange={(v) => toggle.mutate({ kind: 'option', id: o.id, available: v })}
+                    label={tl(o.name, lang)}
+                    description={o.available ? t('common.available') : t('common.soldOut')}
+                  />
                 ))}
               </div>
             ))}

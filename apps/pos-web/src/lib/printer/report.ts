@@ -5,11 +5,18 @@ import type { DocLine } from './receipt';
 
 const m = (v: number, c: ClosingPreview['currency']) => toAscii(formatMoney(v, c));
 
-export function buildClosingReport(p: ClosingPreview, closing: ClosingDto | null, shopName: string, cols: number): DocLine[] {
+export function buildClosingReport(
+  p: ClosingPreview,
+  closing: ClosingDto | null,
+  shopName: string,
+  cols: number,
+): DocLine[] {
   const out: DocLine[] = [];
   const pre = (lines: string[], bold = false) => lines.forEach((text) => out.push({ text, pre: true, bold }));
   const c = p.currency;
-  center(shopName.toUpperCase(), cols).forEach((l) => out.push({ text: l.trim(), align: 'center', bold: true }));
+  center(shopName.toUpperCase(), cols).forEach((l) =>
+    out.push({ text: l.trim(), align: 'center', bold: true }),
+  );
   out.push({ text: `LAPORAN CLOSING - SHIFT ${p.shift.name.toUpperCase()}`, align: 'center', bold: true });
   out.push({ text: `${p.shift.businessDate} - ${p.shift.user.name}`, align: 'center' });
   pre([rule(cols)]);
@@ -37,7 +44,9 @@ export function buildClosingReport(p: ClosingPreview, closing: ClosingDto | null
     pre([rule(cols)]);
     out.push({ text: 'Setoran driver', bold: true });
     for (const d of p.drivers)
-      pre(twoCol(`${d.driver.name} (${d.deliveries})${d.settledAt ? ' v' : ''}`, m(d.cashCollected, c), cols));
+      pre(
+        twoCol(`${d.driver.name} (${d.deliveries})${d.settledAt ? ' v' : ''}`, m(d.cashCollected, c), cols),
+      );
   }
   pre([rule(cols)]);
   out.push({ text: new Date().toLocaleString('id-ID'), align: 'center' });

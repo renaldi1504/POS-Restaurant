@@ -133,7 +133,10 @@ export function RealtimeBridge() {
       qc.setQueryData<StaffMenuResponse>(qk.menu, (old) => {
         if (!old) return old;
         if (p.kind === 'item')
-          return { ...old, items: old.items.map((i) => (i.id === p.id ? { ...i, available: p.available } : i)) };
+          return {
+            ...old,
+            items: old.items.map((i) => (i.id === p.id ? { ...i, available: p.available } : i)),
+          };
         return {
           ...old,
           optionGroups: old.optionGroups.map((g) => ({

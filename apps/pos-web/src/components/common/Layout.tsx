@@ -99,7 +99,9 @@ export function TopBar({
         <div className="flex min-w-0 grow flex-col">
           <h1 className="truncate text-[19px] font-extrabold leading-tight">{title}</h1>
           {subtitle ? (
-            <span className={cn('truncate text-[13px]', dark ? 'text-[#D0D5DD]' : 'text-muted')}>{subtitle}</span>
+            <span className={cn('truncate text-[13px]', dark ? 'text-[#D0D5DD]' : 'text-muted')}>
+              {subtitle}
+            </span>
           ) : null}
         </div>
         {right}

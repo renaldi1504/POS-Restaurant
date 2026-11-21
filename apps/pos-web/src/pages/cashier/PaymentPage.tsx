@@ -26,7 +26,13 @@ import {
 import { api, errorMessage, qk } from '../../lib/api';
 import { useMe } from '../../lib/auth';
 import { useMoney, usePublicSettings, type MoneyCtx } from '../../lib/data';
-import { computeChange, exactAmount, quickCashOptions, splitRemaining, type SplitLine } from '../../lib/payment';
+import {
+  computeChange,
+  exactAmount,
+  quickCashOptions,
+  splitRemaining,
+  type SplitLine,
+} from '../../lib/payment';
 import { getPrefs } from '../../lib/prefs';
 import { isPrinterConnected, type ReceiptData } from '../../lib/printer';
 import { printReceipt } from '../../lib/print';
@@ -60,7 +66,12 @@ export function CashPanel({
     <>
       <section className="flex flex-col gap-2">
         <b className="text-base">2. {t('bayar.received')}</b>
-        <div role="radiogroup" aria-label={t('payment.currency')} className="grid gap-1 rounded-xl bg-[#EEF0F3] p-1" style={{ gridTemplateColumns: `repeat(${money.enabled.length}, minmax(0,1fr))` }}>
+        <div
+          role="radiogroup"
+          aria-label={t('payment.currency')}
+          className="grid gap-1 rounded-xl bg-[#EEF0F3] p-1"
+          style={{ gridTemplateColumns: `repeat(${money.enabled.length}, minmax(0,1fr))` }}
+        >
           {money.enabled.map((c) => (
             <button
               key={c}
@@ -72,7 +83,12 @@ export function CashPanel({
                 onReceived(null);
                 setCustom(false);
               }}
-              className={cn('h-[42px] rounded-[9px] text-[15px] text-ink', currency === c ? 'bg-white font-extrabold shadow-[0_1px_3px_rgba(0,0,0,0.15)]' : 'font-semibold')}
+              className={cn(
+                'h-[42px] rounded-[9px] text-[15px] text-ink',
+                currency === c
+                  ? 'bg-white font-extrabold shadow-[0_1px_3px_rgba(0,0,0,0.15)]'
+                  : 'font-semibold',
+              )}
             >
               {CURRENCY_SHORT[c]}
             </button>
@@ -84,40 +100,85 @@ export function CashPanel({
           </span>
         ) : null}
         <div className="grid grid-cols-2 gap-2">
-          <ChoiceButton selected={!custom && received === exact} onClick={() => { setCustom(false); onReceived(exact); }} className="h-16 text-[19px] font-bold">
+          <ChoiceButton
+            selected={!custom && received === exact}
+            onClick={() => {
+              setCustom(false);
+              onReceived(exact);
+            }}
+            className="h-16 text-[19px] font-bold"
+          >
             {t('payment.exact')}
           </ChoiceButton>
           {quick.map((v) => (
-            <ChoiceButton key={v} selected={!custom && received === v} onClick={() => { setCustom(false); onReceived(v); }} className="h-16 text-[22px] font-extrabold tabular-nums">
+            <ChoiceButton
+              key={v}
+              selected={!custom && received === v}
+              onClick={() => {
+                setCustom(false);
+                onReceived(v);
+              }}
+              className="h-16 text-[22px] font-extrabold tabular-nums"
+            >
               {formatMoney(v, currency)}
             </ChoiceButton>
           ))}
         </div>
         {custom ? (
-          <MoneyInput big autoFocus label={t('bayar.typeAmount')} currency={currency} value={received} onChange={onReceived} />
+          <MoneyInput
+            big
+            autoFocus
+            label={t('bayar.typeAmount')}
+            currency={currency}
+            value={received}
+            onChange={onReceived}
+          />
         ) : (
-          <button type="button" onClick={() => { setCustom(true); onReceived(null); }} className="h-[52px] rounded-[14px] border-[1.5px] border-dashed border-[#98A2B3] text-[17px] font-bold">
+          <button
+            type="button"
+            onClick={() => {
+              setCustom(true);
+              onReceived(null);
+            }}
+            className="h-[52px] rounded-[14px] border-[1.5px] border-dashed border-[#98A2B3] text-[17px] font-bold"
+          >
             {t('bayar.typeOther')}
           </button>
         )}
       </section>
       {received ? (
         res.enough ? (
-          <div className="flex flex-col gap-0.5 rounded-card bg-primary-tint px-4 py-3.5" role="status" data-testid="change-box">
-            <span className="text-[15px] text-primary">{t('bayar.receivedAmount', { amount: formatMoney(received, currency) })}</span>
+          <div
+            className="flex flex-col gap-0.5 rounded-card bg-primary-tint px-4 py-3.5"
+            role="status"
+            data-testid="change-box"
+          >
+            <span className="text-[15px] text-primary">
+              {t('bayar.receivedAmount', { amount: formatMoney(received, currency) })}
+            </span>
             <span className="text-lg font-bold text-primary-dark">{t('payment.change')}</span>
-            <b className="text-[48px] leading-[1.05] text-primary-dark tabular-nums" data-testid="change-amount">
+            <b
+              className="text-[48px] leading-[1.05] text-primary-dark tabular-nums"
+              data-testid="change-amount"
+            >
               {formatMoney(res.changeMain, money.main)}
             </b>
             {res.changeMain > 0 && changeOther ? (
               <span className="text-sm text-primary">
-                {t('bayar.orAbout', { amount: formatMoney(convertMoney(res.changeMain, money.main, changeOther, money.rates), changeOther) })}
+                {t('bayar.orAbout', {
+                  amount: formatMoney(
+                    convertMoney(res.changeMain, money.main, changeOther, money.rates),
+                    changeOther,
+                  ),
+                })}
               </span>
             ) : null}
           </div>
         ) : (
           <div className="rounded-card bg-danger-tint px-4 py-3.5 text-danger" role="alert">
-            <b className="text-2xl">{t('payment.insufficient', { amount: formatMoney(res.shortMain, money.main) })}</b>
+            <b className="text-2xl">
+              {t('payment.insufficient', { amount: formatMoney(res.shortMain, money.main) })}
+            </b>
           </div>
         )
       ) : null}
@@ -140,8 +201,16 @@ export default function PaymentPage() {
   const { data: me } = useMe();
   const print = usePrint();
 
-  const orderQ = useQuery({ queryKey: qk.order(orderId ?? ''), queryFn: () => api.call('orderGet', { params: { id: orderId! } }), enabled: !!orderId });
-  const billQ = useQuery({ queryKey: qk.tableBill(tableId ?? 0), queryFn: () => api.call('tableSession', { params: { id: tableId! } }), enabled: !!tableId && !orderId });
+  const orderQ = useQuery({
+    queryKey: qk.order(orderId ?? ''),
+    queryFn: () => api.call('orderGet', { params: { id: orderId! } }),
+    enabled: !!orderId,
+  });
+  const billQ = useQuery({
+    queryKey: qk.tableBill(tableId ?? 0),
+    queryFn: () => api.call('tableSession', { params: { id: tableId! } }),
+    enabled: !!tableId && !orderId,
+  });
   const order = orderQ.data?.order;
   const bill = billQ.data;
 
@@ -170,13 +239,19 @@ export default function PaymentPage() {
   const splitCalc = splitRemaining(dueMain, split, money.main, money.rates);
   const ready =
     dueMain > 0 &&
-    (method === 'cash' ? cash.enough : method === 'split' ? splitCalc.remainingMain === 0 && split.some((l) => l.amount) : true);
+    (method === 'cash'
+      ? cash.enough
+      : method === 'split'
+        ? splitCalc.remainingMain === 0 && split.some((l) => l.amount)
+        : true);
 
   const lines = useMemo((): PaymentLineInput[] => {
     if (method === 'cash') return received ? [{ method: 'cash', currency, amount: received }] : [];
     if (method === 'aba') return [{ method: 'aba', currency: money.main, amount: dueMain }];
     if (method === 'platform') return [{ method: 'platform', currency: money.main, amount: dueMain }];
-    return split.filter((l) => l.amount && l.amount > 0).map((l) => ({ method: l.method, currency: l.currency, amount: l.amount! }));
+    return split
+      .filter((l) => l.amount && l.amount > 0)
+      .map((l) => ({ method: l.method, currency: l.currency, amount: l.amount! }));
   }, [method, received, currency, money.main, dueMain, split]);
 
   const pay = useMutation({
@@ -198,7 +273,11 @@ export default function PaymentPage() {
               ctx,
               res.remainingMain > 0 ? 'provisional' : 'receipt',
               {
-                payments: res.payments.map((p) => ({ label: `${t(`paymentMethod.${p.method}`)} ${p.currency}`, amount: p.amount, currency: p.currency })),
+                payments: res.payments.map((p) => ({
+                  label: `${t(`paymentMethod.${p.method}`)} ${p.currency}`,
+                  amount: p.amount,
+                  currency: p.currency,
+                })),
                 change: res.changeMain,
               },
             )
@@ -219,8 +298,17 @@ export default function PaymentPage() {
 
   if (orderQ.isLoading || billQ.isLoading) return <LoadingBlock />;
   const err = orderQ.error ?? billQ.error;
-  const title = order ? t('bayar.title', { no: order.displayNo }) : bill ? t('bayar.title', { no: bill.table.name }) : t('payment.title');
-  const back = () => (tableId ? navigate(`/kasir/meja/${tableId}`) : order ? navigate(`/kasir/pesanan/${order.id}`) : navigate('/kasir'));
+  const title = order
+    ? t('bayar.title', { no: order.displayNo })
+    : bill
+      ? t('bayar.title', { no: bill.table.name })
+      : t('payment.title');
+  const back = () =>
+    tableId
+      ? navigate(`/kasir/meja/${tableId}`)
+      : order
+        ? navigate(`/kasir/pesanan/${order.id}`)
+        : navigate('/kasir');
 
   if (err || (!order && !bill))
     return (
@@ -241,10 +329,17 @@ export default function PaymentPage() {
         <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-3.5 py-3">
           <div className="flex flex-col gap-0.5 rounded-card bg-primary-tint px-4 py-4" role="status">
             <span className="text-lg font-bold text-primary-dark">{t('payment.change')}</span>
-            <b className="text-[52px] leading-[1.05] text-primary-dark tabular-nums" data-testid="done-change">
+            <b
+              className="text-[52px] leading-[1.05] text-primary-dark tabular-nums"
+              data-testid="done-change"
+            >
               {formatMoney(res.changeMain, money.main)}
             </b>
-            {!finished ? <span className="text-base font-bold text-warn-dark">{t('bayar.remainingTable', { amount: formatMoney(res.remainingMain, money.main) })}</span> : null}
+            {!finished ? (
+              <span className="text-base font-bold text-warn-dark">
+                {t('bayar.remainingTable', { amount: formatMoney(res.remainingMain, money.main) })}
+              </span>
+            ) : null}
           </div>
           <ReceiptPreview data={receipt} />
         </main>
@@ -254,11 +349,19 @@ export default function PaymentPage() {
               {t('payment.printReceipt')}
             </Button>
             {tableId && !finished ? (
-              <Button size="xl" className="grow" onClick={() => navigate(`/kasir/meja/${tableId}`, { replace: true })}>
+              <Button
+                size="xl"
+                className="grow"
+                onClick={() => navigate(`/kasir/meja/${tableId}`, { replace: true })}
+              >
                 {t('bayar.backToTable')}
               </Button>
             ) : (
-              <Button size="xl" className="grow" onClick={() => navigate(tableId ? '/kasir/meja' : '/kasir', { replace: true })}>
+              <Button
+                size="xl"
+                className="grow"
+                onClick={() => navigate(tableId ? '/kasir/meja' : '/kasir', { replace: true })}
+              >
                 {tableId ? t('bayar.backToTables') : t('payment.newOrder')}
               </Button>
             )}
@@ -285,19 +388,41 @@ export default function PaymentPage() {
             {formatMoney(dueMain, money.main)}
           </b>
         </div>
-        {dueMain <= 0 ? <div className="rounded-card bg-primary-tint p-4 text-lg font-bold text-primary-dark">{t('payment.paid')}</div> : null}
+        {dueMain <= 0 ? (
+          <div className="rounded-card bg-primary-tint p-4 text-lg font-bold text-primary-dark">
+            {t('payment.paid')}
+          </div>
+        ) : null}
         <section className="flex flex-col gap-2">
           <b className="text-base">1. {t('bayar.how')}</b>
-          <div role="radiogroup" aria-label={t('payment.method')} className={cn('grid gap-2', methods.length === 4 ? 'grid-cols-4' : 'grid-cols-3')}>
+          <div
+            role="radiogroup"
+            aria-label={t('payment.method')}
+            className={cn('grid gap-2', methods.length === 4 ? 'grid-cols-4' : 'grid-cols-3')}
+          >
             {methods.map((m) => (
-              <ChoiceButton key={m.value} role="radio" aria-checked={method === m.value} selected={method === m.value} onClick={() => setMethod(m.value)} className="h-[60px] text-[19px]">
+              <ChoiceButton
+                key={m.value}
+                role="radio"
+                aria-checked={method === m.value}
+                selected={method === m.value}
+                onClick={() => setMethod(m.value)}
+                className="h-[60px] text-[19px]"
+              >
                 {m.label}
               </ChoiceButton>
             ))}
           </div>
         </section>
         {method === 'cash' ? (
-          <CashPanel dueMain={dueMain} money={money} currency={currency} onCurrency={setCurrency} received={received} onReceived={setReceived} />
+          <CashPanel
+            dueMain={dueMain}
+            money={money}
+            currency={currency}
+            onCurrency={setCurrency}
+            received={received}
+            onReceived={setReceived}
+          />
         ) : null}
         {method === 'aba' ? (
           <div className="rounded-card bg-info-tint px-4 py-3.5 text-info-dark">
@@ -311,10 +436,19 @@ export default function PaymentPage() {
             <p className="mt-1 text-[15px] text-muted">{t('bayar.platformHint')}</p>
           </div>
         ) : null}
-        {method === 'split' ? <SplitEditor lines={split} onChange={setSplit} dueMain={dueMain} money={money} /> : null}
+        {method === 'split' ? (
+          <SplitEditor lines={split} onChange={setSplit} dueMain={dueMain} money={money} />
+        ) : null}
       </main>
       <ScreenFooter>
-        <Button size="xl" block className="h-16 text-[22px]" disabled={!ready} loading={pay.isPending} onClick={() => pay.mutate()}>
+        <Button
+          size="xl"
+          block
+          className="h-16 text-[22px]"
+          disabled={!ready}
+          loading={pay.isPending}
+          onClick={() => pay.mutate()}
+        >
           {t('bayar.finish')}
         </Button>
       </ScreenFooter>
@@ -322,10 +456,21 @@ export default function PaymentPage() {
   );
 }
 
-function SplitEditor({ lines, onChange, dueMain, money }: { lines: SplitLine[]; onChange: (l: SplitLine[]) => void; dueMain: number; money: MoneyCtx }) {
+function SplitEditor({
+  lines,
+  onChange,
+  dueMain,
+  money,
+}: {
+  lines: SplitLine[];
+  onChange: (l: SplitLine[]) => void;
+  dueMain: number;
+  money: MoneyCtx;
+}) {
   const { t } = useTranslation();
   const calc = splitRemaining(dueMain, lines, money.main, money.rates);
-  const update = (id: number, patch: Partial<SplitLine>) => onChange(lines.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+  const update = (id: number, patch: Partial<SplitLine>) =>
+    onChange(lines.map((l) => (l.id === id ? { ...l, ...patch } : l)));
   return (
     <section className="flex flex-col gap-2">
       <b className="text-base">2. {t('bayar.splitTitle')}</b>
@@ -334,14 +479,22 @@ function SplitEditor({ lines, onChange, dueMain, money }: { lines: SplitLine[]; 
           <div className="flex items-center gap-2">
             <b className="grow">{t('bayar.part', { n: i + 1 })}</b>
             {lines.length > 1 ? (
-              <button type="button" className="min-h-10 rounded-lg px-2 text-sm font-bold text-danger" onClick={() => onChange(lines.filter((x) => x.id !== l.id))}>
+              <button
+                type="button"
+                className="min-h-10 rounded-lg px-2 text-sm font-bold text-danger"
+                onClick={() => onChange(lines.filter((x) => x.id !== l.id))}
+              >
                 {t('common.delete')}
               </button>
             ) : null}
           </div>
           <div className="grid grid-cols-2 gap-2">
             {(['cash', 'aba'] as const).map((m) => (
-              <ChoiceButton key={m} selected={l.method === m} onClick={() => update(l.id, { method: m, currency: m === 'aba' ? money.main : l.currency })}>
+              <ChoiceButton
+                key={m}
+                selected={l.method === m}
+                onClick={() => update(l.id, { method: m, currency: m === 'aba' ? money.main : l.currency })}
+              >
                 {t(`payment.${m}`)}
               </ChoiceButton>
             ))}
@@ -349,14 +502,32 @@ function SplitEditor({ lines, onChange, dueMain, money }: { lines: SplitLine[]; 
           {l.method === 'cash' && money.enabled.length > 1 ? (
             <div className="flex gap-1.5" role="radiogroup" aria-label={t('payment.currency')}>
               {money.enabled.map((c) => (
-                <button key={c} type="button" role="radio" aria-checked={l.currency === c} onClick={() => update(l.id, { currency: c, amount: null })} className={cn('min-h-10 grow rounded-lg text-sm', l.currency === c ? 'bg-ink font-bold text-white' : 'border border-line-strong font-semibold')}>
+                <button
+                  key={c}
+                  type="button"
+                  role="radio"
+                  aria-checked={l.currency === c}
+                  onClick={() => update(l.id, { currency: c, amount: null })}
+                  className={cn(
+                    'min-h-10 grow rounded-lg text-sm',
+                    l.currency === c
+                      ? 'bg-ink font-bold text-white'
+                      : 'border border-line-strong font-semibold',
+                  )}
+                >
                   {CURRENCY_SHORT[c]}
                 </button>
               ))}
             </div>
           ) : null}
           <div className="flex items-end gap-2">
-            <MoneyInput className="grow" ariaLabel={`${t('bayar.part', { n: i + 1 })} ${t('payment.received')}`} currency={l.currency} value={l.amount} onChange={(v) => update(l.id, { amount: v })} />
+            <MoneyInput
+              className="grow"
+              ariaLabel={`${t('bayar.part', { n: i + 1 })} ${t('payment.received')}`}
+              currency={l.currency}
+              value={l.amount}
+              onChange={(v) => update(l.id, { amount: v })}
+            />
             <Button
               variant="outline"
               size="md"
@@ -371,13 +542,27 @@ function SplitEditor({ lines, onChange, dueMain, money }: { lines: SplitLine[]; 
           </div>
         </div>
       ))}
-      <button type="button" onClick={() => onChange([...lines, { id: Date.now(), method: 'cash', currency: money.main, amount: null }])} className="h-12 rounded-[14px] border-[1.5px] border-dashed border-[#98A2B3] font-bold">
+      <button
+        type="button"
+        onClick={() =>
+          onChange([...lines, { id: Date.now(), method: 'cash', currency: money.main, amount: null }])
+        }
+        className="h-12 rounded-[14px] border-[1.5px] border-dashed border-[#98A2B3] font-bold"
+      >
         + {t('bayar.addPart')}
       </button>
-      <div className={cn('rounded-card px-4 py-3', calc.remainingMain > 0 ? 'bg-warn-tint text-warn-dark' : 'bg-primary-tint text-primary-dark')} role="status">
+      <div
+        className={cn(
+          'rounded-card px-4 py-3',
+          calc.remainingMain > 0 ? 'bg-warn-tint text-warn-dark' : 'bg-primary-tint text-primary-dark',
+        )}
+        role="status"
+      >
         <div className="flex justify-between text-lg font-bold">
           <span>{calc.remainingMain > 0 ? t('payment.remaining') : t('payment.change')}</span>
-          <span className="tabular-nums">{formatMoney(calc.remainingMain > 0 ? calc.remainingMain : calc.changeMain, money.main)}</span>
+          <span className="tabular-nums">
+            {formatMoney(calc.remainingMain > 0 ? calc.remainingMain : calc.changeMain, money.main)}
+          </span>
         </div>
       </div>
     </section>

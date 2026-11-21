@@ -4,8 +4,20 @@ import type { MoneyCtx } from './data';
 import { paymentLabel, receiptItemsFromOrder, type ReceiptData, type ReceiptLang } from './printer';
 
 const TYPE_LABEL: Record<ReceiptLang, Record<string, string>> = {
-  id: { dine_in: 'Makan sini', takeaway: 'Bungkus', delivery: 'Delivery', grab: 'Grab', foodpanda: 'foodpanda' },
-  en: { dine_in: 'Dine-in', takeaway: 'Takeaway', delivery: 'Delivery', grab: 'Grab', foodpanda: 'foodpanda' },
+  id: {
+    dine_in: 'Makan sini',
+    takeaway: 'Bungkus',
+    delivery: 'Delivery',
+    grab: 'Grab',
+    foodpanda: 'foodpanda',
+  },
+  en: {
+    dine_in: 'Dine-in',
+    takeaway: 'Takeaway',
+    delivery: 'Delivery',
+    grab: 'Grab',
+    foodpanda: 'foodpanda',
+  },
 };
 
 export interface ReceiptCtx {
@@ -21,7 +33,11 @@ function shopOf(s: PublicSettingsResponse | undefined) {
 
 export function receiptFromOrder(o: OrderDto, ctx: ReceiptCtx, extra: { change?: number } = {}): ReceiptData {
   const typeKey = o.channel === 'grab' || o.channel === 'foodpanda' ? o.channel : o.type;
-  const payments = o.payments.map((p) => ({ label: paymentLabel(p, ctx.lang), amount: p.amount, currency: p.currency }));
+  const payments = o.payments.map((p) => ({
+    label: paymentLabel(p, ctx.lang),
+    amount: p.amount,
+    currency: p.currency,
+  }));
   const change = extra.change ?? o.payments.reduce((a, p) => a + p.changeMain, 0);
   return {
     kind: o.paymentStatus === 'paid' ? 'receipt' : 'provisional',
@@ -63,7 +79,10 @@ export function receiptFromBill(
     cashier: ctx.cashier ?? null,
     table: bill.table.name,
     orderNo: live.length === 1 ? live[0]!.displayNo : null,
-    groups: live.map((o) => ({ title: live.length > 1 ? o.displayNo : undefined, items: receiptItemsFromOrder(o, ctx.lang) })),
+    groups: live.map((o) => ({
+      title: live.length > 1 ? o.displayNo : undefined,
+      items: receiptItemsFromOrder(o, ctx.lang),
+    })),
     subtotal: bill.subtotal,
     discount: bill.discount,
     deliveryFee: 0,

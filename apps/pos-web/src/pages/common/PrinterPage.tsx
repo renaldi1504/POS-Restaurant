@@ -7,11 +7,22 @@ import { ReceiptPreview, Screen, Section, Switch, TopBar } from '../../component
 import { useMe, homePathFor } from '../../lib/auth';
 import { usePublicSettings, useMoney } from '../../lib/data';
 import { setPrefs, usePrefs } from '../../lib/prefs';
-import { connectPrinter, disconnectPrinter, supportsBluetooth, supportsSerial, usePrinterStatus, type ReceiptData } from '../../lib/printer';
+import {
+  connectPrinter,
+  disconnectPrinter,
+  supportsBluetooth,
+  supportsSerial,
+  usePrinterStatus,
+  type ReceiptData,
+} from '../../lib/printer';
 import { printReceipt } from '../../lib/print';
 import { beep } from '../../lib/sound';
 
-export function testReceipt(shop: string, money: ReturnType<typeof useMoney>, lang: 'id' | 'en'): ReceiptData {
+export function testReceipt(
+  shop: string,
+  money: ReturnType<typeof useMoney>,
+  lang: 'id' | 'en',
+): ReceiptData {
   return {
     kind: 'receipt',
     lang,
@@ -19,7 +30,14 @@ export function testReceipt(shop: string, money: ReturnType<typeof useMoney>, la
     date: new Date(),
     cashier: 'Tes',
     orderNo: '#0',
-    groups: [{ items: [{ qty: 2, name: 'Ayam Goreng', options: ['Paha atas', 'Tidak pedas'], total: 20000 }, { qty: 1, name: 'Es Teh Manis', options: [], total: 4000 }] }],
+    groups: [
+      {
+        items: [
+          { qty: 2, name: 'Ayam Goreng', options: ['Paha atas', 'Tidak pedas'], total: 20000 },
+          { qty: 1, name: 'Es Teh Manis', options: [], total: 4000 },
+        ],
+      },
+    ],
     subtotal: 24000,
     discount: 0,
     deliveryFee: 0,
@@ -53,24 +71,59 @@ export default function PrinterPage() {
   };
   return (
     <Screen testId="printer-screen">
-      <TopBar back={{ label: t('common.back'), onClick: () => (window.history.length > 1 ? navigate(-1) : navigate(me ? homePathFor(me.permissions) : '/login')) }} title={t('admin.printerSound')} />
+      <TopBar
+        back={{
+          label: t('common.back'),
+          onClick: () =>
+            window.history.length > 1 ? navigate(-1) : navigate(me ? homePathFor(me.permissions) : '/login'),
+        }}
+        title={t('admin.printerSound')}
+      />
       <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto p-3">
         <Section title={t('printer.title')}>
-          <div role="status" className={status.connected ? 'rounded-xl bg-primary-tint px-3 py-2.5 font-bold text-primary-dark' : 'rounded-xl bg-warn-tint px-3 py-2.5 font-bold text-warn-dark'}>
-            {status.connected ? `${t('printer.connected')} · ${status.name ?? ''}` : prefs.printer !== 'none' ? t('print.saved', { name: prefs.printerName ?? '' }) : t('printer.disconnected')}
+          <div
+            role="status"
+            className={
+              status.connected
+                ? 'rounded-xl bg-primary-tint px-3 py-2.5 font-bold text-primary-dark'
+                : 'rounded-xl bg-warn-tint px-3 py-2.5 font-bold text-warn-dark'
+            }
+          >
+            {status.connected
+              ? `${t('printer.connected')} · ${status.name ?? ''}`
+              : prefs.printer !== 'none'
+                ? t('print.saved', { name: prefs.printerName ?? '' })
+                : t('printer.disconnected')}
             {status.error ? <div className="text-sm font-semibold text-danger">{status.error}</div> : null}
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" disabled={!supportsSerial() || status.busy} onClick={() => void connect('serial')}>
+            <Button
+              variant="outline"
+              disabled={!supportsSerial() || status.busy}
+              onClick={() => void connect('serial')}
+            >
               {t('print.serial')}
             </Button>
-            <Button variant="outline" disabled={!supportsBluetooth() || status.busy} onClick={() => void connect('bluetooth')}>
+            <Button
+              variant="outline"
+              disabled={!supportsBluetooth() || status.busy}
+              onClick={() => void connect('bluetooth')}
+            >
               {t('print.ble')}
             </Button>
           </div>
-          {!supportsSerial() && !supportsBluetooth() ? <span className="text-sm text-danger">{t('print.unsupported')}</span> : <span className="text-xs text-muted">{t('print.howTo')}</span>}
+          {!supportsSerial() && !supportsBluetooth() ? (
+            <span className="text-sm text-danger">{t('print.unsupported')}</span>
+          ) : (
+            <span className="text-xs text-muted">{t('print.howTo')}</span>
+          )}
           {prefs.printer !== 'none' ? (
-            <Button variant="ghost" size="md" className="text-danger" onClick={() => void disconnectPrinter()}>
+            <Button
+              variant="ghost"
+              size="md"
+              className="text-danger"
+              onClick={() => void disconnectPrinter()}
+            >
               {t('print.forget')}
             </Button>
           ) : null}
@@ -92,7 +145,11 @@ export default function PrinterPage() {
               { value: 'en', label: 'Receipt: English' },
             ]}
           />
-          <Switch checked={prefs.autoPrint} onChange={(v) => setPrefs({ autoPrint: v })} label={t('print.auto')} />
+          <Switch
+            checked={prefs.autoPrint}
+            onChange={(v) => setPrefs({ autoPrint: v })}
+            label={t('print.auto')}
+          />
           <Button
             loading={testing}
             onClick={async () => {
@@ -116,7 +173,12 @@ export default function PrinterPage() {
           </div>
         </Section>
         <Section title={t('kitchen.sound')}>
-          <Switch checked={!prefs.muted} onChange={(v) => setPrefs({ muted: !v })} label={t('kitchen.sound')} description={prefs.muted ? t('kitchen.soundOff') : t('kitchen.soundOn')} />
+          <Switch
+            checked={!prefs.muted}
+            onChange={(v) => setPrefs({ muted: !v })}
+            label={t('kitchen.sound')}
+            description={prefs.muted ? t('kitchen.soundOff') : t('kitchen.soundOn')}
+          />
           <Button variant="outline" size="md" onClick={() => beep('order', true)}>
             {t('print.testSound')}
           </Button>

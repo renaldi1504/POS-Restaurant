@@ -36,7 +36,11 @@ export function DiffLabel({ diff, currency }: { diff: number; currency: Currency
   const k = diffKind(diff);
   return (
     <b className={cn('text-xl', k === 'match' ? 'text-primary' : 'text-danger')} data-testid="diff-label">
-      {k === 'match' ? t('tutup.match') : k === 'short' ? t('tutup.short', { amount: formatMoney(-diff, currency) }) : t('tutup.over', { amount: formatMoney(diff, currency) })}
+      {k === 'match'
+        ? t('tutup.match')
+        : k === 'short'
+          ? t('tutup.short', { amount: formatMoney(-diff, currency) })
+          : t('tutup.over', { amount: formatMoney(diff, currency) })}
     </b>
   );
 }
@@ -77,11 +81,21 @@ export function ClosingResultView({
     <>
       {preview.unpaidOrderCount || preview.activeOrderCount ? (
         <Card tone="warn" className="text-[15px] font-bold text-warn-dark">
-          {preview.unpaidOrderCount ? <div>{t('closing.unpaidWarning', { count: preview.unpaidOrderCount })}</div> : null}
-          {preview.activeOrderCount ? <div>{t('tutup.activeWarning', { count: preview.activeOrderCount })}</div> : null}
+          {preview.unpaidOrderCount ? (
+            <div>{t('closing.unpaidWarning', { count: preview.unpaidOrderCount })}</div>
+          ) : null}
+          {preview.activeOrderCount ? (
+            <div>{t('tutup.activeWarning', { count: preview.activeOrderCount })}</div>
+          ) : null}
         </Card>
       ) : null}
-      <section className={cn('flex flex-col gap-1.5 rounded-card border-2 bg-white px-3.5 py-3 shadow-card', calc.cashDiff ? 'border-[#F04438]' : 'border-primary')} data-testid="cash-result">
+      <section
+        className={cn(
+          'flex flex-col gap-1.5 rounded-card border-2 bg-white px-3.5 py-3 shadow-card',
+          calc.cashDiff ? 'border-[#F04438]' : 'border-primary',
+        )}
+        data-testid="cash-result"
+      >
         <div className="flex items-baseline justify-between">
           <b className="text-xl">{t('common.cash')}</b>
           <DiffLabel diff={calc.cashDiff} currency={cur} />
@@ -92,13 +106,25 @@ export function ClosingResultView({
         </div>
         <div className="flex justify-between text-[15px]">
           <span className="text-muted">{t('tutup.counted')}</span>
-          <b className="tabular-nums" data-testid="cash-counted">{fmt(calc.cashActualMain)}</b>
+          <b className="tabular-nums" data-testid="cash-counted">
+            {fmt(calc.cashActualMain)}
+          </b>
         </div>
         <span className="text-xs text-muted">
-          {t('tutup.explain', { opening: plain(calc.openingMain), sales: plain(calc.cashSalesMain), expenses: plain(calc.cashExpensesMain) })}
+          {t('tutup.explain', {
+            opening: plain(calc.openingMain),
+            sales: plain(calc.cashSalesMain),
+            expenses: plain(calc.cashExpensesMain),
+          })}
         </span>
       </section>
-      <section className={cn('flex flex-col gap-1.5 rounded-card border-2 bg-white px-3.5 py-3 shadow-card', calc.abaDiff ? 'border-[#F04438]' : 'border-primary')} data-testid="aba-result">
+      <section
+        className={cn(
+          'flex flex-col gap-1.5 rounded-card border-2 bg-white px-3.5 py-3 shadow-card',
+          calc.abaDiff ? 'border-[#F04438]' : 'border-primary',
+        )}
+        data-testid="aba-result"
+      >
         <div className="flex items-baseline justify-between">
           <b className="text-xl">ABA</b>
           <DiffLabel diff={calc.abaDiff} currency={cur} />
@@ -138,12 +164,21 @@ export function ClosingResultView({
             <div key={d.id} className="flex items-center gap-2">
               <div className="flex grow flex-col">
                 <b>{d.driver.name}</b>
-                <span className="text-[13px] text-muted">{t('tutup.driverLine', { count: d.deliveries, amount: fmt(d.cashCollected) })}</span>
+                <span className="text-[13px] text-muted">
+                  {t('tutup.driverLine', { count: d.deliveries, amount: fmt(d.cashCollected) })}
+                </span>
               </div>
               {d.settledAt ? (
-                <span className="rounded-lg bg-primary-tint px-2.5 py-1.5 text-[13px] font-extrabold text-primary-dark">{t('closing.settled')}</span>
+                <span className="rounded-lg bg-primary-tint px-2.5 py-1.5 text-[13px] font-extrabold text-primary-dark">
+                  {t('closing.settled')}
+                </span>
               ) : (
-                <button type="button" disabled={settle.isPending} onClick={() => settle.mutate(d.id)} className="h-11 rounded-[10px] border-2 border-warn bg-warn-tint px-3 text-[13px] font-extrabold">
+                <button
+                  type="button"
+                  disabled={settle.isPending}
+                  onClick={() => settle.mutate(d.id)}
+                  className="h-11 rounded-[10px] border-2 border-warn bg-warn-tint px-3 text-[13px] font-extrabold"
+                >
                   {t('tutup.markSettled')}
                 </button>
               )}
@@ -189,7 +224,11 @@ export default function ClosingPage() {
   const settings = usePublicSettings();
   const { logout } = useAuthActions();
   const print = usePrint();
-  const preview = useQuery({ queryKey: qk.closingPreview, queryFn: () => api.call('closingPreview'), retry: false });
+  const preview = useQuery({
+    queryKey: qk.closingPreview,
+    queryFn: () => api.call('closingPreview'),
+    retry: false,
+  });
   const [step, setStep] = useState<Step>(1);
   const [cur, setCur] = useState<Currency>(money.main);
   const [mode, setMode] = useState<CountMode>('denom');
@@ -206,7 +245,11 @@ export default function ClosingPage() {
       api.call('closingCreate', {
         body: {
           shiftId: preview.data!.shift.id,
-          actual: { cashByCurrency: totals, abaMain: aba ?? 0, ...(mode === 'denom' ? { denominations: counts } : {}) },
+          actual: {
+            cashByCurrency: totals,
+            abaMain: aba ?? 0,
+            ...(mode === 'denom' ? { denominations: counts } : {}),
+          },
           ...(note.trim() ? { note: note.trim() } : {}),
         },
       }),
@@ -217,7 +260,14 @@ export default function ClosingPage() {
       toast.success(t('tutup.closed'));
       if (getPrefs().printer !== 'none') {
         try {
-          await printDoc(buildClosingReport(res.preview, res.closing, settings.data?.name ?? 'Rumah Makan Berkat', paperCols()));
+          await printDoc(
+            buildClosingReport(
+              res.preview,
+              res.closing,
+              settings.data?.name ?? 'Rumah Makan Berkat',
+              paperCols(),
+            ),
+          );
         } catch (e) {
           toast.error(`${t('print.failed')}: ${(e as Error).message}`);
         }
@@ -230,17 +280,35 @@ export default function ClosingPage() {
   const header = (
     <header className="flex shrink-0 flex-col gap-2.5 border-b border-line bg-white px-3.5 py-3">
       <div className="flex items-center gap-2">
-        <button type="button" onClick={() => navigate('/kasir')} aria-label={t('common.back')} className="flex h-11 items-center rounded-xl border border-line-strong px-3 font-bold">
+        <button
+          type="button"
+          onClick={() => navigate('/kasir')}
+          aria-label={t('common.back')}
+          className="flex h-11 items-center rounded-xl border border-line-strong px-3 font-bold"
+        >
           ‹
         </button>
-        <h1 className="text-xl font-extrabold">{t('tutup.title', { name: preview.data?.shift.name ?? '' })}</h1>
+        <h1 className="text-xl font-extrabold">
+          {t('tutup.title', { name: preview.data?.shift.name ?? '' })}
+        </h1>
       </div>
       <ol className="grid grid-cols-3 gap-1.5 text-center text-[13px] font-bold">
         {steps.map((s, i) => {
           const n = (i + 1) as Step;
           const doneStep = n < step || !!result;
           return (
-            <li key={s} aria-current={n === step && !result ? 'step' : undefined} className={cn('rounded-[10px] px-1 py-2', n === step && !result ? 'bg-ink text-white' : doneStep ? 'bg-primary-tint text-primary-dark' : 'bg-[#F2F4F7] text-muted')}>
+            <li
+              key={s}
+              aria-current={n === step && !result ? 'step' : undefined}
+              className={cn(
+                'rounded-[10px] px-1 py-2',
+                n === step && !result
+                  ? 'bg-ink text-white'
+                  : doneStep
+                    ? 'bg-primary-tint text-primary-dark'
+                    : 'bg-[#F2F4F7] text-muted',
+              )}
+            >
               {n}. {s}
               {doneStep ? ' ✓' : ''}
             </li>
@@ -257,7 +325,10 @@ export default function ClosingPage() {
         {header}
         <div className="p-4">
           <ErrorBlock error={preview.error} onRetry={() => void preview.refetch()} />
-          <EmptyState title={t('shift.noShift')} action={<Button onClick={() => navigate('/kasir')}>{t('cashier.title')}</Button>} />
+          <EmptyState
+            title={t('shift.noShift')}
+            action={<Button onClick={() => navigate('/kasir')}>{t('cashier.title')}</Button>}
+          />
         </div>
       </Screen>
     );
@@ -275,17 +346,29 @@ export default function ClosingPage() {
           <section className="flex flex-col gap-1 rounded-card bg-white p-3.5 text-[15px] shadow-card">
             <div className="flex justify-between">
               <span>{t('tutup.cashDiff')}</span>
-              <b className="tabular-nums">{formatMoney(result.closing.diff.cashMain, p.currency, { signed: true })}</b>
+              <b className="tabular-nums">
+                {formatMoney(result.closing.diff.cashMain, p.currency, { signed: true })}
+              </b>
             </div>
             <div className="flex justify-between">
               <span>{t('tutup.abaDiff')}</span>
-              <b className="tabular-nums">{formatMoney(result.closing.diff.abaMain, p.currency, { signed: true })}</b>
+              <b className="tabular-nums">
+                {formatMoney(result.closing.diff.abaMain, p.currency, { signed: true })}
+              </b>
             </div>
           </section>
         </main>
         <ScreenFooter>
           <div className="flex gap-2">
-            <Button variant="outline" className="h-16 w-36" onClick={() => void print.printDoc(buildClosingReport(result.preview, result.closing, settings.data?.name ?? '', paperCols()))}>
+            <Button
+              variant="outline"
+              className="h-16 w-36"
+              onClick={() =>
+                void print.printDoc(
+                  buildClosingReport(result.preview, result.closing, settings.data?.name ?? '', paperCols()),
+                )
+              }
+            >
               {t('closing.printReport')}
             </Button>
             <Button size="xl" className="grow" onClick={() => void logout()}>
@@ -304,18 +387,42 @@ export default function ClosingPage() {
         {step === 1 ? (
           <>
             <p className="text-[15px] text-muted">{t('closing.countCash')}</p>
-            <Tabs dense label={t('closing.countCash')} value={mode} onChange={setMode} tabs={[{ value: 'denom', label: t('shift.perDenomination') }, { value: 'total', label: t('shift.totalOnly') }]} />
+            <Tabs
+              dense
+              label={t('closing.countCash')}
+              value={mode}
+              onChange={setMode}
+              tabs={[
+                { value: 'denom', label: t('shift.perDenomination') },
+                { value: 'total', label: t('shift.totalOnly') },
+              ]}
+            />
             <CurrencyTabs currencies={money.enabled} value={cur} onChange={setCur} totals={totals} />
             {mode === 'denom' ? (
-              <DenominationList currency={cur} counts={counts[cur] ?? {}} onChange={(next) => setCounts((c) => ({ ...c, [cur]: next }))} />
+              <DenominationList
+                currency={cur}
+                counts={counts[cur] ?? {}}
+                onChange={(next) => setCounts((c) => ({ ...c, [cur]: next }))}
+              />
             ) : (
-              <ManualTotal currency={cur} value={manual[cur] ?? null} onChange={(v) => setManual((m) => ({ ...m, [cur]: v }))} />
+              <ManualTotal
+                currency={cur}
+                value={manual[cur] ?? null}
+                onChange={(v) => setManual((m) => ({ ...m, [cur]: v }))}
+              />
             )}
           </>
         ) : null}
         {step === 2 ? (
           <section className="flex flex-col gap-2 rounded-card bg-white p-3.5 shadow-card">
-            <MoneyInput big autoFocus label={t('closing.abaBalance')} currency={p.currency} value={aba} onChange={setAba} />
+            <MoneyInput
+              big
+              autoFocus
+              label={t('closing.abaBalance')}
+              currency={p.currency}
+              value={aba}
+              onChange={setAba}
+            />
             <span className="text-sm text-muted">{t('tutup.abaHint')}</span>
           </section>
         ) : null}
@@ -338,12 +445,18 @@ export default function ClosingPage() {
         {step === 1 ? (
           <div className="flex items-baseline justify-between">
             <span className="text-[15px] text-muted">{t('closing.actualCash')}</span>
-            <b className="text-2xl tabular-nums">{formatMoney(closingCalc(p, totals, 0, p.currency, money.rates).cashActualMain, p.currency)}</b>
+            <b className="text-2xl tabular-nums">
+              {formatMoney(closingCalc(p, totals, 0, p.currency, money.rates).cashActualMain, p.currency)}
+            </b>
           </div>
         ) : null}
         <div className="flex gap-2">
           {step > 1 ? (
-            <button type="button" onClick={() => setStep(step === 3 ? 1 : 1)} className="h-16 w-[110px] rounded-2xl border border-line-strong bg-white text-[15px] font-bold shadow-card">
+            <button
+              type="button"
+              onClick={() => setStep(step === 3 ? 1 : 1)}
+              className="h-16 w-[110px] rounded-2xl border border-line-strong bg-white text-[15px] font-bold shadow-card"
+            >
               ‹ {step === 3 ? t('tutup.recount') : t('common.back')}
             </button>
           ) : null}

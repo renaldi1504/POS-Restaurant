@@ -33,7 +33,8 @@ export function groupRuleLabel(g: OptionGroupDto, selected: number, t: TFunction
   const min = effectiveMin(g);
   if (g.required) {
     if (max === 1) return t('common.chooseOne');
-    if (min > 1 && max >= min) return `${t('common.chooseAtLeast', { count: min })} · ${t('common.chooseUpTo', { count: max })}`;
+    if (min > 1 && max >= min)
+      return `${t('common.chooseAtLeast', { count: min })} · ${t('common.chooseUpTo', { count: max })}`;
     return t('common.chooseUpTo', { count: max });
   }
   if (max === 1) return `${t('common.optional')} · ${t('common.chooseOne').toLowerCase()}`;
@@ -63,9 +64,18 @@ export function OptionSheet({ item, groups, basePrice, currency, onClose, onAdd 
   const result = useMemo(() => validateOptionSelection(groups, selected), [groups, selected]);
   const delta = useMemo(() => {
     const ids = new Set(selected);
-    return groups.flatMap((g) => g.options).filter((o) => ids.has(o.id)).reduce((a, o) => a + o.priceDelta, 0);
+    return groups
+      .flatMap((g) => g.options)
+      .filter((o) => ids.has(o.id))
+      .reduce((a, o) => a + o.priceDelta, 0);
   }, [groups, selected]);
-  const firstMissing = result.ok ? null : groups.find((g) => !result.ok && result.errors.some((e) => e.groupId === g.id && (e.code === 'required' || e.code === 'min')));
+  const firstMissing = result.ok
+    ? null
+    : groups.find(
+        (g) =>
+          !result.ok &&
+          result.errors.some((e) => e.groupId === g.id && (e.code === 'required' || e.code === 'min')),
+      );
 
   if (!item) return null;
   const total = (basePrice + delta) * qty;
@@ -86,7 +96,15 @@ export function OptionSheet({ item, groups, basePrice, currency, onClose, onAdd 
             {item.photoUrl ? (
               <img src={item.photoUrl} alt="" className="size-full object-cover" />
             ) : (
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                aria-hidden
+              >
                 <path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
               </svg>
             )}
@@ -101,7 +119,9 @@ export function OptionSheet({ item, groups, basePrice, currency, onClose, onAdd 
           </div>
           <div className="flex flex-col gap-1 bg-white px-4 py-3.5">
             <b className="text-[21px]">{tl(item.name, lang)}</b>
-            {tl(item.description, lang) ? <span className="text-[13px] text-muted">{tl(item.description, lang)}</span> : null}
+            {tl(item.description, lang) ? (
+              <span className="text-[13px] text-muted">{tl(item.description, lang)}</span>
+            ) : null}
             <b className="mt-0.5 text-[17px] text-primary-dark">
               {hasPriced ? t('opsi.startFrom', { price: fmt(basePrice) }) : fmt(basePrice)}
             </b>
@@ -114,7 +134,11 @@ export function OptionSheet({ item, groups, basePrice, currency, onClose, onAdd 
             const satisfied = inGroup.length >= effectiveMin(g) && (g.required ? inGroup.length > 0 : true);
             const radio = max === 1;
             return (
-              <section key={g.id} className="mt-2 flex flex-col bg-white px-4 pb-1.5 pt-3" aria-labelledby={`grp-${g.id}`}>
+              <section
+                key={g.id}
+                className="mt-2 flex flex-col bg-white px-4 pb-1.5 pt-3"
+                aria-labelledby={`grp-${g.id}`}
+              >
                 <div className="mb-1 flex items-center justify-between gap-2">
                   <div className="flex flex-col gap-0.5">
                     <b id={`grp-${g.id}`} className="text-base">
@@ -179,7 +203,8 @@ export function OptionSheet({ item, groups, basePrice, currency, onClose, onAdd 
 
           <section className="mt-2 flex flex-col gap-1.5 bg-white px-4 pb-4 pt-3">
             <label htmlFor="opt-note" className="font-bold">
-              {t('order.itemNote')} <span className="font-medium text-muted">({t('common.optional').toLowerCase()})</span>
+              {t('order.itemNote')}{' '}
+              <span className="font-medium text-muted">({t('common.optional').toLowerCase()})</span>
             </label>
             <input
               id="opt-note"
