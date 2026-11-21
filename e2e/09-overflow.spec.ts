@@ -24,13 +24,26 @@ async function overflowProblems(page: Page): Promise<string[]> {
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0) continue;
       const cs = getComputedStyle(el);
-      if (cs.visibility === 'hidden' || cs.position === 'fixed') continue;
-      if ((r.right > vw + 1 || r.left < -1) && !clipped(el)) {
-        const id = `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}.${String(el.className).slice(0, 60)}`;
+      if (cs.visibility === 'hidden') continue;
+      const id = `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 60)}`;
+      // Wadah gulir vertikal (mis. <main overflow-y-auto>) tidak boleh bisa digeser ke samping.
+      // Wadah yang memang digeser horizontal (overflow-x-auto, mis. chip kategori) dikecualikan.
+      const scrollX = cs.overflowX === 'auto' || cs.overflowX === 'scroll';
+      const intendedX = /overflow-x-(auto|scroll)|snap-x/.test(String(el.className));
+      if (scrollX && !intendedX && el.scrollWidth > el.clientWidth + 1)
+        out.push(`${id} bisa digeser ke samping (${el.scrollWidth} > ${el.clientWidth})`);
+      // Wadah overflow hidden yang memotong isi ke samping (selain teks "…" yang memang dipotong).
+      const clipX = cs.overflowX === 'hidden' || cs.overflowX === 'clip';
+      const ellipsis =
+        cs.textOverflow === 'ellipsis' || /truncate|line-clamp|sr-only/.test(String(el.className));
+      // Gambar/peta dekoratif (role=img) boleh memotong isinya sendiri.
+      const picture = el.getAttribute('role') === 'img' || el.closest('[role="img"]') !== null;
+      if (clipX && !ellipsis && !picture && el.scrollWidth > el.clientWidth + 1)
+        out.push(`${id} memotong isi (${el.scrollWidth} > ${el.clientWidth})`);
+      if (cs.position !== 'fixed' && (r.right > vw + 1 || r.left < -1) && !clipped(el))
         out.push(
           `${id} [${Math.round(r.left)}..${Math.round(r.right)}] "${(el.textContent ?? '').trim().slice(0, 40)}"`,
         );
-      }
     }
     return out.slice(0, 10);
   });
@@ -66,6 +79,8 @@ test('pos-web 360 px: tanpa scroll horizontal', async ({ browser }) => {
     '/driver',
     '/admin',
     '/admin/menu',
+    '/admin/menu/1',
+    '/admin/menu/baru',
     '/admin/opsi/1',
     '/admin/meja',
     '/admin/pengguna',
@@ -97,6 +112,11 @@ test('order-web 360 px: tanpa scroll horizontal', async ({ browser }) => {
   await check(page, `${ORDER}/`);
   await page.getByRole('button', { name: 'Tambah Kerupuk' }).click();
   await check(page, `${ORDER}/keranjang`);
+  // Mode biasa: "Makan di sini" diarahkan scan QR meja (tidak bisa lanjut).
+  await page.getByRole('radio', { name: 'Makan di sini' }).click();
+  await expect(page.getByTestId('dine-info')).toContainText('silakan scan QR');
+  await expect(page.getByRole('button', { name: /Lanjut ke pembayaran/ })).toBeDisabled();
+  await page.getByRole('radio', { name: 'Delivery' }).click();
   await page.getByRole('button', { name: /Lanjut ke alamat/ }).click();
   await expect(page.getByRole('heading', { name: 'Alamat pengantaran' })).toBeVisible();
   expect(await overflowProblems(page), 'overflow alamat').toEqual([]);
