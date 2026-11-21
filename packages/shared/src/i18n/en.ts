@@ -203,6 +203,8 @@ export const en: Dict = {
     categoryNameTaken: 'Category name already used',
     categoryExists: 'Category already exists',
     categoryHasItems: 'Category still has menu items',
+    reorderDuplicate: 'The order list contains duplicates',
+    reorderMissing: 'Some items no longer exist — refresh and try again',
     roleNameTaken: 'Role name already used',
     roleInUse: 'Role is still used by users',
     systemRoleDelete: 'System roles cannot be deleted',

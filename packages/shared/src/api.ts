@@ -572,6 +572,22 @@ export const endpoints = {
     response: OkResponse,
     description: 'Hapus kategori (CONFLICT bila masih ada menu)',
   }),
+  adminCategoriesReorder: def({
+    method: 'PUT',
+    path: '/api/admin/categories/order',
+    ...staff('menu.manage'),
+    body: A.ReorderRequest,
+    response: OkResponse,
+    description: 'Atur urutan kategori (atas → bawah)',
+  }),
+  adminItemsReorder: def({
+    method: 'PUT',
+    path: '/api/admin/items/order',
+    ...staff('menu.manage'),
+    body: A.ReorderRequest,
+    response: OkResponse,
+    description: 'Atur urutan menu (atas → bawah), biasanya per kategori',
+  }),
   adminItemsList: def({
     method: 'GET',
     path: '/api/admin/items',

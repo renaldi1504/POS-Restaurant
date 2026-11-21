@@ -19,6 +19,10 @@ export const UpdateCategoryRequest = z.object({
 });
 export type UpdateCategoryRequest = z.infer<typeof UpdateCategoryRequest>;
 
+/** Urutan baru: id dari atas ke bawah (sort = posisi). Id yang tidak disebut tidak berubah. */
+export const ReorderRequest = z.object({ ids: z.array(Id).min(1).max(1000) });
+export type ReorderRequest = z.infer<typeof ReorderRequest>;
+
 // ---------- Menu item ----------
 export const ItemPricesInput = z.object({
   store: NonNegMoney,
@@ -183,8 +187,8 @@ export const TranslateRequest = z.object({
 export type TranslateRequest = z.input<typeof TranslateRequest>;
 export const TranslateResponse = z.object({
   entries: z.array(z.object({ key: z.string(), text: LocalizedText })),
-  /** 'gemini' | 'mock' (key kosong / kuota habis). */
-  provider: z.enum(['gemini', 'mock']),
+  /** gemini = AI; free = MyMemory gratis; none = gagal (kolom dibiarkan kosong); mock = test/dev offline. */
+  provider: z.enum(['gemini', 'free', 'mock', 'none']),
 });
 export type TranslateResponse = z.infer<typeof TranslateResponse>;
 

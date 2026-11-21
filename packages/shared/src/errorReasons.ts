@@ -96,6 +96,8 @@ export const ERROR_REASONS = {
   categoryNameTaken: 'Nama kategori sudah dipakai',
   categoryExists: 'Kategori sudah ada',
   categoryHasItems: 'Kategori masih berisi menu',
+  reorderDuplicate: 'Urutan berisi id ganda',
+  reorderMissing: 'Sebagian data tidak ditemukan',
   // ---- pengguna & role ----
   roleNameTaken: 'Nama role sudah dipakai',
   roleInUse: 'Role masih dipakai pengguna',

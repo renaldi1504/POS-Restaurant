@@ -1,6 +1,6 @@
 /**
  * Gemini (@google/genai): terjemahan menu & tanya-jawab bot Telegram.
- * Tanpa GEMINI_API_KEY → mode mock deterministik (test & dev offline).
+ * Tanpa GEMINI_API_KEY → terjemahan gratis MyMemory; mock "[en] …" hanya di test/dev offline.
  */
 import { GoogleGenAI } from '@google/genai';
 import type { FastifyInstance } from 'fastify';
@@ -51,29 +51,75 @@ export interface TranslateEntry {
   overwrite: boolean;
 }
 
-/** Mock: teks Indonesia diberi awalan "[en] …". */
+export type TranslateProvider = 'gemini' | 'free' | 'mock' | 'none';
+
+/** Mock: teks Indonesia diberi awalan "[en] …" — HANYA untuk test & dev offline, tidak pernah di production. */
 export function mockTranslate(text: string, lang: Lang): string {
   return `[${lang}] ${text}`;
+}
+
+/** Sisa mock lama ("[en] Nasi") dianggap belum diterjemahkan. */
+export function isMockText(v: string | undefined): boolean {
+  return !!v && /^\[(en|kh|zh)\]\s/.test(v);
+}
+
+/** Kode bahasa MyMemory. */
+const FREE_LANG: Record<Lang, string> = { id: 'id', en: 'en', kh: 'km', zh: 'zh-CN' };
+
+/**
+ * Terjemahan gratis tanpa API key: MyMemory (api.mymemory.translated.net), ±5.000 karakter/hari per IP
+ * (50.000 bila TRANSLATE_EMAIL diisi). Dipakai bila Gemini tidak ada / gagal. Kembalikan null bila gagal.
+ */
+export async function freeTranslate(
+  app: FastifyInstance,
+  text: string,
+  lang: Lang,
+  fetchFn: typeof fetch = fetch,
+): Promise<string | null> {
+  try {
+    const url = new URL('https://api.mymemory.translated.net/get');
+    url.searchParams.set('q', text);
+    url.searchParams.set('langpair', `id|${FREE_LANG[lang]}`);
+    if (app.config.TRANSLATE_EMAIL) url.searchParams.set('de', app.config.TRANSLATE_EMAIL);
+    const res = await fetchFn(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+    const body = (await res.json()) as {
+      responseStatus?: number | string;
+      responseData?: { translatedText?: string };
+    };
+    const out = body.responseData?.translatedText?.trim();
+    if (Number(body.responseStatus) !== 200 || !out) return null;
+    // MyMemory membalas pesan error/kuota sebagai teks berhuruf kapital
+    if (/MYMEMORY WARNING|QUERY LENGTH LIMIT|INVALID LANGUAGE PAIR/i.test(out)) return null;
+    return out;
+  } catch (err) {
+    app.log.warn({ err: (err as Error).message }, 'Terjemahan gratis (MyMemory) gagal');
+    return null;
+  }
 }
 
 /**
  * Isi bahasa target yang kosong (atau semua bila overwrite) dari teks `id`.
  * Bahasa yang sudah terisi (diedit manual) tidak disentuh kecuali overwrite.
+ * Urutan: Gemini (bila ada key) → MyMemory gratis → di production dibiarkan kosong ('none');
+ * di test/dev offline baru mock "[en] …".
  */
 export async function translateEntries(
   app: FastifyInstance,
   entries: TranslateEntry[],
   targets: Lang[] = ['en', 'kh', 'zh'],
-): Promise<{ entries: { key: string; text: LocalizedText }[]; provider: 'gemini' | 'mock' }> {
+  deps: { fetchFn?: typeof fetch } = {},
+): Promise<{ entries: { key: string; text: LocalizedText }[]; provider: TranslateProvider }> {
   const langs = targets.filter((l) => l !== 'id');
   const jobs = entries.map((e) => ({
     key: e.key,
     source: e.text.id,
-    need: langs.filter((l) => e.overwrite || !e.text[l]?.trim()),
+    need: langs.filter((l) => e.overwrite || !e.text[l]?.trim() || isMockText(e.text[l])),
   }));
   const pending = jobs.filter((j) => j.need.length);
-  let provider: 'gemini' | 'mock' = 'mock';
-  let translated: Record<string, Partial<Record<Lang, string>>> = {};
+  const translated: Record<string, Partial<Record<Lang, string>>> = {};
+  const used = new Set<TranslateProvider>();
+
   if (pending.length && genai(app)) {
     try {
       const system =
@@ -82,26 +128,54 @@ export async function translateEntries(
         'Reply ONLY with JSON: {"<key>": {"<lang>": "<translation>"}} using the language codes given ' +
         `(${langs.map((l) => `${l}=${LANG_NAMES[l]}`).join(', ')}).`;
       const prompt = JSON.stringify(pending.map((j) => ({ key: j.key, text: j.source, langs: j.need })));
-      translated = await generateJson(app, system, prompt);
-      provider = 'gemini';
+      const res = await generateJson<Record<string, Partial<Record<Lang, string>>>>(app, system, prompt);
+      for (const [k, v] of Object.entries(res ?? {})) translated[k] = { ...v };
+      used.add('gemini');
     } catch (err) {
-      app.log.warn({ err: (err as Error).message }, 'Gemini translate gagal, pakai mock');
-      translated = {};
-      provider = 'mock';
+      app.log.warn({ err: (err as Error).message }, 'Gemini translate gagal, coba terjemahan gratis');
     }
   }
-  return {
-    provider,
-    entries: entries.map((e) => {
-      const job = jobs.find((j) => j.key === e.key)!;
-      const out: LocalizedText = { ...e.text };
-      for (const l of job.need) {
-        const v = provider === 'gemini' ? translated[e.key]?.[l] : undefined;
-        out[l] = (typeof v === 'string' && v.trim() ? v.trim() : mockTranslate(e.text.id, l)).slice(0, 200);
+
+  const ok = (v: unknown): v is string => typeof v === 'string' && !!v.trim();
+  // Yang belum terisi (Gemini mati / gagal / bolong) → MyMemory gratis. Tidak dipakai saat test.
+  if ((deps.fetchFn || !app.config.isTest) && app.config.TRANSLATE_FREE_ENABLED) {
+    for (const j of pending) {
+      for (const l of j.need) {
+        if (ok(translated[j.key]?.[l])) continue;
+        const v = await freeTranslate(app, j.source, l, deps.fetchFn);
+        if (v) {
+          (translated[j.key] ??= {})[l] = v;
+          used.add('free');
+        }
       }
-      return { key: e.key, text: out };
-    }),
-  };
+    }
+  }
+
+  const allowMock = !app.config.isProd;
+  let mocked = false;
+  const out = entries.map((e) => {
+    const job = jobs.find((j) => j.key === e.key)!;
+    const text: LocalizedText = { ...e.text };
+    for (const l of job.need) {
+      const v = translated[e.key]?.[l];
+      if (ok(v)) text[l] = v.trim().slice(0, 200);
+      else if (allowMock) {
+        text[l] = mockTranslate(e.text.id, l);
+        mocked = true;
+      } else if (isMockText(text[l])) delete text[l];
+    }
+    return { key: e.key, text };
+  });
+  const provider: TranslateProvider = used.has('gemini')
+    ? 'gemini'
+    : used.has('free')
+      ? 'free'
+      : mocked
+        ? 'mock'
+        : pending.length
+          ? 'none'
+          : 'gemini';
+  return { provider, entries: out };
 }
 
 // ---------- Tanya-jawab ----------

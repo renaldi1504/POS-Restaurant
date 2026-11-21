@@ -1,10 +1,10 @@
-import { count, eq } from 'drizzle-orm';
+import { count, eq, inArray } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import type { MenuAvailabilityPayload } from '@pos/shared';
 import { categories, menuItems, optionGroups, options, promos } from '../../db/schema';
 import { writeAudit } from '../../lib/audit';
 import { now } from '../../lib/clock';
-import { conflict, notFound, validationError } from '../../lib/errors';
+import { badRequest, conflict, notFound, validationError } from '../../lib/errors';
 import { defineRoute } from '../../lib/route';
 import { readImageUpload } from '../../lib/upload';
 import {
@@ -31,6 +31,25 @@ export function broadcastAvailability(app: FastifyInstance, p: Omit<MenuAvailabi
     'menu.availability',
     payload,
   );
+}
+
+/** Set `sort` = posisi (1, 2, 3…) untuk id yang diberikan, dalam satu transaksi. */
+async function applyOrder(
+  app: FastifyInstance,
+  table: typeof categories | typeof menuItems,
+  ids: number[],
+): Promise<void> {
+  if (new Set(ids).size !== ids.length) throw badRequest('Urutan berisi id ganda');
+  await app.db.transaction(async (tx) => {
+    const found = await tx.select({ id: table.id }).from(table).where(inArray(table.id, ids));
+    if (found.length !== ids.length) throw notFound('Sebagian data tidak ditemukan');
+    for (const [i, id] of ids.entries()) {
+      await tx
+        .update(table)
+        .set({ sort: i + 1 })
+        .where(eq(table.id, id));
+    }
+  });
 }
 
 export default async function menuRoutes(app: FastifyInstance) {
@@ -126,6 +145,28 @@ export default async function menuRoutes(app: FastifyInstance) {
       entity: 'category',
       entityId: params.id,
       before: row,
+    });
+    return { ok: true as const };
+  });
+
+  defineRoute(app, 'adminCategoriesReorder', async ({ body, staff }) => {
+    await applyOrder(app, categories, body.ids);
+    await writeAudit(app.db, {
+      userId: staff.id,
+      action: 'category.reorder',
+      entity: 'category',
+      after: { ids: body.ids },
+    });
+    return { ok: true as const };
+  });
+
+  defineRoute(app, 'adminItemsReorder', async ({ body, staff }) => {
+    await applyOrder(app, menuItems, body.ids);
+    await writeAudit(app.db, {
+      userId: staff.id,
+      action: 'menu.reorder',
+      entity: 'menu_item',
+      after: { ids: body.ids },
     });
     return { ok: true as const };
   });

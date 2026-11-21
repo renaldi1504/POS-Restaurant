@@ -34,6 +34,10 @@ const EnvSchema = z.object({
 
   GEMINI_API_KEY: optionalString,
   GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
+  /** Opsional: email untuk kuota terjemahan gratis MyMemory lebih besar (50.000 karakter/hari). */
+  TRANSLATE_EMAIL: optionalString,
+  /** Terjemahan gratis MyMemory bila Gemini tidak ada/gagal (matikan di e2e agar tidak ke internet). */
+  TRANSLATE_FREE_ENABLED: bool(true),
 
   GOOGLE_MAPS_API_KEY: optionalString,
 

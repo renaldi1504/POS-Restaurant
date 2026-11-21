@@ -27,11 +27,16 @@ export function useAutoTranslate() {
       });
       return { map: new Map(res.entries.map((e) => [e.key, e.text])), provider: res.provider };
     },
-    onSuccess: (r) =>
-      toast.success(r.provider === 'mock' ? t('menux.translatedMock') : t('menux.translated')),
+    onSuccess: (r) => {
+      if (r.provider === 'none') toast.error(t('menux.translateFailed'));
+      else toast.success(r.provider === 'mock' ? t('menux.translatedMock') : t('menux.translated'));
+    },
     onError: (e) => toast.error(errorMessage(e, t)),
   });
 }
+
+/** Sisa mode uji lama ("[en] Nasi") dianggap kosong supaya diterjemahkan ulang. */
+export const isMockText = (v: string | undefined) => !!v && /^\[(en|kh|zh)\]\s/.test(v);
 
 /** Gabungkan hasil terjemahan ke teks: hanya bahasa yang kosong; kembalikan bahasa yang terisi otomatis. */
 export function mergeTranslation(cur: Loc, tr: LocalizedText | undefined): { text: Loc; auto: Lang[] } {
@@ -40,7 +45,7 @@ export function mergeTranslation(cur: Loc, tr: LocalizedText | undefined): { tex
   const auto: Lang[] = [];
   for (const l of LANGS) {
     if (l === 'id') continue;
-    if (!cur[l]?.trim() && tr[l]?.trim()) {
+    if ((!cur[l]?.trim() || isMockText(cur[l])) && tr[l]?.trim()) {
       text[l] = tr[l];
       auto.push(l);
     }

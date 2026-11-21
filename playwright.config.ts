@@ -65,6 +65,7 @@ export default defineConfig({
         E2E_DATABASE_URL: E2E_DB,
         JOBS_ENABLED: 'false',
         RATE_LIMIT_ENABLED: 'false',
+        TRANSLATE_FREE_ENABLED: 'false',
         LOG_LEVEL: 'warn',
         POS_ORIGIN: `http://localhost:${POS_PORT}`,
         ORDER_ORIGIN: `http://localhost:${ORDER_PORT}`,

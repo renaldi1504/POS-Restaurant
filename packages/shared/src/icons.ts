@@ -82,6 +82,10 @@ export const ICON_NAMES = [
   'volume_up',
   'warning',
   'wifi_off',
+  // Urutan (kategori & menu)
+  'arrow_upward',
+  'arrow_downward',
+  'swap_vert',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

@@ -221,6 +221,8 @@ export const kh: Dict = {
     categoryNameTaken: 'ឈ្មោះប្រភេទនេះមានរួចហើយ',
     categoryExists: 'ប្រភេទនេះមានរួចហើយ',
     categoryHasItems: 'ប្រភេទនេះនៅមានម្ហូប',
+    reorderDuplicate: 'លំដាប់មានធាតុស្ទួន',
+    reorderMissing: 'ធាតុខ្លះមិនមានទៀតទេ — សូមផ្ទុកឡើងវិញ',
     roleNameTaken: 'ឈ្មោះតួនាទីនេះមានរួចហើយ',
     roleInUse: 'តួនាទីនេះនៅមានអ្នកប្រើ',
     systemRoleDelete: 'មិនអាចលុបតួនាទីប្រព័ន្ធ',

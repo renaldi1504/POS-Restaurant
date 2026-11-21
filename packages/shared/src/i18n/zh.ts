@@ -221,6 +221,8 @@ export const zh: Dict = {
     categoryNameTaken: '分类名称已被使用',
     categoryExists: '分类已存在',
     categoryHasItems: '分类下还有菜品',
+    reorderDuplicate: '排序中有重复项',
+    reorderMissing: '部分项目已不存在，请刷新后重试',
     roleNameTaken: '角色名称已被使用',
     roleInUse: '该角色仍有用户在使用',
     systemRoleDelete: '系统角色不能删除',
