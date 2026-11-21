@@ -7,14 +7,18 @@ import { useMe } from '../../lib/auth';
 import { useOnlineAlarm } from '../../lib/online';
 
 /**
- * Aksi top app bar kasir: Denah meja + bel order online (badge + bunyi berulang sampai dilihat).
+ * Aksi top app bar kasir: pintasan Pengeluaran & Dashboard (opsional, sesuai permission),
+ * Denah meja + bel order online (badge + bunyi berulang sampai dilihat).
  * Menu lengkap ada di navigation bar bawah ("Lainnya").
  */
 export function CashierActions({
   onOnlineScreen = false,
+  shortcuts = false,
   extra,
 }: {
   onOnlineScreen?: boolean;
+  /** Tampilkan pintasan Pengeluaran & Dashboard (layar utama kasir). */
+  shortcuts?: boolean;
   extra?: ReactNode;
 }) {
   const { t } = useTranslation();
@@ -25,6 +29,16 @@ export function CashierActions({
   return (
     <>
       {extra}
+      {shortcuts && hasPermission(me?.permissions, 'shift.manage') ? (
+        <IconButton
+          icon="payments"
+          label={t('nav.expenses')}
+          onClick={() => navigate('/kasir/pengeluaran')}
+        />
+      ) : null}
+      {shortcuts && hasPermission(me?.permissions, 'reports.view') ? (
+        <IconButton icon="bar_chart" label={t('nav.dashboard')} onClick={() => navigate('/admin')} />
+      ) : null}
       {hasPermission(me?.permissions, 'order.create') ? (
         <IconButton
           icon="table_restaurant"

@@ -103,9 +103,13 @@ function MenuGrid({ shiftName, lang }: { shiftName: string; lang: string }) {
       <header className="flex shrink-0 flex-col gap-2 bg-surface pb-2 transition-colors group-data-[scrolled]/screen:bg-surface-container">
         <div className="flex min-h-16 items-center gap-3 pl-4 pr-1">
           {settings.data?.logoUrl ? (
-            <img src={settings.data.logoUrl} alt="" className="size-10 shrink-0 rounded-full object-cover" />
+            <img
+              src={settings.data.logoUrl}
+              alt=""
+              className="hidden size-10 shrink-0 rounded-full object-cover min-[420px]:block"
+            />
           ) : (
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
+            <span className="hidden size-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container min-[420px]:flex">
               <Icon name="storefront" />
             </span>
           )}
@@ -115,7 +119,7 @@ function MenuGrid({ shiftName, lang }: { shiftName: string; lang: string }) {
               {t('cashier.shiftBy', { shift: shiftName, name: me?.name ?? '' })}
             </span>
           </div>
-          <CashierActions />
+          <CashierActions shortcuts />
         </div>
         <div className="px-4">
           <label className="flex h-14 items-center gap-3 rounded-full bg-surface-container-high px-4 text-on-surface-variant focus-within:outline-3 focus-within:outline-secondary">
