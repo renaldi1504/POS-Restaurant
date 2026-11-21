@@ -77,8 +77,15 @@ function PanePlaceholder({ icon, text }: { icon: Parameters<typeof Icon>[0]['nam
 function KasirRoute() {
   const shift = useCurrentShift();
   // Belum ada shift: form buka shift saja (tanpa panel pesanan).
-  if (!shift.data) return <CashierPage />;
-  return <ListDetail activePath="/kasir" list={<CashierPage />} detail={<OrderDetailPage />} pinned />;
+  return (
+    <ListDetail
+      activePath="/kasir"
+      list={<CashierPage />}
+      detail={<OrderDetailPage />}
+      pinned
+      showDetail={!!shift.data}
+    />
+  );
 }
 
 /** /kasir/pesanan[/:orderId]: tablet tanpa id = sama dengan /kasir (panel pesanan); selain itu layar penuh. */

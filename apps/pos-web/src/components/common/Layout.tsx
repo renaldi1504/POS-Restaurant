@@ -89,6 +89,7 @@ export function ListDetail({
   activePath,
   pinned,
   detailWidth = 'w-[400px]',
+  showDetail = true,
 }: {
   list: ReactNode;
   detail?: ReactNode | null;
@@ -96,6 +97,8 @@ export function ListDetail({
   activePath: string;
   pinned?: boolean;
   detailWidth?: string;
+  /** false = hanya daftar (mis. kasir sebelum shift dibuka); struktur tetap sama supaya tidak remount. */
+  showDetail?: boolean;
 }) {
   const size = useWindowSizeClass();
   if (size !== 'expanded') return <>{detail && !pinned ? detail : list}</>;
@@ -105,21 +108,23 @@ export function ListDetail({
         <div className="flex min-h-0 min-w-0 grow flex-col" data-pane="list">
           <PaneCtx.Provider value="list">{list}</PaneCtx.Provider>
         </div>
-        <div
-          className={cn(
-            'flex min-h-0 shrink-0 flex-col border-l border-outline-variant bg-surface-container-low',
-            detail ? detailWidth : 'w-[400px]',
-          )}
-          data-pane="detail"
-        >
-          <PaneCtx.Provider value={pinned ? 'pinned' : 'detail'}>
-            {detail ?? (
-              <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center text-on-surface-variant">
-                {placeholder}
-              </div>
+        {showDetail ? (
+          <div
+            className={cn(
+              'flex min-h-0 shrink-0 flex-col border-l border-outline-variant bg-surface-container-low',
+              detail ? detailWidth : 'w-[400px]',
             )}
-          </PaneCtx.Provider>
-        </div>
+            data-pane="detail"
+          >
+            <PaneCtx.Provider value={pinned ? 'pinned' : 'detail'}>
+              {detail ?? (
+                <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center text-on-surface-variant">
+                  {placeholder}
+                </div>
+              )}
+            </PaneCtx.Provider>
+          </div>
+        ) : null}
       </div>
     </AppFrame>
   );

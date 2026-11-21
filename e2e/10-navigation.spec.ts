@@ -19,8 +19,13 @@ test('kasir (HP): bottom nav tampil, bernavigasi, pin dari Lainnya; disembunyika
   const nav = page.getByRole('navigation', { name: 'Navigasi utama' });
   await expect(nav).toBeVisible();
   await expect(page.getByTestId('navigation-rail')).toHaveCount(0);
-  const box = (await nav.boundingBox())!;
-  expect(box.y + box.height).toBeGreaterThan(page.viewportSize()!.height - 2); // menempel di bawah
+  // Menempel di bawah layar.
+  await expect
+    .poll(async () => {
+      const b = await nav.boundingBox();
+      return b ? Math.round(b.y + b.height) : 0;
+    })
+    .toBeGreaterThan(page.viewportSize()!.height - 2);
   await expect(nav.getByRole('link', { name: 'Kasir' })).toHaveAttribute('aria-current', 'page');
   await expect(nav.getByRole('link')).toHaveText(['Kasir', 'Meja', 'Online', 'Riwayat']);
 
@@ -74,9 +79,9 @@ test('tablet: navigation rail kiri (tanpa bar bawah) + list-detail Kelola menu &
   // Kasir: grid menu + panel pesanan selalu tampil (tanpa bar keranjang).
   await expect(page.locator('[data-pane="detail"]').getByTestId('cart-screen')).toBeVisible();
   await expect(page.getByRole('button', { name: /Lihat pesanan/ })).toHaveCount(0);
-  const box = (await rail.boundingBox())!;
-  expect(box.x).toBeLessThan(2);
-  expect(box.width).toBeLessThanOrEqual(81);
+  // Rail menempel di kiri, lebar 80px.
+  await expect.poll(async () => (await rail.boundingBox())?.x ?? -1).toBe(0);
+  await expect.poll(async () => Math.round((await rail.boundingBox())?.width ?? 0)).toBe(80);
 
   await rail.getByRole('link', { name: 'Kelola menu' }).click();
   await expect(page).toHaveURL(/\/admin\/menu$/);
