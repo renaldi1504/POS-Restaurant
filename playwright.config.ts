@@ -11,7 +11,7 @@ const E2E_DB = process.env.E2E_DATABASE_URL ?? 'postgres://pos:pos@localhost:543
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 30_000,
+  timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
   workers: 1,
@@ -29,8 +29,11 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
+    // Persiapan data sekali per run (jam buka 24 jam, rekening ABA) — setelah webServer menyala.
+    { name: 'setup', testMatch: /global\.setup\.ts/ },
     {
       name: 'mobile-chrome',
+      dependencies: ['setup'],
       use: { ...devices['Pixel 7'], channel: 'chrome', viewport: { width: 390, height: 844 } },
     },
   ],

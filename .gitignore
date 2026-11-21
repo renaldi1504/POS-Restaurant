@@ -14,3 +14,4 @@ test-results/
 .DS_Store
 .env.e2e
 apps/server/uploads-e2e/
+.qa/
