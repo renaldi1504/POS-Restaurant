@@ -12,7 +12,12 @@ export interface MoneyTextProps {
   signed?: boolean;
 }
 
-const sizes = { sm: 'text-sm', md: 'text-base', lg: 'text-2xl', xl: 'text-4xl' };
+const sizes = {
+  sm: 'text-label-large',
+  md: 'text-title-medium',
+  lg: 'text-headline-small font-medium',
+  xl: 'text-display-small font-medium',
+};
 
 /** Nominal uang dengan angka tabular & format SPEC (42.000 ៛ / $10.25 / Rp 168.000). */
 export function MoneyText({
@@ -27,11 +32,9 @@ export function MoneyText({
   const eq = equivalents && rates ? equivalents.filter((c) => c !== currency) : [];
   return (
     <span className={cn('inline-flex flex-col', className)}>
-      <span className={cn('font-extrabold tabular-nums', sizes[size])}>
-        {formatMoney(amount, currency, { signed })}
-      </span>
+      <span className={cn('tabular-nums', sizes[size])}>{formatMoney(amount, currency, { signed })}</span>
       {eq.length ? (
-        <span className="text-[13px] font-semibold text-muted tabular-nums">
+        <span className="text-label-medium text-on-surface-variant tabular-nums">
           {eq.map((c) => `≈ ${formatMoney(convertMoney(amount, currency, c, rates!), c)}`).join(' · ')}
         </span>
       ) : null}

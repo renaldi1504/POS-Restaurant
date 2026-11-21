@@ -1,6 +1,7 @@
 export { cn } from './cn';
-export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
-export { IconButton } from './IconButton';
+export { Icon, type IconName, type IconProps } from './Icon';
+export { Button, CircularProgress, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
+export { IconButton, CountBadge } from './IconButton';
 export { Card } from './Card';
 export { Segmented, type SegmentedOption } from './Segmented';
 export { Chip } from './Chip';
@@ -12,4 +13,6 @@ export { Sheet } from './Sheet';
 export { MoneyText } from './MoneyText';
 export { LangSwitcher } from './LangSwitcher';
 export { EmptyState } from './EmptyState';
+export { Switch, SwitchTrack } from './Switch';
+export { LinearProgress } from './LinearProgress';
 export { ToastProvider, useToast, type ToastTone } from './Toast';

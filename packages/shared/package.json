@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Kontrak API (Zod), enum, util uang/tanggal, validator opsi, kamus i18n — dipakai server & kedua web app.",
+  "description": "Kontrak API (Zod), enum, util uang/tanggal, validator opsi, kamus i18n \u2014 dipakai server & kedua web app.",
   "exports": {
     ".": "./src/index.ts",
     "./i18n": "./src/i18n/index.ts",
-    "./client": "./src/client.ts"
+    "./client": "./src/client.ts",
+    "./icons": "./src/icons.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

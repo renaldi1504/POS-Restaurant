@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from './cn';
+import { IconButton } from './IconButton';
 
 export interface HeaderBarProps {
   title: ReactNode;
@@ -12,7 +13,7 @@ export interface HeaderBarProps {
   children?: ReactNode;
 }
 
-/** Header putih sticky dengan tombol kembali 48px. */
+/** Top app bar kecil M3 (64px, title-large) dengan tombol kembali 48px. */
 export function HeaderBar({
   title,
   subtitle,
@@ -23,42 +24,22 @@ export function HeaderBar({
   children,
 }: HeaderBarProps) {
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-20 flex flex-col gap-2.5 border-b border-line bg-white px-3.5 py-2.5',
-        className,
-      )}
-    >
-      <div className="flex items-center gap-2.5">
+    <header className={cn('sticky top-0 z-20 flex flex-col gap-2 bg-surface px-1 pb-2', className)}>
+      <div className="flex min-h-16 items-center gap-1">
         {onBack ? (
-          <button
-            type="button"
-            onClick={onBack}
-            aria-label={backLabel}
-            className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-line-strong bg-white shadow-card"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          </button>
-        ) : null}
-        <div className="flex min-w-0 grow flex-col">
-          <h1 className="truncate text-xl font-extrabold leading-tight">{title}</h1>
-          {subtitle ? <span className="truncate text-[13px] text-muted">{subtitle}</span> : null}
+          <IconButton icon="arrow_back" label={backLabel} onClick={onBack} className="text-on-surface" />
+        ) : (
+          <span className="w-3 shrink-0" />
+        )}
+        <div className="flex min-w-0 grow flex-col px-1">
+          <h1 className="truncate text-title-large">{title}</h1>
+          {subtitle ? (
+            <span className="truncate text-label-medium font-normal text-on-surface-variant">{subtitle}</span>
+          ) : null}
         </div>
-        {right}
+        {right ? <div className="flex shrink-0 items-center gap-1 pr-1">{right}</div> : null}
       </div>
-      {children}
+      {children ? <div className="flex flex-col gap-2 px-3">{children}</div> : null}
     </header>
   );
 }

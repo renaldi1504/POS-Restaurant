@@ -89,8 +89,8 @@ function prepare(wa: TelegramWebApp): TelegramWebApp {
     wa.ready();
     wa.expand();
     // Warna tetap terang (tema kita sendiri) supaya kontras untuk orang tua, apa pun tema Telegram.
-    wa.setHeaderColor?.('#FFFFFF');
-    wa.setBackgroundColor?.('#F5F6F8');
+    wa.setHeaderColor?.('#F8FAF6'); // M3 surface
+    wa.setBackgroundColor?.('#F8FAF6');
   } catch {
     /* versi lama */
   }

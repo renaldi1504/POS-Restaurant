@@ -1,4 +1,5 @@
 import { cn } from './cn';
+import { Icon } from './Icon';
 
 export interface StepperProps {
   value: number;
@@ -8,29 +9,41 @@ export interface StepperProps {
   /** Nama item untuk aria-label ("Kurangi Ayam Goreng"). */
   label: string;
   size?: 'md' | 'lg';
+  /** aria-label tombol − / + (default "Kurangi {label}" / "Tambah {label}"). */
+  decLabel?: string;
+  incLabel?: string;
 }
 
-/** Stepper − n + dengan tombol besar. Nilai di bawah `min` tidak bisa dipilih. */
-export function Stepper({ value, onChange, min = 0, max = 99, label, size = 'md' }: StepperProps) {
+/** Stepper − n + : tombol ikon outlined & tonal besar. Nilai di bawah `min` tidak bisa dipilih. */
+export function Stepper({
+  value,
+  onChange,
+  min = 0,
+  max = 99,
+  label,
+  size = 'md',
+  decLabel,
+  incLabel,
+}: StepperProps) {
   const btn = cn(
-    'flex items-center justify-center rounded-xl font-extrabold disabled:opacity-40',
-    size === 'lg' ? 'size-14 text-3xl' : 'size-12 text-2xl',
+    'state-layer flex shrink-0 items-center justify-center rounded-full disabled:opacity-38',
+    size === 'lg' ? 'size-14' : 'size-12',
   );
   return (
     <div className="inline-flex items-center gap-2" role="group" aria-label={label}>
       <button
         type="button"
-        className={cn(btn, 'border border-line-strong bg-white text-ink')}
-        aria-label={`Kurangi ${label}`}
+        className={cn(btn, 'border border-outline text-on-surface-variant')}
+        aria-label={decLabel ?? `Kurangi ${label}`}
         disabled={value <= min}
         onClick={() => onChange(Math.max(min, value - 1))}
       >
-        −
+        <Icon name="remove" size={size === 'lg' ? 28 : 24} />
       </button>
       <span
         className={cn(
-          'min-w-8 text-center font-extrabold tabular-nums',
-          size === 'lg' ? 'text-2xl' : 'text-xl',
+          'min-w-8 text-center tabular-nums',
+          size === 'lg' ? 'text-headline-small' : 'text-title-large',
         )}
         aria-live="polite"
       >
@@ -38,12 +51,12 @@ export function Stepper({ value, onChange, min = 0, max = 99, label, size = 'md'
       </span>
       <button
         type="button"
-        className={cn(btn, 'bg-primary text-white')}
-        aria-label={`Tambah ${label}`}
+        className={cn(btn, 'bg-primary text-on-primary')}
+        aria-label={incLabel ?? `Tambah ${label}`}
         disabled={value >= max}
         onClick={() => onChange(Math.min(max, value + 1))}
       >
-        +
+        <Icon name="add" size={size === 'lg' ? 28 : 24} />
       </button>
     </div>
   );

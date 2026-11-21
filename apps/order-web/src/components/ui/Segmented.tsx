@@ -1,4 +1,5 @@
 import { cn } from './cn';
+import { Icon } from './Icon';
 
 export interface SegmentedOption<T extends string> {
   value: T;
@@ -14,7 +15,7 @@ export interface SegmentedProps<T extends string> {
   size?: 'md' | 'lg';
 }
 
-/** Kontrol segmen (radio group) — mis. Makan sini / Bungkus / Delivery. */
+/** Tombol segmen M3 (radio group, 2–4 pilihan) — mis. Makan sini / Bungkus / Delivery. */
 export function Segmented<T extends string>({
   options,
   value,
@@ -23,8 +24,12 @@ export function Segmented<T extends string>({
   size = 'lg',
 }: SegmentedProps<T>) {
   return (
-    <div role="radiogroup" aria-label={label} className="flex gap-1 rounded-[14px] bg-[#F2F4F7] p-1">
-      {options.map((o) => {
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className="flex overflow-hidden rounded-full border border-outline"
+    >
+      {options.map((o, i) => {
         const active = o.value === value;
         return (
           <button
@@ -35,12 +40,14 @@ export function Segmented<T extends string>({
             disabled={o.disabled}
             onClick={() => onChange(o.value)}
             className={cn(
-              'flex-1 rounded-xl px-2 font-bold transition-colors disabled:opacity-40',
-              size === 'lg' ? 'min-h-12 text-base' : 'min-h-11 text-[15px]',
-              active ? 'bg-white text-ink shadow-card' : 'text-muted',
+              'state-layer flex min-w-0 flex-1 items-center justify-center gap-1 px-2 text-label-large transition-colors disabled:text-on-surface/38',
+              size === 'lg' ? 'min-h-12' : 'min-h-12',
+              i > 0 && 'border-l border-outline',
+              active ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface',
             )}
           >
-            {o.label}
+            {active ? <Icon name="check" size={18} /> : null}
+            <span className="truncate">{o.label}</span>
           </button>
         );
       })}

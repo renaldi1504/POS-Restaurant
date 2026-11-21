@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { cn } from './cn';
+import { IconButton } from './IconButton';
 
 export interface SheetProps {
   open: boolean;
@@ -7,12 +8,14 @@ export interface SheetProps {
   title: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
-  /** 'bottom' = lembar dari bawah (HP), 'center' = dialog. */
+  /** 'bottom' = bottom sheet modal M3 (HP), 'center' = dialog M3. */
   variant?: 'bottom' | 'center';
   closeLabel?: string;
+  /** Di tablet (≥600px) lembar bawah menjadi dialog di tengah (default) atau side sheet kanan. */
+  tablet?: 'dialog' | 'side';
 }
 
-/** Lembar bawah / modal dengan backdrop, Escape untuk tutup, fokus awal ke panel. */
+/** Bottom sheet / dialog M3: scrim, surface-container-high, radius 28px, Escape menutup, fokus ke panel. */
 export function Sheet({
   open,
   onClose,
@@ -21,6 +24,7 @@ export function Sheet({
   footer,
   variant = 'bottom',
   closeLabel = 'Tutup',
+  tablet = 'dialog',
 }: SheetProps) {
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
@@ -37,11 +41,19 @@ export function Sheet({
     };
   }, [open, onClose]);
   if (!open) return null;
+  const bottom = variant === 'bottom';
   return (
     <div
       className={cn(
-        'fixed inset-0 z-50 flex bg-ink/50',
-        variant === 'bottom' ? 'items-end' : 'items-center justify-center p-4',
+        'fixed inset-0 z-50 flex animate-fade-in bg-scrim',
+        bottom
+          ? cn(
+              'items-end',
+              tablet === 'side'
+                ? 'medium:items-stretch medium:justify-end'
+                : 'medium:items-center medium:justify-center medium:p-6',
+            )
+          : 'items-center justify-center p-6',
       )}
       onClick={onClose}
     >
@@ -53,37 +65,31 @@ export function Sheet({
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'mx-auto flex max-h-[92dvh] w-full max-w-[480px] flex-col bg-white outline-none',
-          variant === 'bottom' ? 'rounded-t-[20px]' : 'rounded-[20px]',
+          'mx-auto flex max-h-[92dvh] w-full flex-col bg-surface-container-high text-on-surface shadow-e1 outline-none',
+          bottom
+            ? cn(
+                'max-w-[560px] animate-sheet-up rounded-t-xl',
+                tablet === 'side'
+                  ? 'medium:mx-0 medium:h-full medium:max-h-none medium:w-[420px] medium:animate-fade-in medium:rounded-none medium:rounded-l-xl'
+                  : 'medium:animate-fade-in medium:rounded-xl',
+              )
+            : 'max-w-[480px] rounded-xl',
         )}
       >
-        <div className="flex items-center gap-2 border-b border-line px-4 py-3">
-          <h2 id={titleId} className="grow text-lg font-extrabold">
+        {bottom ? (
+          <div className="flex justify-center pb-1 pt-4 medium:hidden" aria-hidden>
+            <span className="h-1 w-8 rounded-full bg-on-surface-variant/40" />
+          </div>
+        ) : null}
+        <div className={cn('flex items-center gap-2 pl-6 pr-2', bottom ? 'py-1 medium:pt-4' : 'pb-2 pt-4')}>
+          <h2 id={titleId} className={cn('grow', bottom ? 'text-title-large' : 'text-headline-small')}>
             {title}
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={closeLabel}
-            className="flex size-12 items-center justify-center rounded-xl text-muted hover:bg-bg"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              aria-hidden
-            >
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
-          </button>
+          <IconButton icon="close" label={closeLabel} onClick={onClose} />
         </div>
-        <div className="grow overflow-y-auto px-4 py-3">{children}</div>
+        <div className="grow overflow-y-auto px-6 pb-4 pt-2">{children}</div>
         {footer ? (
-          <div className="border-t border-line px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
+          <div className={cn('px-6 pt-2', bottom ? 'pb-[max(16px,env(safe-area-inset-bottom))]' : 'pb-6')}>
             {footer}
           </div>
         ) : null}

@@ -1,0 +1,254 @@
+/*
+ * Material Design 3 — token & dasar bersama pos-web dan order-web.
+ * Sumber kebenaran: .claude/skills/material-design-pos/SKILL.md (seed #047857, skala teks dinaikkan satu tingkat
+ * untuk pengguna lanjut usia). Diimpor oleh index.css kedua aplikasi SETELAH `@import 'tailwindcss'`.
+ * Kelas Tailwind memakai nama M3: bg-primary, text-on-surface-variant, bg-secondary-container, rounded-md,
+ * shadow-e1, text-title-large, …  Jangan menulis hex di komponen.
+ */
+@theme {
+  /* Hapus warna bawaan Tailwind: hanya peran M3 (dan putih/hitam/transparan) yang tersedia. */
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-primary: #006c4e;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #87f8c9;
+  --color-on-primary-container: #002115;
+  --color-secondary: #4c6358;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #cfe9da;
+  --color-on-secondary-container: #092017;
+  --color-tertiary: #3e6374;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #c1e8fc;
+  --color-on-tertiary-container: #001f2a;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #410002;
+  --color-warning: #795900;
+  --color-on-warning: #ffffff;
+  --color-warning-container: #ffdf9f;
+  --color-on-warning-container: #261a00;
+  --color-surface: #f8faf6;
+  --color-on-surface: #191c1a;
+  --color-on-surface-variant: #404944;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f0;
+  --color-surface-container: #eceeeb;
+  --color-surface-container-high: #e7e9e5;
+  --color-surface-container-highest: #e1e3df;
+  --color-outline: #707973;
+  --color-outline-variant: #bfc9c2;
+  --color-inverse-surface: #2e312f;
+  --color-inverse-on-surface: #eff1ed;
+  --color-inverse-primary: #6adbae;
+  --color-scrim: rgb(0 0 0 / 0.32);
+  /* Warna merek hanya untuk titik kecil di depan nama channel (SKILL §2). */
+  --color-brand-grab: #00b14f;
+  --color-brand-foodpanda: #d70f64;
+
+  --font-sans: 'Roboto Flex', 'Roboto', 'Noto Sans Khmer', 'Noto Sans SC', system-ui, sans-serif;
+  --font-khmer: 'Noto Sans Khmer', 'Roboto', system-ui, sans-serif;
+  --font-sc: 'Noto Sans SC', 'Roboto', system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+
+  /* Skala teks M3 (+1 tingkat). rem → ikut setelan ukuran teks. */
+  --text-display-small: 2.25rem;
+  --text-display-small--line-height: 2.75rem;
+  --text-display-small--font-weight: 400;
+  --text-headline-medium: 1.75rem;
+  --text-headline-medium--line-height: 2.25rem;
+  --text-headline-medium--font-weight: 400;
+  --text-headline-small: 1.5rem;
+  --text-headline-small--line-height: 2rem;
+  --text-headline-small--font-weight: 400;
+  --text-title-large: 1.375rem;
+  --text-title-large--line-height: 1.75rem;
+  --text-title-large--font-weight: 500;
+  --text-title-medium: 1.125rem;
+  --text-title-medium--line-height: 1.5rem;
+  --text-title-medium--font-weight: 500;
+  --text-body-large: 1.0625rem;
+  --text-body-large--line-height: 1.5rem;
+  --text-body-large--font-weight: 400;
+  --text-body-medium: 1rem;
+  --text-body-medium--line-height: 1.375rem;
+  --text-body-medium--font-weight: 400;
+  --text-label-large: 1rem;
+  --text-label-large--line-height: 1.25rem;
+  --text-label-large--font-weight: 500;
+  --text-label-medium: 0.875rem;
+  --text-label-medium--line-height: 1.125rem;
+  --text-label-medium--font-weight: 500;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 28px;
+
+  --shadow-e1: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px 1px rgb(0 0 0 / 0.15);
+  --shadow-e2: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 6px 2px rgb(0 0 0 / 0.15);
+  --shadow-e3: 0 4px 8px 3px rgb(0 0 0 / 0.15), 0 1px 3px rgb(0 0 0 / 0.3);
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Kelas ukuran jendela M3 (SKILL §8b): compact < 600 ≤ medium < 840 ≤ expanded; large ≥ 1200. */
+  --breakpoint-*: initial;
+  --breakpoint-medium: 600px;
+  --breakpoint-expanded: 840px;
+  --breakpoint-large: 1200px;
+}
+
+/* Material Symbols Rounded — subset di-host sendiri (public/fonts) supaya PWA jalan offline.
+   Buat ulang: `pnpm icons:font` (daftar ikon: packages/shared/src/icons.ts). */
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 500;
+  font-display: block;
+  src: url('/fonts/material-symbols-rounded.woff2') format('woff2');
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  html[lang='km'] body {
+    font-family: var(--font-khmer);
+  }
+  html[lang='zh-Hans'] body {
+    font-family: var(--font-sc);
+  }
+  body {
+    margin: 0;
+    background: var(--color-surface);
+    color: var(--color-on-surface);
+    font-family: var(--font-sans);
+    font-size: var(--text-body-large);
+    line-height: var(--text-body-large--line-height);
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+  button {
+    cursor: pointer;
+  }
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1rem); /* cegah zoom iOS */
+  }
+  /* Fokus keyboard M3: garis 3 px warna secondary, jarak 2 px. */
+  :focus-visible {
+    outline: 3px solid var(--color-secondary);
+    outline-offset: 2px;
+  }
+  #root {
+    min-height: 100dvh;
+  }
+}
+
+@layer components {
+  .material-symbol {
+    font-family: 'Material Symbols Rounded';
+    font-weight: 500;
+    font-style: normal;
+    font-size: 24px;
+    width: 1em;
+    height: 1em;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    flex-shrink: 0;
+    overflow: hidden;
+    user-select: none;
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0;
+    transition: font-variation-settings 200ms var(--ease-standard);
+  }
+  /* Nama ikon lewat konten semu → tidak ikut textContent / nama aksesibel. */
+  .material-symbol::before {
+    content: attr(data-icon);
+  }
+  .material-symbol[data-filled] {
+    font-variation-settings: 'FILL' 1;
+  }
+}
+
+/* Lapisan status M3: hover 8 %, fokus/tekan 10 % dari warna konten di atas wadah. */
+@utility state-layer {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms var(--ease-standard);
+  }
+  @media (hover: hover) {
+    &:hover:not(:disabled)::before {
+      opacity: 0.08;
+    }
+  }
+  &:focus-visible::before,
+  &:active:not(:disabled)::before {
+    opacity: 0.1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes m3-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes m3-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes m3-progress {
+  0% {
+    transform: translateX(-100%) scaleX(0.4);
+  }
+  100% {
+    transform: translateX(250%) scaleX(0.4);
+  }
+}
+@utility animate-sheet-up {
+  animation: m3-sheet-up 300ms var(--ease-standard);
+}
+@utility animate-fade-in {
+  animation: m3-fade-in 200ms var(--ease-standard);
+}
+@utility animate-progress {
+  animation: m3-progress 1.4s var(--ease-standard) infinite;
+}

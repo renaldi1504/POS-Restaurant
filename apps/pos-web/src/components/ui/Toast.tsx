@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import { cn } from './cn';
+import { Icon } from './Icon';
 
 export type ToastTone = 'success' | 'error' | 'info';
 interface ToastItem {
@@ -15,42 +16,46 @@ interface ToastApi {
 
 const ToastCtx = createContext<ToastApi | null>(null);
 
-const toneClass: Record<ToastTone, string> = {
-  success: 'bg-primary text-white',
-  error: 'bg-danger text-white',
-  info: 'bg-ink text-white',
+const toneIcon = {
+  success: <Icon name="check_circle" className="text-inverse-primary" />,
+  error: <Icon name="error" className="text-error-container" />,
+  info: null,
 };
 
-/** Provider toast; pakai `const toast = useToast(); toast.success('Tersimpan')`. */
+/**
+ * Snackbar M3 (inverse-surface, di bawah, di atas navigation bar). Tidak menangkap ketukan sehingga tombol
+ * di bawahnya tetap bisa dipakai. `const toast = useToast(); toast.success('Tersimpan')`.
+ */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([]);
   const seq = useRef(0);
-  const show = useCallback((message: string, tone: ToastTone = 'info', ms = 3000) => {
+  const show = useCallback((message: string, tone: ToastTone = 'info', ms = 4000) => {
     const id = ++seq.current;
     setItems((xs) => [...xs, { id, message, tone }]);
     setTimeout(() => setItems((xs) => xs.filter((x) => x.id !== id)), ms);
   }, []);
   const api = useMemo<ToastApi>(
-    () => ({ show, success: (m) => show(m, 'success'), error: (m) => show(m, 'error', 5000) }),
+    () => ({ show, success: (m) => show(m, 'success'), error: (m) => show(m, 'error', 6000) }),
     [show],
   );
   return (
     <ToastCtx.Provider value={api}>
       {children}
       <div
-        className="pointer-events-none fixed inset-x-0 top-3 z-[60] flex flex-col items-center gap-2 px-3"
+        className="pointer-events-none fixed inset-x-0 bottom-[calc(96px+env(safe-area-inset-bottom))] z-[60] flex flex-col items-center gap-2 px-4"
         aria-live="assertive"
       >
         {items.map((t) => (
           <div
             key={t.id}
             role="status"
+            data-tone={t.tone}
             className={cn(
-              'pointer-events-auto w-full max-w-[420px] rounded-2xl px-4 py-3 text-base font-bold shadow-lg',
-              toneClass[t.tone],
+              'flex min-h-12 w-full max-w-[560px] animate-fade-in items-center gap-3 rounded-xs bg-inverse-surface px-4 py-3 text-body-medium text-inverse-on-surface shadow-e3',
             )}
           >
-            {t.message}
+            {toneIcon[t.tone]}
+            <span className="grow">{t.message}</span>
           </div>
         ))}
       </div>

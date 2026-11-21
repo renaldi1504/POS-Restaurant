@@ -1,77 +1,14 @@
 @import 'tailwindcss';
+/* Token Material 3 bersama (warna, teks, bentuk, elevasi, ikon) — lihat file untuk daftar kelas. */
+@import '../../../packages/shared/styles/m3.css';
 
-/* Token desain SPEC (warna, font, radius, bayangan) → kelas Tailwind: bg-primary, text-muted, rounded-card, shadow-card, font-khmer… */
-@theme {
-  --font-sans: 'Plus Jakarta Sans', 'Noto Sans Khmer', 'Noto Sans SC', system-ui, sans-serif;
-  --font-khmer: 'Noto Sans Khmer', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-sc: 'Noto Sans SC', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'Roboto Mono', ui-monospace, monospace;
-
-  --color-bg: #f5f6f8;
-  --color-ink: #101828;
-  --color-muted: #667085;
-  --color-line: #eaecf0;
-  --color-line-strong: #d0d5dd;
-
-  --color-primary: #047857;
-  --color-primary-tint: #ecfdf5;
-  --color-primary-dark: #065f46;
-
-  --color-warn: #f59e0b;
-  --color-warn-tint: #fffaeb;
-  --color-warn-dark: #93370d;
-
-  --color-danger: #b42318;
-  --color-danger-tint: #fef3f2;
-
-  --color-info: #175cd3;
-  --color-info-tint: #eff8ff;
-  --color-info-dark: #1849a9;
-
-  --radius-card: 16px;
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.07);
-}
-
-/* Ukuran teks (settings.ui.textSize / per perangkat): skala rem global. */
+/* Ukuran teks (settings.ui.textSize / per perangkat): skala rem global (skala teks M3 memakai rem). */
 html {
   font-size: 16px;
-  -webkit-tap-highlight-color: transparent;
 }
 html[data-text-size='large'] {
   font-size: 18px;
 }
 html[data-text-size='xlarge'] {
   font-size: 20px;
-}
-html[lang='km'] body {
-  font-family: var(--font-khmer);
-}
-html[lang='zh-Hans'] body {
-  font-family: var(--font-sc);
-}
-
-body {
-  margin: 0;
-  background: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-button {
-  cursor: pointer;
-}
-input,
-select,
-textarea {
-  font-size: max(16px, 1rem); /* cegah zoom iOS */
-}
-
-#root {
-  min-height: 100dvh;
 }

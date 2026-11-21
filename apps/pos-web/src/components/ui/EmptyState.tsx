@@ -1,35 +1,28 @@
 import type { ReactNode } from 'react';
+import { Icon, type IconName } from './Icon';
 
 export function EmptyState({
   title,
   description,
   action,
-  icon,
+  icon = 'receipt_long',
 }: {
   title: string;
   description?: string;
   action?: ReactNode;
-  icon?: ReactNode;
+  icon?: IconName | ReactNode;
 }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-      {icon ?? (
-        <svg
-          width="48"
-          height="48"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#98A2B3"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          aria-hidden
-        >
-          <rect x="3" y="4" width="18" height="16" rx="3" />
-          <path d="M3 9h18M8 14h8" />
-        </svg>
+      {typeof icon === 'string' ? (
+        <span className="flex size-20 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant">
+          <Icon name={icon as IconName} size={40} />
+        </span>
+      ) : (
+        icon
       )}
-      <p className="text-lg font-bold">{title}</p>
-      {description ? <p className="text-[15px] text-muted">{description}</p> : null}
+      <p className="text-title-medium">{title}</p>
+      {description ? <p className="text-body-medium text-on-surface-variant">{description}</p> : null}
       {action}
     </div>
   );

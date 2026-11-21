@@ -6,3 +6,4 @@ apps/server/drizzle
 docs
 playwright-report
 test-results
+.claude
