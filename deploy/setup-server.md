@@ -7,6 +7,18 @@ Target: Linode 1 GB (Nanode). Satu proses Node (PM2) + PostgreSQL 16 + Caddy (HT
 | `pos.rmberkat.linkedbite.com`   | PWA staf (kasir, dapur, driver, admin) + `/api`, `/ws`, `/tg`, `/uploads` |
 | `order.rmberkat.linkedbite.com` | Website pelanggan / Telegram Mini App / QR meja + `/api`, `/ws`           |
 
+## Cara cepat (disarankan)
+
+Login ke server sebagai root, lalu:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/renaldi1504/POS-Restaurant/main/deploy/install.sh | bash
+```
+
+Skrip melakukan langkah 2–6 di bawah secara otomatis (password DB & secret dibuat acak). Setelah mengisi kunci API di `/srv/pos/app/.env`, jalankan `bash /srv/pos/app/deploy/update.sh` (juga dipakai untuk update versi baru; webhook Telegram otomatis didaftarkan bila token terisi).
+
+Langkah manual di bawah hanya sebagai referensi.
+
 ## 1. DNS
 
 Buat record **A** untuk `pos.rmberkat` dan `order.rmberkat` (domain `linkedbite.com`) ke IP server. Bila memakai Cloudflare, set proxy **DNS only** (awan abu-abu) agar Caddy bisa mengambil sertifikat, atau pakai mode Full (strict).
