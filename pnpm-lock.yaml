@@ -87,6 +87,9 @@ importers:
       '@testing-library/user-event':
         specifier: ^14.6.13
         version: 14.6.13(@testing-library/dom@10.4.2)
+      '@types/google.maps':
+        specifier: ^3.67.0
+        version: 3.67.0
       '@types/react':
         specifier: ^18.3.31
         version: 18.3.31

@@ -3,7 +3,9 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
+  // .env root berisi NODE_ENV=development (untuk server) → tanpa ini Vite membundel React versi development.
+  if (command === 'build' && mode === 'production') process.env.VITE_USER_NODE_ENV = 'production';
   const env = loadEnv(mode, '../../', '');
   const target = process.env.VITE_API_TARGET ?? env.VITE_API_TARGET ?? 'http://localhost:3000';
   return {

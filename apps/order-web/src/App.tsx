@@ -1,5 +1,7 @@
-import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Outlet, RouterProvider } from 'react-router';
+import { lazy, Suspense, useState } from 'react';
+import { createBrowserRouter, Outlet, RouterProvider, type RouteObject } from 'react-router';
+import { LoadingBlock } from './components/Shell';
+import { CustomerProvider } from './lib/customer';
 import MenuPage from './pages/MenuPage';
 
 const CartPage = lazy(() => import('./pages/CartPage'));
@@ -10,9 +12,11 @@ const TableBillPage = lazy(() => import('./pages/TableBillPage'));
 
 function Root() {
   return (
-    <Suspense fallback={<div className="p-6 text-muted">…</div>}>
-      <Outlet />
-    </Suspense>
+    <CustomerProvider>
+      <Suspense fallback={<LoadingBlock />}>
+        <Outlet />
+      </Suspense>
+    </CustomerProvider>
   );
 }
 
@@ -27,7 +31,7 @@ function Root() {
  *   /pesanan/:id      status order
  *   /meja/tagihan     tagihan berjalan meja
  */
-export const router = createBrowserRouter([
+export const routes: RouteObject[] = [
   {
     element: <Root />,
     children: [
@@ -42,8 +46,9 @@ export const router = createBrowserRouter([
       { path: '*', element: <MenuPage mode="none" /> },
     ],
   },
-]);
+];
 
 export function App() {
+  const [router] = useState(() => createBrowserRouter(routes));
   return <RouterProvider router={router} />;
 }

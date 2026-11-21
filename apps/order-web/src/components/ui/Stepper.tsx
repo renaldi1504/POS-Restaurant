@@ -8,10 +8,22 @@ export interface StepperProps {
   /** Nama item untuk aria-label ("Kurangi Ayam Goreng"). */
   label: string;
   size?: 'md' | 'lg';
+  /** aria-label tombol − / + (default "Kurangi {label}" / "Tambah {label}"). */
+  decLabel?: string;
+  incLabel?: string;
 }
 
 /** Stepper − n + dengan tombol besar. Nilai di bawah `min` tidak bisa dipilih. */
-export function Stepper({ value, onChange, min = 0, max = 99, label, size = 'md' }: StepperProps) {
+export function Stepper({
+  value,
+  onChange,
+  min = 0,
+  max = 99,
+  label,
+  size = 'md',
+  decLabel,
+  incLabel,
+}: StepperProps) {
   const btn = cn(
     'flex items-center justify-center rounded-xl font-extrabold disabled:opacity-40',
     size === 'lg' ? 'size-14 text-3xl' : 'size-12 text-2xl',
@@ -21,7 +33,7 @@ export function Stepper({ value, onChange, min = 0, max = 99, label, size = 'md'
       <button
         type="button"
         className={cn(btn, 'border border-line-strong bg-white text-ink')}
-        aria-label={`Kurangi ${label}`}
+        aria-label={decLabel ?? `Kurangi ${label}`}
         disabled={value <= min}
         onClick={() => onChange(Math.max(min, value - 1))}
       >
@@ -39,7 +51,7 @@ export function Stepper({ value, onChange, min = 0, max = 99, label, size = 'md'
       <button
         type="button"
         className={cn(btn, 'bg-primary text-white')}
-        aria-label={`Tambah ${label}`}
+        aria-label={incLabel ?? `Tambah ${label}`}
         disabled={value >= max}
         onClick={() => onChange(Math.min(max, value + 1))}
       >
