@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
-import '../lib/i18n';
+import i18n from '../lib/i18n';
 import { server } from './server';
 import { resetPrefs } from '../lib/prefs';
 import { clearCart } from '../lib/cart';
@@ -33,5 +33,7 @@ afterEach(() => {
   resetPrefs();
   clearCart();
   sessionStorage.clear();
+  // Bahasa UI global → kembali ke default supaya test berikutnya tidak mewarisi bahasa.
+  void i18n.changeLanguage('id');
 });
 afterAll(() => server.close());

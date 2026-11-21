@@ -93,15 +93,15 @@ pnpm test:e2e       # Playwright (jalankan 2x untuk memastikan stabil)
 
 ### Per suite
 
-| Suite                        | Perintah                                               | Catatan                                                               |
-| ---------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------- |
-| shared (unit)                | `pnpm --filter @pos/shared test`                       | util uang, business_date, validator opsi, kamus i18n                  |
-| server (integrasi)           | `pnpm --filter @pos/server test`                       | DB `pos_test` di-reset otomatis; file berjalan berurutan              |
-| pos-web (komponen)           | `pnpm --filter @pos/pos-web test`                      | Testing Library + MSW; termasuk cek kunci i18n (kh/zh dapur & driver) |
-| order-web (komponen)         | `pnpm --filter @pos/order-web test`                    | Testing Library + MSW                                                 |
-| e2e (Playwright)             | `pnpm test:e2e`                                        | Chrome sistem `/usr/bin/google-chrome`, viewport HP 390×844           |
-| satu file e2e                | `npx playwright test e2e/03-dine-in-qr.spec.ts`        | project `setup` ikut jalan otomatis                                   |
-| laporan/trace e2e yang gagal | `npx playwright show-trace test-results/<…>/trace.zip` | trace disimpan hanya saat gagal                                       |
+| Suite                        | Perintah                                               | Catatan                                                        |
+| ---------------------------- | ------------------------------------------------------ | -------------------------------------------------------------- |
+| shared (unit)                | `pnpm --filter @pos/shared test`                       | util uang, business_date, validator opsi, kamus i18n           |
+| server (integrasi)           | `pnpm --filter @pos/server test`                       | DB `pos_test` di-reset otomatis; file berjalan berurutan       |
+| pos-web (komponen)           | `pnpm --filter @pos/pos-web test`                      | Testing Library + MSW; kamus i18n wajib lengkap di id/en/kh/zh |
+| order-web (komponen)         | `pnpm --filter @pos/order-web test`                    | Testing Library + MSW                                          |
+| e2e (Playwright)             | `pnpm test:e2e`                                        | Chrome sistem `/usr/bin/google-chrome`, viewport HP 390×844    |
+| satu file e2e                | `npx playwright test e2e/03-dine-in-qr.spec.ts`        | project `setup` ikut jalan otomatis                            |
+| laporan/trace e2e yang gagal | `npx playwright show-trace test-results/<…>/trace.zip` | trace disimpan hanya saat gagal                                |
 
 **Project:** `mobile-chrome` (HP 390×844, semua test) dan `tablet` (1024×768 landscape, test bertanda `@tablet`:
 kasir, dapur, driver, kelola menu, web pelanggan Telegram, rail & list-detail).
@@ -120,6 +120,7 @@ Font Google & SDK Telegram diblokir di test (tidak bisa dijangkau dari CI).
 | `05-closing.spec.ts`         | modal + jual cash/ABA + pengeluaran → closing: cash seharusnya & selisih wajib catatan                                |
 | `06-admin.spec.ts`           | Habis live di web, tambah pilihan berharga, PDF QR meja, user baru login PIN baru                                     |
 | `07-i18n.spec.ts`            | dapur & driver dalam Khmer                                                                                            |
+| `11-i18n-admin.spec.ts`      | Owner ganti ke ខ្មែរ / 中文 di Lainnya: dashboard, kelola menu, ubah menu, settings, pengguna tanpa sisa teks id/en    |
 | `08-permissions.spec.ts`     | dapur/kasir dialihkan dari rute terlarang; API 403/401                                                                |
 | `09-overflow.spec.ts`        | tidak ada scroll horizontal / isi terpotong di 360 px, 768, 1024 & 1280 px (kedua aplikasi)                           |
 | `10-navigation.spec.ts`      | bottom nav adaptif kasir (navigasi, pin, tersembunyi saat bayar), dapur tanpa tujuan admin; rail + list-detail tablet |
@@ -179,7 +180,8 @@ Langkah lengkap: [`deploy/setup-server.md`](deploy/setup-server.md).
 
 - `api.call('ordersList', { query: { active: 'true' } })` — tipe input/output dari kontrak; error = `ApiError` (`errorMessage(err, t)`).
 - Realtime: `useSocketEvent('order.created', handler)`, `useResync((since) => ...)`, `useSocketStatus()` di `src/lib/socket.ts`.
-- Teks UI dari kamus `@pos/shared/i18n` (`t('kitchen.startCooking')`); nama menu `tl(item.name, lang)`.
+- Teks UI dari kamus `@pos/shared/i18n` + `apps/pos-web/src/i18n/extra*.ts` (`t('kitchen.startCooking')`); nama menu `tl(item.name, lang)`. **Semua kamus wajib lengkap di id/en/kh/zh** (dicek test); cek kunci yang kurang: `pnpm i18n:missing`.
+- Bahasa staf: satu bahasa global (`lib/useLang.ts`); dipilih di lembar Lainnya / layar login / layar dapur & driver, disimpan per perangkat (`pos.lang`) dan per akun (`PATCH /api/auth/me/lang`, dipakai saat login). Error server ditampilkan lewat `errorMessage()` → `errorReason.*` (pesan server dicocokkan ke `ERROR_REASONS` di `@pos/shared`) → `errors.<CODE>`. Tanggal: `lib/format.ts` (angka tetap Latin; nama hari/bulan Khmer bawaan karena Chrome tidak membawa data ICU `km`). Struk thermal tetap ASCII id/en (Printer → Bahasa struk).
 - Desain Material 3: token & kelas di `packages/shared/styles/m3.css` (nama M3: `bg-primary`, `text-on-surface-variant`, `text-title-large`, `rounded-md`, `shadow-e1`, `state-layer`; breakpoint `medium:` 600px, `expanded:` 840px, `large:` 1200px). Tanpa hex di komponen.
 - Komponen dasar M3 di `src/components/ui` (Icon, Button, IconButton, Card, Segmented, Chip, Stepper, Badge, HeaderBar, BottomBar, Sheet, Switch, LinearProgress, MoneyText, LangSwitcher, EmptyState, Toast/snackbar); pos-web juga `components/common` (Screen/AppFrame, TopBar, Tabs, Section, ListRow, ExtendedFab, ListDetail, NavigationBar/Rail + lembar Lainnya, form outlined).
 - Ikon: `<Icon name="point_of_sale" filled />` (nama dicek TypeScript & test terhadap daftar subset font).

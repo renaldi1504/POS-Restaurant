@@ -4,10 +4,11 @@ import { errorMessage } from '../../lib/api';
 
 /** Indikator progres melingkar M3. */
 export function Spinner({ className = 'size-6' }: { className?: string }) {
+  const { t } = useTranslation();
   return (
     <span
       role="progressbar"
-      aria-label="Memuat"
+      aria-label={t('common.loading')}
       className={`inline-block animate-spin rounded-full border-4 border-secondary-container border-t-primary ${className}`}
     />
   );

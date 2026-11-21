@@ -7,6 +7,7 @@ import Cropper, { type Area } from 'react-easy-crop';
 import { useTranslation } from 'react-i18next';
 import { Button, useToast } from '../ui';
 import { blobToFile, cropToBlob, loadImage } from '../../lib/crop';
+import { errorMessage } from '../../lib/api';
 
 export const MENU_PHOTO_ASPECT = 4 / 3;
 
@@ -43,7 +44,7 @@ export function PhotoCropSheet({
       const { blob } = await cropToBlob(img, area, { maxWidth: 1200, quality: 0.85 });
       onDone(blobToFile(blob, 'foto'), URL.createObjectURL(blob));
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(errorMessage(e, t));
     } finally {
       setBusy(false);
     }
@@ -118,6 +119,7 @@ export function usePhotoPicker(
   onPicked: (file: File, previewUrl: string) => void,
   opts: { round?: boolean } = {},
 ) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [src, setSrc] = useState<string | null>(null);
   const close = useCallback(() => {
@@ -133,7 +135,7 @@ export function usePhotoPicker(
         type="file"
         accept="image/*"
         className="hidden"
-        aria-label="Pilih foto"
+        aria-label={t('crop.pick')}
         data-testid="photo-input"
         onChange={(e) => {
           const f = e.target.files?.[0];

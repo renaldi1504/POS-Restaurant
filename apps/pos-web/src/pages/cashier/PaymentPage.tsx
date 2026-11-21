@@ -12,7 +12,7 @@ import {
 } from '@pos/shared';
 import { Button, Icon, cn, useToast } from '../../components/ui';
 import {
-  CURRENCY_SHORT,
+  currencyShort,
   ChoiceButton,
   ErrorBlock,
   LoadingBlock,
@@ -23,7 +23,7 @@ import {
   TopBar,
   usePrint,
 } from '../../components/common';
-import { api, errorMessage, qk } from '../../lib/api';
+import { api, deviceErrorText, errorMessage, qk } from '../../lib/api';
 import { useMe } from '../../lib/auth';
 import { useMoney, usePublicSettings, type MoneyCtx } from '../../lib/data';
 import {
@@ -90,7 +90,7 @@ export function CashPanel({
               )}
             >
               {currency === c ? <Icon name="check" size={18} /> : null}
-              {CURRENCY_SHORT[c]}
+              {currencyShort(c, t)}
             </button>
           ))}
         </div>
@@ -290,7 +290,7 @@ export default function PaymentPage() {
           try {
             await printReceipt(receipt);
           } catch (e) {
-            toast.error(`${t('print.failed')}: ${(e as Error).message}`);
+            toast.error(`${t('print.failed')}: ${deviceErrorText((e as Error).message, t)}`);
           }
         }
       }
@@ -531,7 +531,7 @@ function SplitEditor({
                       : 'border border-outline-variant text-on-surface-variant',
                   )}
                 >
-                  {CURRENCY_SHORT[c]}
+                  {currencyShort(c, t)}
                 </button>
               ))}
             </div>

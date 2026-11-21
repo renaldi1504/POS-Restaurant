@@ -14,7 +14,7 @@ import {
 import { AdminBar } from '../../components/admin/AdminBar';
 import {
   usePhotoPicker,
-  CURRENCY_LABEL,
+  currencyShort,
   ConfirmSheet,
   ErrorBlock,
   ListRow,
@@ -214,7 +214,7 @@ export default function SettingsPage() {
                     })
                   }
                 />
-                {CURRENCY_LABEL[c]} {c === 'KHR' ? '៛' : c === 'USD' ? '$' : 'Rp'}
+                {currencyShort(c, t)}
               </label>
               {d.currency.main === c ? (
                 <Badge tone="primary">

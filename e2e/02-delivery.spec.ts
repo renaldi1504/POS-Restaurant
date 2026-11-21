@@ -97,6 +97,7 @@ test('delivery Telegram oleh kasir → dapur → driver ambil & antar; driver la
   const d1Errors = collectErrors(d1);
   await loginUI(d1, 'Driver');
   await expect(d1).toHaveURL(/\/driver$/);
+  // Bahasa ikut tersimpan di akun Driver (07-i18n mengembalikannya ke kh).
   await d1.getByRole('radio', { name: 'ID' }).click();
   const d2ctx = await newPhone(browser);
   const d2 = await d2ctx.newPage();

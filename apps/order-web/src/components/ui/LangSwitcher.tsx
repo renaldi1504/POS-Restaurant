@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { LANGS, type Lang } from '@pos/shared';
 import { dictionaries } from '@pos/shared/i18n';
 import { cn } from './cn';
@@ -14,17 +15,12 @@ export interface LangSwitcherProps {
 const SHORT: Record<Lang, string> = { id: 'ID', en: 'EN', kh: 'ខ្មែរ', zh: '中文' };
 
 /** Pilih bahasa (ID / EN / ខ្មែរ / 中文) — tombol segmen M3. */
-export function LangSwitcher({
-  value,
-  onChange,
-  langs = LANGS,
-  label = 'Bahasa',
-  compact,
-}: LangSwitcherProps) {
+export function LangSwitcher({ value, onChange, langs = LANGS, label, compact }: LangSwitcherProps) {
+  const { t } = useTranslation();
   return (
     <div
       role="radiogroup"
-      aria-label={label}
+      aria-label={label ?? t('common.language')}
       className="flex shrink-0 overflow-hidden rounded-full border border-outline"
     >
       {langs.map((l, i) => (

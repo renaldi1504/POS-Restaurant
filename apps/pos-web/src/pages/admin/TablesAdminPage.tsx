@@ -252,7 +252,7 @@ export default function TablesAdminPage() {
               value={form.name}
               maxLength={50}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Meja 7"
+              placeholder={t('mejaqr.namePh')}
             />
             <TextField
               label={t('tables.area')}

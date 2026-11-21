@@ -22,7 +22,10 @@ export function useMe() {
     queryKey: qk.me,
     queryFn: async () => {
       try {
-        return (await api.call('authMe')).user;
+        const user = (await api.call('authMe')).user;
+        // Sesi yang berlanjut di perangkat yang belum pernah memilih bahasa → pakai bahasa akun.
+        if (!storedLang()) setLang(user.lang);
+        return user;
       } catch (e) {
         if (isApiError(e) && e.status === 401) return null;
         throw e;
@@ -40,7 +43,8 @@ export function useAuthActions() {
     onLoggedIn(user: StaffUser) {
       qc.setQueryData(qk.me, user);
       resetNavSession();
-      if (!storedLang()) setLang(user.lang);
+      // Bahasa milik akun (dipilih sendiri di Lainnya, atau default dari admin) berlaku setiap login.
+      setLang(user.lang);
       reconnectSocket();
       navigate(homePathFor(user.permissions), { replace: true });
     },

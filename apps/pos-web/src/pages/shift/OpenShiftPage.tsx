@@ -128,7 +128,7 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
       <ScreenFooter className="gap-2.5">
         <div className="flex items-baseline justify-between">
           <span className="text-body-medium text-on-surface-variant">
-            {t('shiftx.totalIn', { currency: money.main === 'KHR' ? 'Riel' : money.main })}
+            {t('shiftx.totalIn', { currency: t(`currency.${money.main}`) })}
           </span>
           <b className="text-headline-medium text-primary tabular-nums" data-testid="opening-total">
             {formatMoney(totalMain, money.main)}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { cn } from './cn';
 import { IconButton } from './IconButton';
@@ -23,9 +24,10 @@ export function Sheet({
   children,
   footer,
   variant = 'bottom',
-  closeLabel = 'Tutup',
+  closeLabel,
   tablet = 'dialog',
 }: SheetProps) {
+  const { t } = useTranslation();
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -85,7 +87,7 @@ export function Sheet({
           <h2 id={titleId} className={cn('grow', bottom ? 'text-title-large' : 'text-headline-small')}>
             {title}
           </h2>
-          <IconButton icon="close" label={closeLabel} onClick={onClose} />
+          <IconButton icon="close" label={closeLabel ?? t('common.close')} onClick={onClose} />
         </div>
         <div className="grow overflow-y-auto px-6 pb-4 pt-2">{children}</div>
         {footer ? (

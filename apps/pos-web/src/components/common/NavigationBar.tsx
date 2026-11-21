@@ -8,9 +8,11 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { hasPermission, type PermissionKey, type StaffUser } from '@pos/shared';
 import { Button, CountBadge, Icon, IconButton, Sheet, Switch, cn, useToast } from '../ui';
+import { LangPicker } from './LangPicker';
 import { api, qk } from '../../lib/api';
 import { useAuthActions, useMe } from '../../lib/auth';
 import { useCurrentShift } from '../../lib/data';
+import { roleLabel } from '../../lib/labels';
 import {
   MAX_PINS,
   MENU_ENTRIES,
@@ -338,7 +340,7 @@ export function MoreSheet({
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-title-medium">{me?.name}</span>
             <span className="truncate text-body-medium text-on-surface-variant">
-              {me?.role.name}
+              {me ? roleLabel(me.role.name, t) : ''}
               {shift.data ? ` · ${t('bnav.shift')}: ${shift.data.name} · ${shift.data.user.name}` : ''}
             </span>
           </div>
@@ -393,6 +395,9 @@ export function MoreSheet({
           </p>
         </nav>
 
+        <div className="rounded-md bg-surface-container-low px-4 py-3">
+          <LangPicker hint={t('langx.hint')} />
+        </div>
         <div className="rounded-md bg-surface-container-low px-4">
           <Switch
             checked={!prefs.muted}

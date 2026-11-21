@@ -7,6 +7,7 @@ import {
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatMoney, parseMoneyInput, type Currency } from '@pos/shared';
 import { Icon, cn } from '../ui';
 
@@ -260,6 +261,7 @@ export function NumberBox({
   max?: number;
   label: string;
 }) {
+  const { t } = useTranslation();
   const btn =
     'state-layer flex size-12 shrink-0 items-center justify-center rounded-full text-on-surface-variant disabled:opacity-38';
   return (
@@ -268,7 +270,7 @@ export function NumberBox({
       <div className="flex h-14 items-center justify-between rounded-xs border border-outline bg-surface-container-lowest px-1">
         <button
           type="button"
-          aria-label={`Kurangi ${label.toLowerCase()}`}
+          aria-label={t('formx.dec', { label: label.toLowerCase() })}
           disabled={value <= min}
           onClick={() => onChange(Math.max(min, value - 1))}
           className={btn}
@@ -280,7 +282,7 @@ export function NumberBox({
         </b>
         <button
           type="button"
-          aria-label={`Tambah ${label.toLowerCase()}`}
+          aria-label={t('formx.inc', { label: label.toLowerCase() })}
           disabled={value >= max}
           onClick={() => onChange(Math.min(max, value + 1))}
           className={btn}
@@ -306,6 +308,7 @@ export function RoundStepper({
   min?: number;
   size?: 44 | 48;
 }) {
+  const { t } = useTranslation();
   const btn = cn(
     'state-layer flex shrink-0 items-center justify-center rounded-full border border-outline text-on-surface-variant disabled:opacity-38',
     size === 48 ? 'size-12' : 'size-11',
@@ -315,7 +318,7 @@ export function RoundStepper({
       <button
         type="button"
         className={btn}
-        aria-label={`Kurangi ${label}`}
+        aria-label={t('formx.dec', { label })}
         disabled={value <= min}
         onClick={() => onChange(value - 1)}
       >
@@ -333,7 +336,7 @@ export function RoundStepper({
       <button
         type="button"
         className={cn(btn, 'border-0 bg-secondary-container text-on-secondary-container')}
-        aria-label={`Tambah ${label}`}
+        aria-label={t('formx.inc', { label })}
         onClick={() => onChange(value + 1)}
       >
         <Icon name="add" />

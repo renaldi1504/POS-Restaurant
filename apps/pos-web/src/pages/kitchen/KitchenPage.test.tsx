@@ -7,10 +7,15 @@ import { http, HttpResponse, server } from '../../test/server';
 import KitchenPage, { kitchenTone } from './KitchenPage';
 
 describe('Layar dapur', () => {
-  it('ganti bahasa layar per perangkat: UI & nama menu ikut berubah', async () => {
+  it('ganti bahasa layar: UI & nama menu ikut berubah, disimpan di perangkat & akun', async () => {
+    let savedLang: unknown = null;
     const acceptedAt = new Date(Date.now() - 2 * 60_000).toISOString();
     server.use(
       http.get('*/api/auth/me', () => HttpResponse.json({ user: fx.kitchen })),
+      http.patch('*/api/auth/me/lang', async ({ request }) => {
+        savedLang = ((await request.json()) as { lang: string }).lang;
+        return HttpResponse.json({ user: { ...fx.kitchen, lang: savedLang } });
+      }),
       http.get('*/api/orders', () =>
         HttpResponse.json({
           orders: [
@@ -35,13 +40,16 @@ describe('Layar dapur', () => {
     expect(within(card).getByRole('button', { name: 'Start cooking' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('radio', { name: 'ខ្មែរ' }));
-    expect(screen.getByTestId('kitchen-screen')).toHaveAttribute('lang', 'kh');
+    expect(screen.getByTestId('kitchen-screen')).toHaveAttribute('lang', 'km');
+    expect(document.documentElement.lang).toBe('km');
     expect(within(card).getByText('មាន់បំពង')).toBeInTheDocument();
     expect(within(card).getByRole('button', { name: 'ចាប់ផ្តើមចម្អិន' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('radio', { name: '中文' }));
     expect(within(card).getByText('炸鸡')).toBeInTheDocument();
-    expect(localStorage.getItem('pos.prefs')).toContain('"kitchenLang":"zh"');
+    expect(localStorage.getItem('pos.lang')).toBe('zh');
+    expect(document.documentElement.lang).toBe('zh-Hans');
+    await waitFor(() => expect(savedLang).toBe('zh'));
   });
 
   it('warna kartu: baru kuning, dimasak biru, terlambat merah', () => {

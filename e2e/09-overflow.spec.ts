@@ -106,6 +106,52 @@ test('pos-web 360 px: tanpa scroll horizontal', async ({ browser }) => {
   await ctx.close();
 });
 
+// Label Khmer & Mandarin (lebih panjang/tinggi) tetap muat di HP 360 px — semua layar staf.
+for (const lang of ['kh', 'zh'] as const) {
+  test(`pos-web 360 px dalam ${lang}: tanpa scroll horizontal / teks keluar layar`, async ({ browser }) => {
+    const owner = await apiAs('Owner');
+    expect((await owner.patch('/api/auth/me/lang', { data: { lang } })).status()).toBe(200);
+    const ctx = await newPhone(browser, 360);
+    const page = await ctx.newPage();
+    try {
+      await loginUI(page, 'Owner');
+      await expect(page.locator('html')).toHaveAttribute('lang', lang === 'kh' ? 'km' : 'zh-Hans');
+      for (const path of [
+        '/kasir',
+        '/kasir/meja',
+        '/kasir/meja/1',
+        '/kasir/online',
+        '/kasir/riwayat',
+        '/kasir/pengeluaran',
+        '/kasir/closing',
+        '/dapur',
+        '/driver',
+        '/admin',
+        '/admin/menu',
+        '/admin/menu/1',
+        '/admin/menu/baru',
+        '/admin/opsi/1',
+        '/admin/meja',
+        '/admin/pengguna',
+        '/admin/settings',
+        '/admin/promo',
+        '/admin/telegram',
+        '/printer',
+      ])
+        await check(page, `${POS}${path}`);
+      // Lembar Lainnya (pemilih bahasa) juga muat.
+      await page.goto(`${POS}/kasir`);
+      await page.getByRole('button', { name: lang === 'kh' ? 'ផ្សេងៗ' : '更多' }).click();
+      await expect(page.getByTestId('lang-picker')).toBeVisible();
+      expect(await overflowProblems(page), `overflow Lainnya ${lang}`).toEqual([]);
+    } finally {
+      await owner.patch('/api/auth/me/lang', { data: { lang: 'id' } });
+      await owner.dispose();
+      await ctx.close();
+    }
+  });
+}
+
 test('order-web 360 px: tanpa scroll horizontal', async ({ browser }) => {
   const ctx = await newPhone(browser, 360);
   const page = await ctx.newPage();

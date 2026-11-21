@@ -67,7 +67,7 @@ export async function cropToBlob(
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas tidak didukung');
+  if (!ctx) throw new Error('localErr.canvas');
   ctx.imageSmoothingQuality = 'high';
   if (ctx.fillRect) {
     ctx.fillStyle = '#FFFFFF'; // latar putih untuk PNG transparan → JPEG
@@ -76,7 +76,7 @@ export async function cropToBlob(
   ctx.drawImage(image, area.x, area.y, area.width, area.height, 0, 0, width, height);
   const blob = await new Promise<Blob>((resolve, reject) =>
     canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error('Gagal mengekspor foto'))),
+      (b) => (b ? resolve(b) : reject(new Error('localErr.photoExport'))),
       type,
       opts.quality ?? 0.85,
     ),
@@ -88,7 +88,7 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('Foto tidak bisa dibuka'));
+    img.onerror = () => reject(new Error('localErr.photoOpen'));
     img.src = src;
   });
 }

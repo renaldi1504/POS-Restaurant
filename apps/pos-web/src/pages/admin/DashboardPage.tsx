@@ -8,6 +8,8 @@ import { ErrorBlock, LoadingBlock, Screen } from '../../components/common';
 import { EmptyState, cn } from '../../components/ui';
 import { api } from '../../lib/api';
 import { usePublicSettings } from '../../lib/data';
+import { formatDayLabel } from '../../lib/format';
+import { useLang } from '../../lib/useLang';
 
 /** Urutan jam operasional (mis. 08 → 02 untuk buka 08.00 tutup 03.00), nilai 0 bila kosong. */
 export function hourSeries(
@@ -28,7 +30,8 @@ export function hourSeries(
 const pad = (n: number) => String(n).padStart(2, '0');
 
 export default function DashboardPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const lang = useLang();
   const settings = usePublicSettings();
   const [date, setDate] = useState<string>('');
   const q = useQuery({
@@ -38,12 +41,7 @@ export default function DashboardPage() {
   const r = q.data;
   const isToday = !date || date === settings.data?.businessDate;
   const shownDate = r?.date ?? settings.data?.businessDate ?? '';
-  const dateLabel = shownDate
-    ? new Date(`${shownDate}T00:00:00`).toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'id-ID', {
-        day: 'numeric',
-        month: 'short',
-      })
-    : '';
+  const dateLabel = shownDate ? formatDayLabel(shownDate, lang) : '';
 
   return (
     <Screen wide testId="admin-screen">
@@ -72,7 +70,7 @@ export default function DashboardPage() {
         {r ? (
           <DashboardBody
             r={r}
-            lang={i18n.language}
+            lang={lang}
             open={settings.data?.hours.open}
             close={settings.data?.hours.close}
           />

@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import { errorReasonOf } from '@pos/shared';
 import { ApiError, createApiClient, isApiError } from '@pos/shared/client';
 import type { TFunction } from 'i18next';
 
@@ -45,14 +46,42 @@ export const qk = {
   staffSettings: ['settings', 'staff'] as const,
 };
 
-/** Pesan error siap tampil (pakai kamus `errors.*`). */
+/**
+ * Pesan error siap tampil dalam bahasa staf: alasan spesifik dari pesan server (`errorReason.*`,
+ * lihat @pos/shared errorReasons) → kode error (`errors.*`) → `common.error`. Teks server mentah
+ * (Bahasa Indonesia) tidak pernah ditampilkan apa adanya ke staf berbahasa lain. Error lokal browser
+ * (kamera/printer) dilempar sebagai `new Error('localErr.<kunci>')`.
+ */
 export function errorMessage(err: unknown, t: TFunction): string {
   if (err instanceof ApiError) {
+    const hit = errorReasonOf(err.message);
+    if (hit) {
+      const rk = `errorReason.${hit.reason}`;
+      // parameter berupa kode status (cooking, ready, …) ikut diterjemahkan
+      const params = Object.fromEntries(
+        Object.entries(hit.params).map(([k, v]) => {
+          const sk = `status.${v}`;
+          const tr = t(sk);
+          return [k, tr === sk ? v : tr];
+        }),
+      );
+      const msg = t(rk, params);
+      if (msg !== rk) return msg;
+    }
     const key = `errors.${err.code}`;
     const msg = t(key);
-    return msg === key ? err.message : msg;
+    return msg === key ? t('common.error') : msg;
+  }
+  if (err instanceof Error && err.message.startsWith('localErr.')) {
+    const msg = t(err.message);
+    if (msg !== err.message) return msg;
   }
   return t('common.error');
+}
+
+/** Teks error perangkat (printer/kamera): kunci `localErr.*` diterjemahkan; pesan bawaan browser apa adanya. */
+export function deviceErrorText(message: string, t: TFunction): string {
+  return message.startsWith('localErr.') ? t(message) : message;
 }
 
 export { ApiError, isApiError };

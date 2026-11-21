@@ -1,10 +1,10 @@
-/** Layar dapur — acuan: docs/mockups/Dapur.dc.html. Bahasa layar dipilih per perangkat (id/en/kh/zh). */
+/** Layar dapur — acuan: docs/mockups/Dapur.dc.html. Bahasa layar = bahasa staf (id/en/kh/zh), bisa diganti di sini. */
 import type { TFunction } from 'i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LANGS, hasAnyPermission, tl, type Lang, type OrderDto, type OrderStatus } from '@pos/shared';
-import { LANG_FONT_CLASS } from '@pos/shared/i18n';
+import { HTML_LANG, LANG_FONT_CLASS, LANG_SHORT } from '@pos/shared/i18n';
 import { Button, EmptyState, Icon, Segmented, Sheet, cn, useToast } from '../../components/ui';
 import {
   ErrorBlock,
@@ -22,10 +22,10 @@ import { useStaffMenu, useStaffSettings } from '../../lib/data';
 import { setPrefs, usePrefs } from '../../lib/prefs';
 import { useRepeatingAlarm } from '../../lib/sound';
 import { useSocketEvent } from '../../lib/socket';
+import { useChangeLang, useLang } from '../../lib/useLang';
 import { beep } from '../../lib/sound';
 
 export const KITCHEN_FILTER = { status: 'accepted,cooking', active: 'true' } as const;
-const LANG_LABEL: Record<Lang, string> = { id: 'ID', en: 'EN', kh: 'ខ្មែរ', zh: '中文' };
 
 export type KitchenTone = 'new' | 'cooking' | 'late';
 export function kitchenTone(
@@ -69,12 +69,10 @@ export function kitchenRecap(orders: OrderDto[], lang: Lang): { name: string; qt
 }
 
 export default function KitchenPage() {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const prefs = usePrefs();
-  const lang: Lang =
-    prefs.kitchenLang ??
-    ((LANGS as readonly string[]).includes(i18n.language) ? (i18n.language as Lang) : 'id');
-  const t = useMemo(() => i18n.getFixedT(lang), [i18n, lang]);
+  const lang = useLang();
+  const changeLang = useChangeLang();
   const qc = useQueryClient();
   const toast = useToast();
   const { data: me } = useMe();
@@ -138,7 +136,7 @@ export default function KitchenPage() {
   };
 
   return (
-    <Screen wide testId="kitchen-screen" lang={lang} className={LANG_FONT_CLASS[lang]}>
+    <Screen wide testId="kitchen-screen" lang={HTML_LANG[lang]} className={LANG_FONT_CLASS[lang]}>
       <TopBar
         title={t('kitchen.title')}
         subtitle={t('dapur.activeCount', { count: orders.length })}
@@ -163,15 +161,15 @@ export default function KitchenPage() {
                 {prefs.muted ? t('dapur.soundOff') : t('dapur.soundOn')}
               </span>
             </button>
-            <MoreButton lang={lang} />
+            <MoreButton />
           </>
         }
       >
         <Segmented
           label={t('kitchen.screenLanguage')}
           value={lang}
-          onChange={(l) => setPrefs({ kitchenLang: l })}
-          options={LANGS.map((l) => ({ value: l, label: LANG_LABEL[l] }))}
+          onChange={(l) => void changeLang(l)}
+          options={LANGS.map((l) => ({ value: l, label: LANG_SHORT[l] }))}
         />
       </TopBar>
       <main className="flex min-h-0 grow flex-col gap-3 overflow-y-auto px-4 pb-6 pt-3">

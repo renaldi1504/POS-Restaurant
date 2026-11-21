@@ -95,7 +95,7 @@ Error format: `{ error: { code, message } }` dengan HTTP status yang benar. Semu
 Room: `cashier`, `kitchen`, `driver`, `admin`, `customer:<id>`, `table:<sessionId>`. Event: `order.created`, `order.updated`, `order.ready_for_pickup`, `table.updated`, `menu.availability`, `payment.proof_received`. Klien menyimpan `lastEventAt`, saat reconnect memanggil `GET /orders?since=`.
 
 ## 7. Non-fungsional
-Order online muncul ≤3 detik; tambah item ≤1 detik; RAM server hemat (target Linode 1 GB: tanpa Redis, satu proses); audit log; zona waktu Asia/Phnom_Penh; i18n UI POS minimal id & en lengkap, kh & zh untuk layar dapur, driver, dan seluruh order-web; aksesibilitas: label pada input, tombol nyata, aria-label untuk ikon.
+Order online muncul ≤3 detik; tambah item ≤1 detik; RAM server hemat (target Linode 1 GB: tanpa Redis, satu proses); audit log; zona waktu Asia/Phnom_Penh; i18n UI lengkap 4 bahasa (id, en, kh, zh) untuk SEMUA layar staf (termasuk admin) dan seluruh order-web, bahasa dipilih tiap staf & disimpan di akun; aksesibilitas: label pada input, tombol nyata, aria-label untuk ikon.
 
 ## 8. Deploy (dokumentasi + file di `deploy/`)
 Ubuntu 24.04 tanpa Docker: Caddy (dua subdomain, lihat Caddyfile), PM2 satu proses `--max-old-space-size=256`, PostgreSQL tuning kecil, swap 2GB, backup `pg_dump` harian ke Cloudflare R2 (S3 API) 30 hari, GitHub Actions build+test+deploy rsync. README berbahasa Indonesia berisi cara menjalankan lokal, variabel env, seed, test, deploy.

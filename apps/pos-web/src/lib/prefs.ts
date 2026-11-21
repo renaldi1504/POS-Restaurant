@@ -1,9 +1,9 @@
 /**
- * Preferensi per perangkat (localStorage): ukuran teks, bunyi, bahasa layar dapur/driver, printer.
+ * Preferensi per perangkat (localStorage): ukuran teks, bunyi, printer. Bahasa: lib/i18n.ts + lib/useLang.ts.
  * Store kecil dengan useSyncExternalStore supaya semua layar ikut berubah seketika.
  */
 import { useSyncExternalStore } from 'react';
-import type { Lang, TextSize } from '@pos/shared';
+import type { TextSize } from '@pos/shared';
 
 export type PaperWidth = 58 | 80;
 export type PrinterTransportKind = 'serial' | 'bluetooth' | 'none';
@@ -12,8 +12,6 @@ export interface DevicePrefs {
   /** null = ikut default toko (settings.ui.textSize). */
   textSize: TextSize | null;
   muted: boolean;
-  kitchenLang: Lang | null;
-  driverLang: Lang | null;
   paper: PaperWidth;
   printer: PrinterTransportKind;
   /** Nama printer terakhir (untuk ditampilkan). */
@@ -28,8 +26,6 @@ const KEY = 'pos.prefs';
 const DEFAULTS: DevicePrefs = {
   textSize: null,
   muted: false,
-  kitchenLang: null,
-  driverLang: null,
   paper: 58,
   printer: 'none',
   printerName: null,

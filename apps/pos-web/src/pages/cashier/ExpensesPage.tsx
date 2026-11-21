@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 import { formatMoney, type Currency, type ExpenseSource } from '@pos/shared';
 import { Button, Icon, useToast } from '../../components/ui';
 import {
-  CURRENCY_SHORT,
+  currencyShort,
   ChoiceButton,
   ErrorBlock,
   LoadingBlock,
@@ -150,7 +150,7 @@ export default function ExpensesPage() {
                 )}
               >
                 {currency === c ? <Icon name="check" size={18} /> : null}
-                {CURRENCY_SHORT[c]}
+                {currencyShort(c, t)}
               </button>
             ))}
           </div>

@@ -32,7 +32,7 @@ class SerialTransport implements PrinterTransport {
   ) {}
   async write(data: Uint8Array): Promise<void> {
     const w = this.port.writable?.getWriter();
-    if (!w) throw new Error('Port printer tidak bisa ditulis');
+    if (!w) throw new Error('localErr.portWrite');
     try {
       await w.write(data);
     } finally {
@@ -67,7 +67,7 @@ async function openSerial(port: SerialPort): Promise<SerialTransport> {
 
 /** Pilih port (dialog browser). Wajib dari klik pengguna. */
 export async function requestSerial(): Promise<PrinterTransport> {
-  if (!navigator.serial) throw new Error('Browser tidak mendukung Web Serial');
+  if (!navigator.serial) throw new Error('localErr.noSerial');
   const port = await navigator.serial.requestPort({ allowedBluetoothServiceClassIds: [SPP_UUID] });
   return openSerial(port);
 }
@@ -111,7 +111,7 @@ class BleTransport implements PrinterTransport {
 
 async function connectBle(device: BluetoothDevice): Promise<PrinterTransport> {
   const server = await device.gatt?.connect();
-  if (!server) throw new Error('Printer tidak mendukung GATT');
+  if (!server) throw new Error('localErr.noGatt');
   for (const uuid of BLE_SERVICES) {
     try {
       const service = await server.getPrimaryService(uuid);
@@ -123,11 +123,11 @@ async function connectBle(device: BluetoothDevice): Promise<PrinterTransport> {
     }
   }
   server.disconnect();
-  throw new Error('Service printer tidak ditemukan');
+  throw new Error('localErr.serviceNotFound');
 }
 
 export async function requestBluetooth(): Promise<PrinterTransport> {
-  if (!navigator.bluetooth) throw new Error('Browser tidak mendukung Web Bluetooth');
+  if (!navigator.bluetooth) throw new Error('localErr.noBluetooth');
   const device = await navigator.bluetooth.requestDevice({
     acceptAllDevices: true,
     optionalServices: [...BLE_SERVICES],

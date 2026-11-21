@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
 import { cn } from './cn';
 import { IconButton } from './IconButton';
@@ -18,16 +19,22 @@ export function HeaderBar({
   title,
   subtitle,
   onBack,
-  backLabel = 'Kembali',
+  backLabel,
   right,
   className,
   children,
 }: HeaderBarProps) {
+  const { t } = useTranslation();
   return (
     <header className={cn('sticky top-0 z-20 flex flex-col gap-2 bg-surface px-1 pb-2', className)}>
       <div className="flex min-h-16 items-center gap-1">
         {onBack ? (
-          <IconButton icon="arrow_back" label={backLabel} onClick={onBack} className="text-on-surface" />
+          <IconButton
+            icon="arrow_back"
+            label={backLabel ?? t('common.back')}
+            onClick={onBack}
+            className="text-on-surface"
+          />
         ) : (
           <span className="w-3 shrink-0" />
         )}

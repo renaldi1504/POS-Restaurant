@@ -1,6 +1,6 @@
 /** Aplikasi driver — acuan: docs/mockups/Driver.dc.html. */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   LANGS,
@@ -9,20 +9,17 @@ import {
   mapsDirectionsUrl,
   mapsMultiStopUrl,
   type DriverOrderDto,
-  type Lang,
 } from '@pos/shared';
-import { LANG_FONT_CLASS } from '@pos/shared/i18n';
+import { HTML_LANG, LANG_FONT_CLASS, LANG_SHORT } from '@pos/shared/i18n';
 import { Button, EmptyState, Icon, Segmented, Sheet, cn, useToast } from '../../components/ui';
 import { ErrorBlock, LoadingBlock, MoreButton, Screen, Tabs, TopBar } from '../../components/common';
 import { api, errorMessage, isApiError, qk } from '../../lib/api';
 import { useMe } from '../../lib/auth';
 import { usePublicSettings } from '../../lib/data';
-import { setPrefs, usePrefs } from '../../lib/prefs';
 import { beep } from '../../lib/sound';
 import { useSocketEvent, useSocketStatus } from '../../lib/socket';
+import { useChangeLang, useLang } from '../../lib/useLang';
 import { DriverMap, type MapPin } from './DriverMap';
-
-const LANG_LABEL: Record<Lang, string> = { id: 'ID', en: 'EN', kh: 'ខ្មែរ', zh: '中文' };
 
 export function telegramLink(c: DriverOrderDto['customer']): string | null {
   if (!c) return null;
@@ -32,11 +29,10 @@ export function telegramLink(c: DriverOrderDto['customer']): string | null {
 }
 
 export default function DriverPage() {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const { data: me } = useMe();
-  const prefs = usePrefs();
-  const lang: Lang = prefs.driverLang ?? me?.lang ?? 'id';
-  const t = useMemo(() => i18n.getFixedT(lang), [i18n, lang]);
+  const lang = useLang();
+  const changeLang = useChangeLang();
   const qc = useQueryClient();
   const toast = useToast();
   const settings = usePublicSettings();
@@ -124,7 +120,7 @@ export default function DriverPage() {
   const q = tab === 'ready' ? available : mine;
 
   return (
-    <Screen wide testId="driver-screen" lang={lang} className={LANG_FONT_CLASS[lang]}>
+    <Screen wide testId="driver-screen" lang={HTML_LANG[lang]} className={LANG_FONT_CLASS[lang]}>
       <TopBar
         title={t('antar.title')}
         subtitle={me?.name}
@@ -141,15 +137,15 @@ export default function DriverPage() {
               <Icon name={connected ? 'check_circle' : 'wifi_off'} size={18} />
               {connected ? t('antar.online') : t('common.reconnecting')}
             </span>
-            <MoreButton lang={lang} />
+            <MoreButton />
           </>
         }
       >
         <Segmented
           label={t('common.language')}
           value={lang}
-          onChange={(l) => setPrefs({ driverLang: l })}
-          options={LANGS.map((l) => ({ value: l, label: LANG_LABEL[l] }))}
+          onChange={(l) => void changeLang(l)}
+          options={LANGS.map((l) => ({ value: l, label: LANG_SHORT[l] }))}
         />
       </TopBar>
       <div className="flex min-h-0 grow flex-col expanded:flex-row-reverse expanded:gap-4 expanded:px-4 expanded:pb-4">

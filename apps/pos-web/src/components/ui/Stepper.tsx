@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from './cn';
 import { Icon } from './Icon';
 
@@ -9,7 +10,7 @@ export interface StepperProps {
   /** Nama item untuk aria-label ("Kurangi Ayam Goreng"). */
   label: string;
   size?: 'md' | 'lg';
-  /** aria-label tombol − / + (default "Kurangi {label}" / "Tambah {label}"). */
+  /** aria-label tombol − / + (default kamus `formx.dec` / `formx.inc`). */
   decLabel?: string;
   incLabel?: string;
 }
@@ -25,6 +26,7 @@ export function Stepper({
   decLabel,
   incLabel,
 }: StepperProps) {
+  const { t } = useTranslation();
   const btn = cn(
     'state-layer flex shrink-0 items-center justify-center rounded-full disabled:opacity-38',
     size === 'lg' ? 'size-14' : 'size-12',
@@ -34,7 +36,7 @@ export function Stepper({
       <button
         type="button"
         className={cn(btn, 'border border-outline text-on-surface-variant')}
-        aria-label={decLabel ?? `Kurangi ${label}`}
+        aria-label={decLabel ?? t('formx.dec', { label })}
         disabled={value <= min}
         onClick={() => onChange(Math.max(min, value - 1))}
       >
@@ -52,7 +54,7 @@ export function Stepper({
       <button
         type="button"
         className={cn(btn, 'bg-primary text-on-primary')}
-        aria-label={incLabel ?? `Tambah ${label}`}
+        aria-label={incLabel ?? t('formx.inc', { label })}
         disabled={value >= max}
         onClick={() => onChange(Math.min(max, value + 1))}
       >

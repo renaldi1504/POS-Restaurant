@@ -15,6 +15,7 @@ import { Button, EmptyState, Icon, Segmented, Sheet, cn, useToast } from '../../
 import {
   Banner,
   ChoiceButton,
+  currencyShort,
   ConfirmSheet,
   MoneyInput,
   RoundStepper,
@@ -410,7 +411,7 @@ export function CartView() {
                     }))
                   }
                   options={[
-                    { value: 'amount', label: money.main === 'KHR' ? 'Riel ៛' : money.main },
+                    { value: 'amount', label: currencyShort(money.main, t) },
                     { value: 'pct', label: t('pesanan.percent') },
                   ]}
                 />

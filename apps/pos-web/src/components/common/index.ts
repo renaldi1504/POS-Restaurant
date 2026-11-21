@@ -7,3 +7,4 @@ export * from './CashCount';
 export * from './Receipt';
 export * from './OrderBits';
 export * from './PhotoCrop';
+export * from './LangPicker';

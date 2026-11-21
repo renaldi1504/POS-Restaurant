@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router';
 import { Button, Segmented, useToast } from '../../components/ui';
 import { ReceiptPreview, Screen, Section, Switch, TopBar } from '../../components/common';
 import { useMe, homePathFor } from '../../lib/auth';
+import { deviceErrorText } from '../../lib/api';
 import { usePublicSettings, useMoney } from '../../lib/data';
 import { setPrefs, usePrefs } from '../../lib/prefs';
 import {
@@ -66,7 +67,7 @@ export default function PrinterPage() {
       await connectPrinter(kind);
       toast.success(t('printer.connected'));
     } catch (e) {
-      if ((e as Error).name !== 'NotFoundError') toast.error((e as Error).message);
+      if ((e as Error).name !== 'NotFoundError') toast.error(deviceErrorText((e as Error).message, t));
     }
   };
   return (
@@ -95,7 +96,9 @@ export default function PrinterPage() {
                 ? t('print.saved', { name: prefs.printerName ?? '' })
                 : t('printer.disconnected')}
             {status.error ? (
-              <div className="text-label-medium font-medium text-error">{status.error}</div>
+              <div className="text-label-medium font-medium text-error">
+                {deviceErrorText(status.error, t)}
+              </div>
             ) : null}
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -155,7 +158,7 @@ export default function PrinterPage() {
                 await printReceipt(sample);
                 toast.success(t('print.sent'));
               } catch (e) {
-                toast.error(`${t('print.failed')}: ${(e as Error).message}`);
+                toast.error(`${t('print.failed')}: ${deviceErrorText((e as Error).message, t)}`);
               } finally {
                 setTesting(false);
               }

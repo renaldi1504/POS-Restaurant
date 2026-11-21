@@ -1,5 +1,9 @@
 import { QueryClient } from '@tanstack/react-query';
-import { PublicOrderResponse, type PublicOrderResponse as PublicOrderResponseT } from '@pos/shared';
+import {
+  PublicOrderResponse,
+  errorReasonOf,
+  type PublicOrderResponse as PublicOrderResponseT,
+} from '@pos/shared';
 import { ApiError, createApiClient, isApiError } from '@pos/shared/client';
 import type { TFunction } from 'i18next';
 
@@ -29,8 +33,23 @@ export const qk = {
   addresses: ['addresses'] as const,
 };
 
+/** Pesan error dalam bahasa pelanggan: alasan spesifik (`errorReason.*`) → kode (`errors.*`). */
 export function errorMessage(err: unknown, t: TFunction): string {
   if (err instanceof ApiError) {
+    const hit = errorReasonOf(err.message);
+    if (hit) {
+      const rk = `errorReason.${hit.reason}`;
+      // parameter berupa kode status (cooking, ready, …) ikut diterjemahkan
+      const params = Object.fromEntries(
+        Object.entries(hit.params).map(([k, v]) => {
+          const sk = `status.${v}`;
+          const tr = t(sk);
+          return [k, tr === sk ? v : tr];
+        }),
+      );
+      const msg = t(rk, params);
+      if (msg !== rk) return msg;
+    }
     const key = `errors.${err.code}`;
     const msg = t(key);
     return msg === key ? err.message : msg;

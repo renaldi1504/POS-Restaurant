@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router';
 import {
   LANGS,
   PERMISSION_KEYS,
-  PERMISSION_LABELS,
   type AdminUserDto,
   type Lang,
   type PermissionKey,
@@ -27,6 +26,7 @@ import {
 } from '../../components/common';
 import { Button, Icon, Sheet, cn, useToast } from '../../components/ui';
 import { api, errorMessage, qk } from '../../lib/api';
+import { permLabel, roleLabel } from '../../lib/labels';
 
 const UQK = ['admin', 'users'] as const;
 const RQK = ['admin', 'roles'] as const;
@@ -67,7 +67,7 @@ interface UserForm {
 }
 
 export default function UsersPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
@@ -83,7 +83,6 @@ export default function UsersPage() {
     userCount: number;
   } | null>(null);
   const [delRole, setDelRole] = useState(false);
-  const permLang = i18n.language === 'id' ? 'id' : 'en';
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: UQK });
     void qc.invalidateQueries({ queryKey: RQK });
@@ -215,7 +214,7 @@ export default function UsersPage() {
                     <span className="text-body-medium text-on-surface-variant">{userInfo(u)}</span>
                   </span>
                   <span className={cn('shrink-0 rounded-sm px-2 py-1 text-label-medium', c.badge)}>
-                    {u.role.name}
+                    {roleLabel(u.role.name, t)}
                   </span>
                 </button>
               );
@@ -243,7 +242,9 @@ export default function UsersPage() {
                   className="state-layer flex shrink-0 flex-col gap-1.5 rounded-md border border-outline-variant bg-surface-container-lowest p-4 text-left"
                 >
                   <div className="flex w-full items-center justify-between">
-                    <span className={cn('rounded-sm px-2.5 py-1 text-label-medium', c.badge)}>{r.name}</span>
+                    <span className={cn('rounded-sm px-2.5 py-1 text-label-medium', c.badge)}>
+                      {roleLabel(r.name, t)}
+                    </span>
                     <span className="text-label-medium text-on-surface-variant">
                       {t('userx.userCount', { count: r.userCount })}
                     </span>
@@ -260,7 +261,7 @@ export default function UsersPage() {
                           className={yes ? 'text-primary' : 'text-outline'}
                         />
                         <span className={yes ? 'text-on-surface' : 'text-on-surface-variant'}>
-                          {PERMISSION_LABELS[k][permLang]}
+                          {permLabel(k, t)}
                         </span>
                       </div>
                     );
@@ -321,12 +322,12 @@ export default function UsersPage() {
                 .filter((r) => r.name !== 'Bot Telegram')
                 .map((r) => (
                   <option key={r.id} value={r.id}>
-                    {r.name}
+                    {roleLabel(r.name, t)}
                   </option>
                 ))}
             </SelectField>
             <SelectField
-              label={t('common.language')}
+              label={t('langx.userDefault')}
               value={uf.lang}
               onChange={(e) => setUf({ ...uf, lang: e.target.value as Lang })}
             >
@@ -408,7 +409,7 @@ export default function UsersPage() {
                     permissions: v ? [...rf.permissions, k] : rf.permissions.filter((x) => x !== k),
                   })
                 }
-                label={PERMISSION_LABELS[k][permLang]}
+                label={permLabel(k, t)}
                 description={k}
               />
             ))}

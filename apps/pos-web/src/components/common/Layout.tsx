@@ -75,7 +75,7 @@ export function Screen({
       {children}
     </div>
   );
-  return pane ? body : <AppFrame lang={lang}>{body}</AppFrame>;
+  return pane ? body : <AppFrame>{body}</AppFrame>;
 }
 
 /**

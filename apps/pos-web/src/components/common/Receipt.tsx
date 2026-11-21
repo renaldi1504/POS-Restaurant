@@ -10,16 +10,18 @@ import {
 } from '../../lib/printer';
 import { paperCols, printDoc, printReceipt } from '../../lib/print';
 import { getPrefs } from '../../lib/prefs';
+import { deviceErrorText } from '../../lib/api';
 import { useToast } from '../ui';
 
 /** Pratinjau kertas thermal (monospace), identik dengan teks yang dicetak. */
 export function ReceiptPreview({ data, doc }: { data?: ReceiptData; doc?: DocLine[] }) {
+  const { t } = useTranslation();
   const cols = paperCols();
   const lines = previewLines(doc ?? (data ? buildReceipt(data, cols) : []), cols);
   return (
     <div
       data-testid="receipt-preview"
-      aria-label="Pratinjau struk"
+      aria-label={t('print.receiptPreview')}
       className="self-center bg-surface-container-lowest px-4 pb-6 pt-5 font-mono text-[12px] leading-[1.55] text-black shadow-e2"
       style={{ width: `${cols + 4}ch` }}
     >
@@ -50,7 +52,7 @@ export function usePrint() {
         toast.success(t('print.sent'));
         return true;
       } catch (e) {
-        toast.error(`${t('print.failed')}: ${(e as Error).message}`);
+        toast.error(`${t('print.failed')}: ${deviceErrorText((e as Error).message, t)}`);
         return false;
       }
     },

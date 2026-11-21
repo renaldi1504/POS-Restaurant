@@ -11,6 +11,11 @@ export const defaultHandlers = [
   http.get('*/api/menu', () => HttpResponse.json(fx.menu)),
   http.get('*/api/orders', () => HttpResponse.json({ orders: [], serverTime: new Date().toISOString() })),
   http.get('*/api/tables', () => HttpResponse.json({ tables: [] })),
+  // Simpan bahasa akun: balas user yang sama dengan bahasa baru.
+  http.patch('*/api/auth/me/lang', async ({ request }) => {
+    const { lang } = (await request.json()) as { lang: typeof fx.cashier.lang };
+    return HttpResponse.json({ user: { ...fx.cashier, lang } });
+  }),
 ];
 
 export const server = setupServer(...defaultHandlers);

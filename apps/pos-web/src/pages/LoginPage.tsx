@@ -3,10 +3,13 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router';
 import type { LoginUserCard } from '@pos/shared';
-import { Badge, Icon, cn, type BadgeTone } from '../components/ui';
+import { Badge, Icon, LangSwitcher, cn, type BadgeTone } from '../components/ui';
 import { PinDots } from '../components/common/Dialogs';
 import { api, ApiError, errorMessage, qk } from '../lib/api';
 import { homePathFor, useAuthActions, useMe } from '../lib/auth';
+import { formatTime } from '../lib/format';
+import { roleLabel } from '../lib/labels';
+import { useChangeLang, useLang } from '../lib/useLang';
 
 /** Warna kartu per role (mockup Login.dc.html). */
 function roleStyle(roleName: string): { avatar: string; tone: BadgeTone } {
@@ -23,6 +26,8 @@ const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 export default function LoginPage() {
   const { t } = useTranslation();
+  const lang = useLang();
+  const changeLang = useChangeLang();
   const { data: me } = useMe();
   const { onLoggedIn } = useAuthActions();
   const [selected, setSelected] = useState<LoginUserCard | null>(null);
@@ -47,9 +52,7 @@ export default function LoginPage() {
         setError(left !== undefined ? t('auth.wrongPin', { count: left }) : t('errors.PIN_INVALID'));
       } else if (err instanceof ApiError && err.code === 'PIN_LOCKED') {
         const until = (err.details as { lockedUntil?: string } | undefined)?.lockedUntil;
-        const time = until
-          ? new Date(until).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-          : '';
+        const time = until ? formatTime(until, lang) : '';
         setError(t('auth.locked', { time }));
       } else setError(errorMessage(err, t));
     },
@@ -106,6 +109,14 @@ export default function LoginPage() {
           </div>
         </div>
 
+        <LangSwitcher
+          block
+          compact
+          label={t('langx.loginHint')}
+          value={lang}
+          onChange={(l) => void changeLang(l)}
+        />
+
         <h1 className="text-title-medium">{t('auth.whoIsLogging')}</h1>
         <div className="grid w-full grid-cols-2 gap-2">
           {users.data?.users.map((u) => {
@@ -139,7 +150,7 @@ export default function LoginPage() {
                 <span className="flex min-w-0 flex-col gap-1">
                   <b className="truncate text-title-medium">{u.name}</b>
                   <Badge tone={st.tone} className="self-start">
-                    {u.roleName}
+                    {roleLabel(u.roleName, t)}
                   </Badge>
                 </span>
               </button>

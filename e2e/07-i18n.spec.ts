@@ -13,6 +13,10 @@ test.beforeAll(async () => {
     }),
   );
   await kasir.dispose();
+  // Bahasa disimpan di akun: test lain (02-delivery) boleh mengganti bahasa Driver → kembalikan ke seed (kh).
+  const driver = await apiAs('Driver');
+  await json(await driver.patch('/api/auth/me/lang', { data: { lang: 'kh' } }));
+  await driver.dispose();
 });
 
 test('dapur: pilih ខ្មែរ → judul, tombol & nama menu Khmer', async ({ page }) => {
@@ -20,13 +24,13 @@ test('dapur: pilih ខ្មែរ → judul, tombol & nama menu Khmer', async (
   await loginUI(page, 'Dapur');
   await expect(page.getByRole('heading', { name: 'Dapur', level: 1 })).toBeVisible();
   await page.getByRole('radio', { name: 'ខ្មែរ' }).click();
-  await expect(page.getByTestId('kitchen-screen')).toHaveAttribute('lang', 'kh');
+  await expect(page.getByTestId('kitchen-screen')).toHaveAttribute('lang', 'km');
   await expect(page.getByRole('heading', { name: 'ផ្ទះបាយ', level: 1 })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'ត្រូវធ្វើ' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'ចាប់ផ្តើមចម្អិន' }).first()).toBeVisible();
   await expect(page.getByTestId('kitchen-card').filter({ hasText: 'បាយស' }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: 'ផ្សេងៗ' })).toBeVisible();
-  // Pilihan disimpan per perangkat.
+  // Pilihan disimpan di perangkat (dan akun).
   await page.reload();
   await expect(page.getByRole('heading', { name: 'ផ្ទះបាយ', level: 1 })).toBeVisible();
   await page.getByRole('radio', { name: 'ID' }).click();

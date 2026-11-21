@@ -21,7 +21,7 @@ import {
   type CountMode,
   type Counts,
 } from '../../components/common';
-import { api, errorMessage, qk } from '../../lib/api';
+import { api, deviceErrorText, errorMessage, qk } from '../../lib/api';
 import { useAuthActions } from '../../lib/auth';
 import { closingCalc, diffKind } from '../../lib/closing';
 import { useMoney, usePublicSettings, type MoneyCtx } from '../../lib/data';
@@ -269,10 +269,11 @@ export default function ClosingPage() {
               res.closing,
               settings.data?.name ?? 'Rumah Makan Berkat',
               paperCols(),
+              getPrefs().receiptLang,
             ),
           );
         } catch (e) {
-          toast.error(`${t('print.failed')}: ${(e as Error).message}`);
+          toast.error(`${t('print.failed')}: ${deviceErrorText((e as Error).message, t)}`);
         }
       }
     },
@@ -366,7 +367,13 @@ export default function ClosingPage() {
               className="h-16 w-36"
               onClick={() =>
                 void print.printDoc(
-                  buildClosingReport(result.preview, result.closing, settings.data?.name ?? '', paperCols()),
+                  buildClosingReport(
+                    result.preview,
+                    result.closing,
+                    settings.data?.name ?? '',
+                    paperCols(),
+                    getPrefs().receiptLang,
+                  ),
                 )
               }
             >

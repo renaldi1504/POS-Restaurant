@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 /** Hitung uang per pecahan per mata uang (Buka shift & Closing). */
 import { useTranslation } from 'react-i18next';
 import { CURRENCIES, DENOMINATIONS, convertMoney, formatMoney, type Currency, type Rates } from '@pos/shared';
@@ -7,8 +8,12 @@ import { MoneyInput, RoundStepper } from './Form';
 export type Counts = Partial<Record<Currency, Record<string, number>>>;
 export type CountMode = 'denom' | 'total';
 
-export const CURRENCY_LABEL: Record<Currency, string> = { KHR: 'Riel', USD: 'Dollar', IDR: 'Rupiah' };
-export const CURRENCY_SHORT: Record<Currency, string> = { KHR: 'Riel ៛', USD: 'Dollar $', IDR: 'Rupiah' };
+const CURRENCY_SYMBOL: Record<Currency, string> = { KHR: '៛', USD: '$', IDR: 'Rp' };
+/** Nama mata uang dalam bahasa UI (Riel / រៀល / 瑞尔 …). */
+export const currencyLabel = (c: Currency, t: TFunction): string => t(`currency.${c}`);
+/** Nama + simbol (Riel ៛, Dollar $, Rupiah Rp). */
+export const currencyShort = (c: Currency, t: TFunction): string =>
+  `${t(`currency.${c}`)} ${CURRENCY_SYMBOL[c]}`;
 
 export function sumCounts(counts: Record<string, number> | undefined): number {
   return Object.entries(counts ?? {}).reduce((a, [den, n]) => a + Number(den) * n, 0);
@@ -61,7 +66,7 @@ export function CurrencyTabs({
             value === c ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant',
           )}
         >
-          <span>{CURRENCY_LABEL[c]}</span>
+          <span>{currencyLabel(c, t)}</span>
           <span className="text-label-large tabular-nums">
             {formatMoney(totals[c], c, { noSymbol: c === 'KHR' })}
           </span>
@@ -127,7 +132,7 @@ export function ManualTotal({
         currency={currency}
         value={value}
         onChange={onChange}
-        label={`${t('shift.totalOnly')} · ${CURRENCY_LABEL[currency]}`}
+        label={`${t('shift.totalOnly')} · ${currencyLabel(currency, t)}`}
       />
     </section>
   );

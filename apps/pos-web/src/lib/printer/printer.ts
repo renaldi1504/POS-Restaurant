@@ -84,7 +84,7 @@ export async function disconnectPrinter(): Promise<void> {
 export async function printBytes(data: Uint8Array): Promise<void> {
   if (!transport?.isOpen()) {
     const ok = await reconnectPrinter();
-    if (!ok || !transport) throw new Error('Printer belum terhubung');
+    if (!ok || !transport) throw new Error('localErr.notConnected');
   }
   set({ busy: true, error: null });
   try {
