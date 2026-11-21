@@ -3,7 +3,8 @@
  * Uang tetap memakai formatMoney (@pos/shared) supaya struk & layar konsisten.
  *
  * Catatan: Chrome desktop/Android tidak selalu membawa data ICU Khmer (`km`) — Intl lalu diam-diam jatuh
- * ke locale perangkat. Karena itu nama hari/bulan Khmer disediakan sendiri bila locale tidak didukung.
+ * ke locale perangkat (bahkan saat supportedLocalesOf bilang didukung). Karena itu nama hari/bulan Khmer
+ * selalu disediakan sendiri.
  */
 import type { Lang } from '@pos/shared';
 import { INTL_LOCALE } from '@pos/shared/i18n';
@@ -43,7 +44,8 @@ export function formatDayLabel(
   const [y, m, d] = ymd.split('-').map(Number) as [number, number, number];
   const date = new Date(Date.UTC(y, m - 1, d, 12));
   const weekday = opts.weekday !== false;
-  if (lang === 'kh' && !(opts.supports ?? intlSupports)('kh')) {
+  // Khmer: selalu pakai nama bawaan (data ICU `km` tidak bisa diandalkan); `supports` hanya untuk test.
+  if (lang === 'kh' && !(opts.supports ?? (() => false))('kh')) {
     const dm = `${d} ${KH_MONTHS[m - 1]}`;
     return weekday ? `${KH_WEEKDAYS[date.getUTCDay()]} ${dm}` : dm;
   }
