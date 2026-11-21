@@ -8,13 +8,13 @@
 import { and, desc, eq, gt } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { Bot, InlineKeyboard, InputFile, Keyboard, type Context } from 'grammy';
-import { formatMoney, LANGS, type Lang, type OrderStatus } from '@pos/shared';
+import { formatMoney, LANGS, tl, type Lang, type OrderDto, type OrderStatus } from '@pos/shared';
 import { dictionaries } from '@pos/shared/i18n';
 import { customers, orders, payments } from '../../db/schema';
 import { JOB_NAMES } from '../../lib/jobs';
 import { getSettings } from '../../lib/settings';
 import { privateKeyFromUrl } from '../../lib/upload';
-import { answerQuestion } from '../ai/service';
+import { answerQuestion, detectLang } from '../ai/service';
 import { getOrderDto } from '../orders/dto';
 import { langFromTelegram } from './initData';
 
@@ -100,6 +100,70 @@ export function orderStatusMessage(args: {
   const lines = [head, `${label}`];
   if (args.status === 'pending_accept') lines.push(`${d.common.total ?? 'Total'}: ${args.total}`);
   if (args.reason && (args.status === 'rejected' || args.status === 'cancelled')) lines.push(args.reason);
+  return lines.join('\n');
+}
+
+const ORDER_TEXT: Record<
+  Lang,
+  { received: string; payment: string; address: string; note: string; wait: string }
+> = {
+  id: {
+    received: 'Pesanan diterima sistem',
+    payment: 'Pembayaran',
+    address: 'Alamat',
+    note: 'Catatan',
+    wait: 'Kami kabari lagi saat pesanan dikonfirmasi 🙏',
+  },
+  en: {
+    received: 'Order received',
+    payment: 'Payment',
+    address: 'Address',
+    note: 'Note',
+    wait: "We'll update you when the order is confirmed 🙏",
+  },
+  kh: {
+    received: 'បានទទួលការកុម្ម៉ង់',
+    payment: 'ការទូទាត់',
+    address: 'អាសយដ្ឋាន',
+    note: 'កំណត់ចំណាំ',
+    wait: 'យើងនឹងជូនដំណឹងពេលការកុម្ម៉ង់ត្រូវបានបញ្ជាក់ 🙏',
+  },
+  zh: {
+    received: '订单已收到',
+    payment: '付款方式',
+    address: '地址',
+    note: '备注',
+    wait: '订单确认后我们会再通知您 🙏',
+  },
+};
+
+/** Rincian order lengkap (item, opsi, harga per baris, subtotal, diskon, ongkir, total) dalam bahasa pelanggan. */
+export function orderDetailMessage(args: { lang: Lang; restaurant: string; order: OrderDto }): string {
+  const { lang, order: o } = args;
+  const d = dictionaries[lang] ?? dictionaries.id;
+  const T = ORDER_TEXT[lang];
+  const m = (v: number) => formatMoney(v, o.currency);
+  const lines: string[] = [
+    `🧾 ${args.restaurant} · ${o.displayNo}`,
+    `${T.received} — ${d.status[o.status]}`,
+    '',
+  ];
+  for (const it of o.items) {
+    lines.push(`${it.qty}× ${tl(it.name, lang)}  ${m(it.lineTotal)}`);
+    for (const op of it.options)
+      lines.push(`   + ${tl(op.optionName, lang)}${op.priceDelta ? ` (${m(op.priceDelta)})` : ''}`);
+    if (it.note) lines.push(`   📝 ${it.note}`);
+  }
+  lines.push('—'.repeat(14));
+  lines.push(`${d.common.subtotal}: ${m(o.subtotal)}`);
+  if (o.discount) lines.push(`${d.common.discount}: −${m(o.discount)}`);
+  if (o.type === 'delivery') lines.push(`${d.common.deliveryFee}: ${m(o.deliveryFee)}`);
+  lines.push(`${d.common.total.toUpperCase()}: ${m(o.total)}`);
+  if (o.paymentMethod) lines.push(`${T.payment}: ${d.paymentMethod[o.paymentMethod] ?? o.paymentMethod}`);
+  if (o.address)
+    lines.push(`${T.address}: ${o.address.text}${o.address.landmark ? ` (${o.address.landmark})` : ''}`);
+  if (o.note) lines.push(`${T.note}: ${o.note}`);
+  if (o.status === 'pending_accept') lines.push('', T.wait);
   return lines.join('\n');
 }
 
@@ -252,11 +316,23 @@ function createTelegram(app: FastifyInstance): TelegramService {
   });
 
   bot.on('message:text', async (ctx) => {
-    const lang = await langOf(ctx);
+    const stored = await langOf(ctx);
+    // Bahasa pesan ini (aksara/kata) — balas dengan bahasa yang sama, mis. Khmer → Khmer.
+    const lang = detectLang(ctx.message.text) ?? stored;
     const key = String(ctx.from.id);
     if (!limiter.take(key)) return void (await ctx.reply(BOT_TEXT[lang].rateLimited));
+    await ctx.replyWithChatAction('typing').catch(() => undefined);
     const answer = await answerQuestion(app, ctx.message.text, lang);
-    await ctx.reply(answer.text);
+    // Ingat bahasa pelanggan → notifikasi order ikut bahasa ini.
+    if (answer.lang !== stored)
+      await app.db
+        .update(customers)
+        .set({ lang: answer.lang })
+        .where(eq(customers.telegramId, key))
+        .catch(() => undefined);
+    await ctx.reply(answer.text, {
+      reply_markup: new InlineKeyboard().webApp(BOT_TEXT[answer.lang].order, miniAppUrl(app)),
+    });
     if (answer.forward) {
       const who = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(' ');
       await app.jobs
@@ -299,6 +375,13 @@ export async function handleNotifyJob(app: FastifyInstance, data: { orderId: str
     .where(eq(customers.id, o.customer.id));
   const lang = (LANGS as readonly string[]).includes(c?.lang ?? '') ? (c!.lang as Lang) : 'id';
   const settings = await getSettings(app.db);
+  if (data.status === 'pending_accept' || (data.status === 'accepted' && o.createdByStaff)) {
+    await tg.sendMessage(
+      o.customer.telegramId,
+      orderDetailMessage({ lang, restaurant: settings.profile.name, order: o }),
+    );
+    return;
+  }
   await tg.sendMessage(
     o.customer.telegramId,
     orderStatusMessage({

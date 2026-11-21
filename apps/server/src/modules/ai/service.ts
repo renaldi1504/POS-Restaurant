@@ -228,7 +228,9 @@ export interface AiAnswer {
   text: string;
   /** true = kirim balasan cadangan & teruskan ke grup admin. */
   forward: boolean;
-  reason: 'ok' | 'unsure' | 'quota' | 'disabled' | 'error';
+  reason: 'ok' | 'unsure' | 'quota' | 'disabled' | 'error' | 'lookup';
+  /** Bahasa pesan pelanggan (deteksi Gemini / aksara), dipakai untuk membalas & notifikasi. */
+  lang: Lang;
 }
 
 export const FALLBACK_REPLY: Record<Lang, string> = {
@@ -238,31 +240,118 @@ export const FALLBACK_REPLY: Record<Lang, string> = {
   zh: '抱歉，您的问题已转给工作人员，请稍候回复 🙏',
 };
 
+const ID_WORDS =
+  /\b(berapa|harga|ada|apa|mau|pesan|saya|aku|yang|tidak|nggak|gak|ga|bisa|enak|dong|kak|boleh|kapan|buka|tutup|antar|ongkir|pedas|minta|tolong|terima|kasih|sudah|belum|gimana|bagaimana|pakai|dan|atau|juga)\b/gi;
+const EN_WORDS =
+  /\b(how|much|price|what|do|you|have|is|are|open|close|delivery|the|can|i|want|order|menu|spicy|please|thanks|thank|when|where|does|any|with|and|or)\b/gi;
+
+/**
+ * Deteksi bahasa cepat dari aksara/kata (tanpa AI): Khmer → kh, Han → zh, Latin → id/en dari kata umum.
+ * null = tidak yakin (mis. hanya emoji / satu kata nama menu).
+ */
+export function detectLang(text: string): Lang | null {
+  const t = text.trim();
+  if (!t) return null;
+  if (/[ក-៿᧠-᧿]/.test(t)) return 'kh';
+  if (/[一-鿿㐀-䶿]/.test(t)) return 'zh';
+  const id = t.match(ID_WORDS)?.length ?? 0;
+  const en = t.match(EN_WORDS)?.length ?? 0;
+  if (id === 0 && en === 0) return null;
+  if (id === en) return null;
+  return id > en ? 'id' : 'en';
+}
+
+const PRICE_WORDS: Record<Lang, string> = { id: 'Harga', en: 'Price', kh: 'តម្លៃ', zh: '价格' };
+const SOLD_OUT_WORDS: Record<Lang, string> = {
+  id: 'habis hari ini',
+  en: 'sold out today',
+  kh: 'អស់ថ្ងៃនេះ',
+  zh: '今日售罄',
+};
+const ORDER_HINT: Record<Lang, string> = {
+  id: 'Tekan tombol "Pesan sekarang" untuk memesan 🙏',
+  en: 'Tap "Order now" to place your order 🙏',
+  kh: 'ចុច "កុម្ម៉ង់ឥឡូវ" ដើម្បីកុម្ម៉ង់ 🙏',
+  zh: '点击“立即点餐”下单 🙏',
+};
+
+/**
+ * Cadangan tanpa Gemini (key kosong / kuota habis): cari nama menu di pesan (semua bahasa) lalu balas
+ * harga & opsinya. null bila tidak ada menu yang cocok.
+ */
+export async function menuLookupReply(
+  app: FastifyInstance,
+  question: string,
+  lang: Lang,
+): Promise<string | null> {
+  const s = await getSettings(app.db);
+  const [items, groups] = await Promise.all([loadItems(app.db), loadOptionGroups(app.db)]);
+  const q = question.toLowerCase();
+  const hits = items.filter((i) =>
+    LANGS.some((l) => {
+      const n = i.name[l]?.toLowerCase().trim();
+      return !!n && n.length >= 3 && q.includes(n);
+    }),
+  );
+  if (!hits.length) return null;
+  const cur = s.currency.main;
+  const lines = hits.slice(0, 8).map((i) => {
+    const opts = i.optionGroupIds
+      .map((gid) => groups.find((g) => g.id === gid))
+      .filter((g): g is NonNullable<typeof g> => !!g)
+      .map(
+        (g) =>
+          `  • ${tl(g.name, lang)}: ` +
+          g.options
+            .map((o) => `${tl(o.name, lang)}${o.priceDelta ? ` +${formatMoney(o.priceDelta, cur)}` : ''}`)
+            .join(', '),
+      );
+    return [
+      `🍽 ${tl(i.name, lang)} — ${PRICE_WORDS[lang]}: ${formatMoney(i.prices.store, cur)}${i.available ? '' : ` (${SOLD_OUT_WORDS[lang]})`}`,
+      ...opts,
+    ].join('\n');
+  });
+  return `${lines.join('\n\n')}\n\n${ORDER_HINT[lang]}`;
+}
+
 export async function answerQuestion(app: FastifyInstance, question: string, lang: Lang): Promise<AiAnswer> {
   const settings = await getSettings(app.db);
-  if (!settings.ai.enabled || !genai(app))
-    return { text: FALLBACK_REPLY[lang], forward: true, reason: 'disabled' };
+  const detected = detectLang(question) ?? lang;
+  const fallback = async (reason: AiAnswer['reason']): Promise<AiAnswer> => {
+    const lookup = await menuLookupReply(app, question, detected).catch(() => null);
+    if (lookup) return { text: lookup, forward: false, reason: 'lookup', lang: detected };
+    return { text: FALLBACK_REPLY[detected], forward: true, reason, lang: detected };
+  };
+  if (!settings.ai.enabled || !genai(app)) return fallback('disabled');
   try {
     const context = await buildMenuContext(app, settings);
     const system =
-      'You are the friendly assistant of a restaurant on Telegram. Answer ONLY questions about the menu, prices, ' +
-      'options, availability, opening hours, delivery and how to order, using ONLY the context below. ' +
-      'Never take or create orders (tell the customer to use the Mini App menu button). Never ask for or reveal personal data. ' +
-      `Reply in ${LANG_NAMES[lang]} (or the language the customer used), short and polite. ` +
-      'If the question is off-topic, a complaint, about an existing order, or you are not sure, set "confident" to false. ' +
-      'Reply ONLY with JSON {"answer": string, "confident": boolean}.\n\nCONTEXT:\n' +
+      'You are the friendly assistant of a restaurant on Telegram. Answer ONLY questions about the menu, dishes, prices, ' +
+      'options, availability, opening hours, delivery and how to order, using ONLY the context below.\n' +
+      'LANGUAGE: detect the language of the customer message and reply in THAT SAME language ' +
+      '(Khmer → Khmer script, Chinese → Simplified Chinese, Indonesian → Indonesian, English → English; ' +
+      `other languages → English). If unclear, use ${LANG_NAMES[detected]}. Use dish names in that language when the context has them.\n` +
+      'PRICES: always state prices with the currency exactly as in the context. If the customer lists dishes/quantities ' +
+      '(e.g. "2 fried chicken + 1 iced tea"), give a short breakdown per line (qty × price incl. chosen option surcharges) ' +
+      'and the subtotal; mention the delivery fee/minimum order if relevant. Never invent dishes or prices; say if something is sold out.\n' +
+      'You cannot take or create orders yourself: end with a short hint to tap the "Order now" button. ' +
+      'Never ask for or reveal personal data. Keep it short, friendly, plain text (no markdown tables).\n' +
+      'If the question is off-topic, a complaint, about an existing order, or you are not sure, set "confident" to false.\n' +
+      'Reply ONLY with JSON {"answer": string, "confident": boolean, "lang": "id"|"en"|"kh"|"zh"|"other"} ' +
+      '(lang = language of the CUSTOMER message).\n\nCONTEXT:\n' +
       context;
-    const r = await generateJson<{ answer?: string; confident?: boolean }>(
+    const r = await generateJson<{ answer?: string; confident?: boolean; lang?: string }>(
       app,
       system,
       question.slice(0, 1000),
     );
+    const aiLang = (LANGS as readonly string[]).includes(r.lang ?? '') ? (r.lang as Lang) : detected;
     if (!r.answer || r.confident === false)
-      return { text: FALLBACK_REPLY[lang], forward: true, reason: 'unsure' };
-    return { text: r.answer.slice(0, 3500), forward: false, reason: 'ok' };
+      return { text: FALLBACK_REPLY[aiLang], forward: true, reason: 'unsure', lang: aiLang };
+    return { text: r.answer.slice(0, 3500), forward: false, reason: 'ok', lang: aiLang };
   } catch (err) {
     const quota = isQuotaError(err);
     app.log.warn({ err: (err as Error).message, quota }, 'Gemini answer gagal');
-    return { text: FALLBACK_REPLY[lang], forward: true, reason: quota ? 'quota' : 'error' };
+    return fallback(quota ? 'quota' : 'error');
   }
 }
