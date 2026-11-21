@@ -176,6 +176,7 @@ export function OnlineCard({ order: o }: { order: OrderDto }) {
     <article
       className="flex flex-col gap-2.5 rounded-card border-2 border-warn bg-white p-3.5 shadow-card"
       data-testid="online-card"
+      data-order-no={o.displayNo}
     >
       <div className="flex items-center justify-between">
         <SourceBadge channel={o.channel} size="md" />

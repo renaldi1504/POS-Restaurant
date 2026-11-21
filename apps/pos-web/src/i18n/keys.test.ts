@@ -21,6 +21,22 @@ describe('kamus i18n', () => {
     for (const m of src.matchAll(/key: '([a-z]+\.[a-zA-Z]+)'/g)) keys.add(m[1]!);
   }
   it('menemukan kunci', () => expect(keys.size).toBeGreaterThan(200));
+  // SPEC §7: layar dapur & driver lengkap dalam kh & zh (tanpa jatuh ke en/id).
+  const screenKeys = new Set<string>();
+  for (const f of ['pages/kitchen/KitchenPage.tsx', 'pages/driver/DriverPage.tsx']) {
+    const src = readFileSync(join(root, f), 'utf8');
+    for (const m of src.matchAll(/\bt\(\s*['`]([a-zA-Z]+\.[a-zA-Z0-9_.]+)['`]/g)) screenKeys.add(m[1]!);
+  }
+  for (const lng of ['kh', 'zh'] as const) {
+    it(`layar dapur & driver lengkap di ${lng}`, () => {
+      const missing = [...screenKeys].filter(
+        (k) =>
+          !i18n.exists(k, { lng, fallbackLng: false } as never) &&
+          !i18n.exists(`${k}_other`, { lng, fallbackLng: false } as never),
+      );
+      expect(missing).toEqual([]);
+    });
+  }
   for (const lng of ['id', 'en'] as const) {
     it(`semua kunci ada di ${lng}`, () => {
       const missing = [...keys].filter(

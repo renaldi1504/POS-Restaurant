@@ -245,6 +245,9 @@ export const kh: CustomerFacingDict = {
     locked: 'ជាប់សោ។ ព្យាយាមម្តងទៀតម៉ោង {{time}}',
     shiftHint: 'វេន (ព្រឹក/យប់) ជ្រើសពេលបើកវេន',
     openToday: 'បើកថ្ងៃនេះ {{open}} – {{close}}',
+    open24h: 'បើក 24 ម៉ោង',
     chooseUser: 'សូមជ្រើសឈ្មោះរបស់អ្នកជាមុន',
   },
+  cashier: { moreMenu: 'ម៉ឺនុយផ្សេងទៀត' },
+  admin: { optionGroups: 'ក្រុមជម្រើស' },
 };

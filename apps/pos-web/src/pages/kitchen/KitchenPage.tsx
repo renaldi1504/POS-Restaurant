@@ -208,6 +208,7 @@ export default function KitchenPage() {
                 key={o.id}
                 className={cn('flex flex-col overflow-hidden rounded-card bg-white shadow-card', tc.border)}
                 data-testid="kitchen-card"
+                data-order-no={o.displayNo}
                 data-tone={tone}
               >
                 <div className={cn('flex items-center justify-between gap-2 px-3.5 py-2.5', tc.head)}>

@@ -133,6 +133,10 @@ describe('template struk', () => {
     expect(text).toMatch(/Diskon\s+-4\.000/);
     expect(text).toContain('  Paha atas, Tidak pedas');
     expect(text).not.toContain('NOTA SEMENTARA');
+    // Nama meja yang sudah berawalan "Meja" tidak diberi label dobel.
+    const named = renderText(buildReceipt({ ...data, table: 'Meja 1' }, 32), 32).join('\n');
+    expect(named).toContain('MEJA 1');
+    expect(named).not.toContain('MEJA MEJA');
   });
 
   it('nota sementara memuat label & sisa, berbahasa Inggris bila dipilih', () => {

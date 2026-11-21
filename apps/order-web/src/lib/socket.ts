@@ -38,9 +38,26 @@ export function getSocket(): CustomerSocket {
 /** Panggil setelah sesi pelanggan dibuat/berubah (cookie baru → room baru). */
 export function reconnectSocket(): void {
   if (!socket) return void getSocket();
-  socket.disconnect();
+  const s = socket;
   hadDisconnect = true;
-  socket.connect();
+  const cycle = () => {
+    s.disconnect();
+    s.connect();
+  };
+  if (s.connected) return cycle();
+  if (!s.active) return void s.connect();
+  // Handshake sedang berjalan: memutus sekarang memicu peringatan browser
+  // ("WebSocket is closed before the connection is established") → tunggu hasilnya dulu.
+  const onConnect = () => {
+    s.off('connect_error', onError);
+    cycle();
+  };
+  const onError = () => {
+    s.off('connect', onConnect);
+    if (!s.active) s.connect();
+  };
+  s.once('connect', onConnect);
+  s.once('connect_error', onError);
 }
 
 export function useSocketStatus(): { connected: boolean } {

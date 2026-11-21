@@ -264,6 +264,7 @@ export const id = {
     locked: 'Terkunci. Coba lagi jam {{time}}',
     shiftHint: 'Shift (pagi/malam) dipilih saat buka shift, bukan di login',
     openToday: 'Buka hari ini {{open}} – {{close}}',
+    open24h: 'Buka 24 jam',
     chooseUser: 'Pilih nama Anda dulu',
   },
   cashier: {
@@ -273,7 +274,7 @@ export const id = {
     searchMenu: 'Cari menu…',
     tables: 'Denah meja',
     onlineOrders: 'Order online',
-    onlineNew: 'Order website, {{count}} baru',
+    onlineNew: 'Order online, {{count}} baru',
     moreMenu: 'Menu lainnya',
     cart: 'Pesanan',
     emptyCart: 'Belum ada item',

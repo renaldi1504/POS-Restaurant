@@ -126,7 +126,13 @@ export function buildReceipt(data: ReceiptData, cols: number): DocLine[] {
 
   const { date, time } = formatReceiptDate(data.date);
   pre(twoCol(date, time, cols));
-  const right = data.table ? `${t.table} ${data.table}`.toUpperCase() : data.orderNo ? `${data.orderNo}` : '';
+  // Nama meja biasanya sudah memuat kata "Meja"/"Teras" → jangan diawali label lagi ("MEJA MEJA 1").
+  const tableLabel = data.table
+    ? /^(meja|table|teras)\b/i.test(data.table.trim())
+      ? data.table
+      : `${t.table} ${data.table}`
+    : '';
+  const right = tableLabel ? tableLabel.toUpperCase() : data.orderNo ? `${data.orderNo}` : '';
   if (data.cashier || right)
     pre(twoCol(data.cashier ? `${t.cashier}: ${data.cashier}` : '', right, cols), { bold: false });
   if (data.table && data.orderNo) pre(twoCol(`${t.order} ${data.orderNo}`, data.orderTypeLabel ?? '', cols));

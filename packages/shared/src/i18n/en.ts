@@ -244,6 +244,7 @@ export const en: Dict = {
     locked: 'Locked. Try again at {{time}}',
     shiftHint: 'Shift (morning/night) is chosen when opening a shift, not at login',
     openToday: 'Open today {{open}} – {{close}}',
+    open24h: 'Open 24 hours',
     chooseUser: 'Choose your name first',
   },
   cashier: {
@@ -253,7 +254,7 @@ export const en: Dict = {
     searchMenu: 'Search menu…',
     tables: 'Table map',
     onlineOrders: 'Online orders',
-    onlineNew: 'Website orders, {{count}} new',
+    onlineNew: 'Online orders, {{count}} new',
     moreMenu: 'More',
     cart: 'Order',
     emptyCart: 'No items yet',

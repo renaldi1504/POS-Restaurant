@@ -51,9 +51,11 @@ export function StoreHeading() {
             className={cn('truncate text-[13px] font-bold', s.isOpen ? 'text-primary' : 'text-danger')}
             data-testid="open-status"
           >
-            {s.isOpen
-              ? t('web.openUntil', { time: formatHour(s.hours.close, i18n.language) })
-              : t('web.closedOpensAt', { time: formatHour(s.hours.open, i18n.language) })}
+            {s.isOpen && s.hours.open === s.hours.close
+              ? t('web.open24h')
+              : s.isOpen
+                ? t('web.openUntil', { time: formatHour(s.hours.close, i18n.language) })
+                : t('web.closedOpensAt', { time: formatHour(s.hours.open, i18n.language) })}
           </span>
         ) : null}
       </div>

@@ -245,6 +245,9 @@ export const zh: CustomerFacingDict = {
     locked: '已锁定，请在 {{time}} 再试',
     shiftHint: '班次（早/晚）在开班时选择',
     openToday: '今日营业 {{open}} – {{close}}',
+    open24h: '24 小时营业',
     chooseUser: '请先选择您的名字',
   },
+  cashier: { moreMenu: '更多菜单' },
+  admin: { optionGroups: '选项组' },
 };

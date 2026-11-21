@@ -92,7 +92,9 @@ export default function LoginPage() {
           <b className="text-[21px] leading-tight">{name}</b>
           {hours ? (
             <span className="text-sm text-muted">
-              {t('auth.openToday', { open: hours.open, close: hours.close })}
+              {hours.open === hours.close
+                ? t('auth.open24h')
+                : t('auth.openToday', { open: hours.open, close: hours.close })}
             </span>
           ) : null}
         </div>

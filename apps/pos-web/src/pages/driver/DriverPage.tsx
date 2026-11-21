@@ -225,6 +225,7 @@ export default function DriverPage() {
               key={o.id}
               className="flex shrink-0 flex-col overflow-hidden rounded-card bg-white shadow-card"
               data-testid="driver-card"
+              data-order-no={o.displayNo}
             >
               <div className="flex flex-col gap-1.5 px-3.5 py-3">
                 <div className="flex items-center justify-between">
