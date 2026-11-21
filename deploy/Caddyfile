@@ -1,0 +1,54 @@
+# /etc/caddy/Caddyfile — HTTPS otomatis (Let's Encrypt) untuk dua subdomain.
+# Node API (satu proses PM2) di 127.0.0.1:3000.
+
+(api_proxy) {
+	# API, realtime, webhook Telegram & file upload lokal → Node
+	@backend path /api/* /ws /ws/* /tg/* /uploads/*
+	handle @backend {
+		reverse_proxy 127.0.0.1:3000
+	}
+}
+
+(security) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}
+
+# ---------- Staf: kasir, dapur, driver, admin (PWA) ----------
+pos.rmberkat.linkedbite.com {
+	import security
+	import api_proxy
+
+	handle {
+		root * /srv/pos/www/pos
+		# Service worker & index tidak boleh di-cache lama
+		@nocache path /sw.js /index.html /manifest.webmanifest /registerSW.js
+		header @nocache Cache-Control "no-cache"
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+# ---------- Pelanggan: website, Telegram Mini App, QR meja ----------
+order.rmberkat.linkedbite.com {
+	import security
+	import api_proxy
+
+	handle {
+		root * /srv/pos/www/order
+		# Boleh dibuka di dalam Telegram (iframe WebView)
+		header Content-Security-Policy "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org"
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		header /index.html Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}

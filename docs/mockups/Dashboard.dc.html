@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Dashboard harian (HP)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+a{color:#047857}a:hover{color:#065F46}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+
+  <header style="flex-shrink: 0; height: 64px; background: #FFFFFF; border-bottom: 1px solid #EAECF0; display: flex; align-items: center; gap: 10px; padding: 0 12px">
+    <b style="font-size: 19px; flex-grow: 1">Penjualan</b>
+    <button style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 14px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">Hari ini · 21 Nov ▾</button>
+  </header>
+
+  <main style="flex-grow: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)"><span style="font-size: 13px; color: #667085">Total penjualan</span><b style="font-size: 21px">3.420.000 ៛</b><span style="font-size: 12px; color: #667085">2 shift</span></div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)"><span style="font-size: 13px; color: #667085">Jumlah order</span><b style="font-size: 21px">121</b><span style="font-size: 12px; color: #667085">2 batal</span></div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)"><span style="font-size: 13px; color: #667085">Rata-rata / order</span><b style="font-size: 21px">28.300 ៛</b></div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)"><span style="font-size: 13px; color: #667085">Pengeluaran</span><b style="font-size: 21px">210.000 ៛</b></div>
+    </div>
+
+    <section style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b style="font-size: 16px">Penjualan per jam</b>
+      <span style="font-size: 12px; color: #667085">Paling ramai 19.00–21.00 · ribu ៛</span>
+      <div style="height: 150px; display: flex; align-items: flex-end; gap: 3px; border-bottom: 1px solid #D0D5DD">
+        <sc-for list="{{jam}}" as="j" hint-placeholder-count="19">
+          <div style="flex: 1; border-radius: 4px 4px 0 0; background: {{j.color}}; height: {{j.hpx}}"></div>
+        </sc-for>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #667085"><span>08</span><span>12</span><span>16</span><span>20</span><span>00</span><span>02</span></div>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b style="font-size: 16px">Per channel</b>
+      <sc-for list="{{channel}}" as="c" hint-placeholder-count="6">
+        <div style="display: flex; flex-direction: column; gap: 3px">
+          <div style="display: flex; justify-content: space-between; font-size: 14px"><span>{{c.nama}}</span><b>{{c.nilai}}</b></div>
+          <div style="height: 8px; border-radius: 4px; background: #F2F4F7"><div style="height: 8px; border-radius: 4px; background: #047857; width: {{c.pct}}"></div></div>
+        </div>
+      </sc-for>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b style="font-size: 16px; margin-bottom: 4px">Menu terlaris</b>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0"><span>1. Pempek Kapal Selam</span><b>48</b></div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0"><span>2. Ayam Goreng</span><b>41</b></div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0"><span>3. Kopi Susu</span><b>37</b></div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const vals = [60, 95, 120, 180, 260, 210, 120, 90, 110, 150, 230, 340, 380, 300, 220, 170, 120, 40, 25];
+    const max = Math.max(...vals);
+    const jam = vals.map(v => ({ color: v >= 300 ? '#047857' : '#A7F3D0', hpx: Math.round(v / max * 140) + 'px' }));
+    const ch = [['Makan sini', 1250000], ['Grab', 720000], ['Delivery', 610000], ['Bungkus', 520000], ['foodpanda', 320000], ['Telegram', 0]];
+    const fmt = n => n.toLocaleString('id-ID') + ' ៛';
+    const channel = ch.map(([nama, n]) => ({ nama, nilai: fmt(n), pct: Math.round(n / 1250000 * 100) + '%' }));
+    return { jam, channel };
+  }
+}
+</script>
+</body>
+</html>

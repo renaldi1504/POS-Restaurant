@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Pengguna &amp; role (HP)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+a{color:#047857}a:hover{color:#065F46}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; position: relative; overflow: hidden">
+
+  <header style="flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #EAECF0; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <a href="Settings.dc.html" style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #D0D5DD; color: #101828; font-size: 15px; font-weight: 700; display: flex; align-items: center; text-decoration: none">‹ Settings</a>
+      <b style="font-size: 19px">Pengguna &amp; Role</b>
+    </div>
+    <div role="tablist" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #EEF0F3; padding: 4px; border-radius: 12px">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
+        <button role="tab" onClick="{{t.pick}}" style="height: 42px; border-radius: 9px; border: none; background: {{t.bg}}; color: #101828; font-size: 15px; font-weight: {{t.fw}}; box-shadow: {{t.shadow}}">{{t.label}}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; overflow-y: auto; padding: 12px 12px 96px; display: flex; flex-direction: column; gap: 8px; min-height: 0">
+    <sc-if value="{{isUsers}}" hint-placeholder-val="{{true}}">
+      <sc-for list="{{users}}" as="u" hint-placeholder-count="5">
+        <div style="background: #FFFFFF; border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+          <span style="width: 42px; height: 42px; border-radius: 21px; background: {{u.av}}; color: #FFFFFF; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">{{u.ini}}</span>
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <b style="font-size: 16px">{{u.nama}}</b>
+            <span style="font-size: 12px; color: #667085">{{u.ket}}</span>
+          </div>
+          <span style="padding: 4px 8px; border-radius: 7px; background: {{u.roleBg}}; color: {{u.roleFg}}; font-size: 12px; font-weight: 800; flex-shrink: 0">{{u.role}}</span>
+        </div>
+      </sc-for>
+      <span style="font-size: 12px; color: #667085; padding: 4px 2px">Tekan pengguna untuk ubah nama, role, PIN, atau nonaktifkan. Bot Telegram adalah pengguna sistem: tidak bisa login, hanya membuat order online.</span>
+    </sc-if>
+
+    <sc-if value="{{isRoles}}" hint-placeholder-val="{{false}}">
+      <sc-for list="{{roles}}" as="r" hint-placeholder-count="4">
+        <section style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+          <div style="display: flex; justify-content: space-between; align-items: center"><span style="padding: 4px 10px; border-radius: 7px; background: {{r.bg}}; color: {{r.fg}}; font-size: 13px; font-weight: 800">{{r.nama}}</span><span style="font-size: 12px; color: #667085">{{r.jumlah}}</span></div>
+          <sc-for list="{{r.akses}}" as="a" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 14px">
+              <span style="width: 20px; height: 20px; border-radius: 10px; background: {{a.dot}}; color: #FFFFFF; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">{{a.mark}}</span>
+              <span style="color: {{a.color}}">{{a.label}}</span>
+            </div>
+          </sc-for>
+        </section>
+      </sc-for>
+    </sc-if>
+  </main>
+
+  <div style="position: absolute; left: 12px; right: 12px; bottom: 16px">
+    <button style="width: 100%; height: 60px; border-radius: 16px; border: none; background: #047857; color: #FFFFFF; font-size: 18px; font-weight: 800; box-shadow: 0 4px 14px rgba(0,0,0,0.18)">{{addLabel}}</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'users' }; }
+  renderVals() {
+    const tab = this.state.tab;
+    const R = {
+      owner: { nama: 'Admin / Owner', bg: '#101828', fg: '#FFFFFF', av: '#101828' },
+      kasir: { nama: 'Kasir', bg: '#ECFDF5', fg: '#065F46', av: '#047857' },
+      dapur: { nama: 'Dapur', bg: '#FEF0C7', fg: '#93370D', av: '#DC6803' },
+      driver: { nama: 'Driver', bg: '#F2F4F7', fg: '#101828', av: '#667085' },
+      bot: { nama: 'Bot Telegram', bg: '#EFF8FF', fg: '#1849A9', av: '#175CD3' }
+    };
+    const U = [
+      ['[Nama 1]', 'N1', 'owner', 'Aktif · login terakhir hari ini'],
+      ['[Nama 2]', 'N2', 'kasir', 'Aktif · shift pagi'],
+      ['[Nama 3]', 'N3', 'kasir', 'Aktif · shift malam'],
+      ['[Nama 4]', 'N4', 'dapur', 'Aktif'],
+      ['[Nama 5]', 'N5', 'driver', 'Aktif · bahasa: ខ្មែរ'],
+      ['Bot Telegram', 'BT', 'bot', 'Pengguna sistem · tidak bisa login']
+    ];
+    const users = U.map(([nama, ini, k, ket]) => ({ nama, ini, ket, role: R[k].nama, roleBg: R[k].bg, roleFg: R[k].fg, av: R[k].av }));
+    const yes = l => ({ label: l, mark: '✓', dot: '#047857', color: '#101828' });
+    const no = l => ({ label: l, mark: '–', dot: '#D0D5DD', color: '#667085' });
+    const roles = [
+      { ...R.owner, jumlah: '1 pengguna', akses: [yes('Semua fitur kasir & dapur'), yes('Kelola menu, harga, promo'), yes('Dashboard & laporan semua shift'), yes('Settings, pengguna & role'), yes('Batalkan order yang sudah dibayar')] },
+      { ...R.kasir, jumlah: '2 pengguna', akses: [yes('Input order & bayar'), yes('Terima / tolak order online'), yes('Buka shift, pengeluaran, closing'), yes('Tandai menu habis'), no('Batalkan order dibayar (perlu PIN admin)'), no('Kelola menu & settings')] },
+      { ...R.dapur, jumlah: '1 pengguna', akses: [yes('Layar dapur & ubah status masak'), yes('Tandai menu habis'), no('Kasir, uang, dan laporan')] },
+      { ...R.driver, jumlah: '1 pengguna', akses: [yes('Ambil antaran yang sudah siap di dapur'), yes('Lihat peta semua tujuan & navigasi'), yes('Ubah status: diambil, sampai'), no('Kasir, uang, menu, settings')] },
+      { ...R.bot, jumlah: 'sistem', akses: [yes('Buat order online (menunggu diterima kasir)'), yes('Kirim notifikasi status ke pelanggan'), no('Login, uang, menu, settings')] }
+    ];
+    const tabs = [['users', 'Pengguna (6)'], ['roles', 'Role & hak akses']].map(([k, label]) => ({ label, pick: () => this.setState({ tab: k }), bg: k === tab ? '#FFFFFF' : 'transparent', fw: k === tab ? 800 : 600, shadow: k === tab ? '0 1px 3px rgba(0,0,0,0.15)' : 'none' }));
+    return { tabs, users, roles, isUsers: tab === 'users', isRoles: tab === 'roles', addLabel: tab === 'users' ? '+ Tambah pengguna' : '+ Tambah role' };
+  }
+}
+</script>
+</body>
+</html>

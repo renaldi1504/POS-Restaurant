@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Login – pilih pengguna (HP)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+a{color:#047857}a:hover{color:#065F46}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; align-items: center; padding: 28px 20px 24px; gap: 16px; font-size: 16px">
+  <div style="display: flex; align-items: center; gap: 12px; align-self: stretch">
+    <div style="width: 56px; height: 56px; border-radius: 14px; background: #F2F4F7; border: 2px dashed #D0D5DD; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #667085; flex-shrink: 0">LOGO</div>
+    <div style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 21px">[Nama Restoran]</b><span style="font-size: 14px; color: #667085">Buka hari ini 08.00 – 03.00</span></div>
+  </div>
+
+  <b style="font-size: 17px; align-self: flex-start">Siapa yang masuk?</b>
+  <div style="width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: -6px">
+    <sc-for list="{{users}}" as="u" hint-placeholder-count="4">
+      <button onClick="{{u.pick}}" style="height: 68px; border-radius: 14px; border: {{u.border}}; background: {{u.bg}}; color: #101828; display: flex; align-items: center; gap: 8px; padding: 0 10px; text-align: left">
+        <span style="width: 40px; height: 40px; border-radius: 20px; background: {{u.avBg}}; color: #FFFFFF; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">{{u.ini}}</span>
+        <span style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <b style="font-size: 15px">{{u.nama}}</b>
+          <span style="align-self: flex-start; padding: 2px 7px; border-radius: 6px; background: {{u.roleBg}}; color: {{u.roleFg}}; font-size: 11px; font-weight: 800">{{u.role}}</span>
+        </span>
+      </button>
+    </sc-for>
+  </div>
+
+  <b style="font-size: 17px; margin-top: 2px">PIN untuk {{selName}}</b>
+  <div aria-label="2 dari 4 angka diisi" style="display: flex; gap: 16px; align-items: center">
+    <span style="width: 22px; height: 22px; border-radius: 11px; background: #101828"></span>
+    <span style="width: 22px; height: 22px; border-radius: 11px; background: #101828"></span>
+    <span style="width: 18px; height: 18px; border-radius: 11px; border: 1.5px solid #98A2B3"></span>
+    <span style="width: 18px; height: 18px; border-radius: 11px; border: 1.5px solid #98A2B3"></span>
+  </div>
+
+  <div style="width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 28px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">1</button>
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 28px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">2</button>
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 28px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">3</button>
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 28px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">4</button>
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 28px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">5</button>
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 28px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">6</button>
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 28px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">7</button>
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 28px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">8</button>
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 28px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">9</button>
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #B42318; font-size: 17px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">Hapus</button>
+    <button style="height: 64px; border-radius: 16px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 28px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">0</button>
+    <a href="BukaShift.dc.html" style="height: 64px; border-radius: 16px; background: #047857; color: #FFFFFF; font-size: 18px; font-weight: 800; display: flex; align-items: center; justify-content: center; text-decoration: none">Masuk</a>
+  </div>
+  <span style="font-size: 12px; color: #667085; text-align: center">Shift (pagi/malam) dipilih saat buka shift, bukan di login</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: 1 }; }
+  renderVals() {
+    const R = {
+      Owner: { bg: '#101828', fg: '#FFFFFF', av: '#101828' },
+      Kasir: { bg: '#ECFDF5', fg: '#065F46', av: '#047857' },
+      Dapur: { bg: '#FEF0C7', fg: '#93370D', av: '#DC6803' }
+    };
+    const list = [['[Nama 1]', 'N1', 'Owner', 'Admin / Owner'], ['[Nama 2]', 'N2', 'Kasir', 'Kasir'], ['[Nama 3]', 'N3', 'Kasir', 'Kasir'], ['[Nama 4]', 'N4', 'Dapur', 'Dapur']];
+    const sel = this.state.sel;
+    const users = list.map(([nama, ini, k, role], i) => ({
+      nama, ini, role, pick: () => this.setState({ sel: i }),
+      roleBg: R[k].bg, roleFg: R[k].fg, avBg: R[k].av,
+      bg: i === sel ? '#ECFDF5' : '#FFFFFF', border: i === sel ? '2px solid #047857' : '1px solid #D0D5DD'
+    }));
+    return { users, selName: list[sel][0] };
+  }
+}
+</script>
+</body>
+</html>

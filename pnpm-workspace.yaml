@@ -1,0 +1,12 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+onlyBuiltDependencies:
+  - argon2
+  - esbuild
+  - '@tailwindcss/oxide'
+  - msw
+
+ignoredBuiltDependencies:
+  - protobufjs

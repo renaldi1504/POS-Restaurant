@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Kelola menu (HP)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+button,input{font-family:inherit}
+button{cursor:pointer}
+a{color:#047857}a:hover{color:#065F46}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 16px; position: relative; overflow: hidden">
+
+  <header style="flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #EAECF0; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; gap: 10px"><b style="font-size: 20px; flex-grow: 1">Kelola Menu</b><span style="font-size: 13px; color: #667085">1 habis</span></div>
+    <div role="tablist" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #EEF0F3; padding: 4px; border-radius: 12px">
+      <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="2">
+        <button role="tab" onClick="{{tb.pick}}" style="height: 42px; border-radius: 9px; border: none; background: {{tb.bg}}; color: #101828; font-size: 15px; font-weight: {{tb.fw}}; box-shadow: {{tb.shadow}}">{{tb.label}}</button>
+      </sc-for>
+    </div>
+    <input aria-label="Cari" placeholder="{{searchPh}}" style="height: 44px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 14px; font-size: 16px; box-sizing: border-box">
+  </header>
+
+  <main style="flex-grow: 1; overflow-y: auto; padding: 10px 12px 96px; display: flex; flex-direction: column; gap: 8px; min-height: 0">
+    <sc-if value="{{isMenu}}" hint-placeholder-val="{{true}}">
+    <span style="font-size: 13px; color: #667085">Tekan tombol hijau/merah untuk ubah Tersedia ↔ Habis. Tekan nama untuk ubah detail.</span>
+    <sc-for list="{{menu}}" as="m" hint-placeholder-count="8">
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 10px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+        <div style="width: 52px; height: 52px; border-radius: 10px; background: #EEF1F5; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #98A2B3"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"></path></svg></div>
+        <a href="MenuEdit.dc.html" style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; color: #101828; text-decoration: none">
+          <b style="font-size: 16px; line-height: 1.25">{{m.nama}}</b>
+          <span style="font-size: 13px; color: #667085">{{m.kategori}} · {{m.harga}}</span>
+        </a>
+        <sc-if value="{{m.ada}}" hint-placeholder-val="{{true}}">
+          <button style="width: 96px; height: 44px; border-radius: 22px; border: none; background: #047857; color: #FFFFFF; font-size: 14px; font-weight: 800; flex-shrink: 0">Tersedia</button>
+        </sc-if>
+        <sc-if value="{{m.habis}}" hint-placeholder-val="{{false}}">
+          <button style="width: 96px; height: 44px; border-radius: 22px; border: none; background: #B42318; color: #FFFFFF; font-size: 14px; font-weight: 800; flex-shrink: 0">Habis</button>
+        </sc-if>
+      </div>
+    </sc-for>
+    </sc-if>
+    <sc-if value="{{isOpsi}}" hint-placeholder-val="{{false}}">
+      <span style="font-size: 13px; color: #667085">Grup pilihan bisa dipasang ke banyak menu. Pilihan yang habis bisa dimatikan tanpa mematikan menunya.</span>
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="4">
+        <a href="OpsiEdit.dc.html" style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 6px; color: #101828; text-decoration: none; flex-shrink: 0; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><b style="font-size: 16px">{{g.nama}}</b><span style="padding: 3px 8px; border-radius: 7px; background: {{g.badgeBg}}; color: {{g.badgeFg}}; font-size: 12px; font-weight: 800">{{g.rule}}</span></div>
+          <span style="font-size: 13px; color: #475467">{{g.pilihan}}</span>
+          <span style="font-size: 12px; color: #667085">Dipakai di: {{g.dipakai}}</span>
+        </a>
+      </sc-for>
+    </sc-if>
+  </main>
+
+  <div style="position: absolute; left: 12px; right: 12px; bottom: 16px">
+    <a href="{{addHref}}" style="height: 60px; border-radius: 16px; background: #047857; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 14px rgba(0,0,0,0.18)">{{addLabel}}</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'menu' }; }
+  renderVals() {
+    const tab = this.state.tab;
+    const m = (nama, kategori, harga, habis) => ({ nama, kategori, harga, habis: !!habis, ada: !habis });
+    const tabs = [['menu', 'Menu (8)'], ['opsi', 'Grup pilihan (4)']].map(([k, label]) => ({ label, pick: () => this.setState({ tab: k }), bg: k === tab ? '#FFFFFF' : 'transparent', fw: k === tab ? 800 : 600, shadow: k === tab ? '0 1px 3px rgba(16,24,40,0.12)' : 'none' }));
+    const g = (nama, wajib, rule, pilihan, dipakai) => ({ nama, rule, pilihan, dipakai, badgeBg: wajib ? '#FEF3F2' : '#F2F4F7', badgeFg: wajib ? '#B42318' : '#475467' });
+    const groups = [
+      g('Bagian ayam', true, 'Wajib · pilih 1', 'Dada, Paha atas, Paha bawah, Sayap (habis)', 'Ayam Goreng, Ayam Bakar'),
+      g('Level pedas', true, 'Wajib · pilih 1', 'Tidak pedas, Sedang, Pedas, Extra pedas +1.000', 'Ayam Goreng, Ayam Bakar, Pempek'),
+      g('Tambahan', false, 'Opsional · maks 3', 'Nasi +2.000, Telur +3.000, Sambal +1.000, Tahu +2.000', 'Ayam Goreng, Ayam Bakar'),
+      g('Gula & es', false, 'Opsional · pilih 1', 'Normal, Kurang manis, Tanpa gula, Tanpa es', 'Kopi Susu, Es Teh Manis')
+    ];
+    return {
+      tabs, groups, isMenu: tab === 'menu', isOpsi: tab === 'opsi',
+      searchPh: tab === 'menu' ? 'Cari menu…' : 'Cari grup pilihan…',
+      addLabel: tab === 'menu' ? '+ Tambah menu' : '+ Tambah grup pilihan',
+      addHref: tab === 'menu' ? 'MenuEdit.dc.html' : 'OpsiEdit.dc.html',
+      menu: [
+        m('Ayam Goreng', 'Ayam', '10.000 ៛'),
+        m('Ayam Bakar', 'Ayam', '12.000 ៛'),
+        m('Pempek Kapal Selam', 'Pempek', '14.000 ៛'),
+        m('Pempek Lenjer', 'Pempek', '10.000 ៛', true),
+        m('Kopi Susu', 'Minuman', '6.000 ៛'),
+        m('Es Teh Manis', 'Minuman', '4.000 ៛'),
+        m('Nasi Putih', 'Tambahan', '2.000 ៛'),
+        m('Kerupuk', 'Tambahan', '2.000 ៛')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

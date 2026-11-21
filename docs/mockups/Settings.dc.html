@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Settings (HP)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+button,input{font-family:inherit}
+button{cursor:pointer}
+a{color:#047857}a:hover{color:#065F46}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+
+  <header style="flex-shrink: 0; height: 64px; background: #FFFFFF; border-bottom: 1px solid #EAECF0; display: flex; align-items: center; gap: 10px; padding: 0 14px">
+    <b style="font-size: 20px; flex-grow: 1">Settings</b>
+    <span style="font-size: 12px; color: #667085">Admin / Owner</span>
+  </header>
+
+  <main style="flex-grow: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b style="font-size: 16px">Profil &amp; logo</b>
+      <div style="display: flex; gap: 10px; align-items: center">
+        <div style="width: 64px; height: 64px; border-radius: 14px; background: #F2F4F7; border: 2px dashed #D0D5DD; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #667085; flex-shrink: 0">LOGO</div>
+        <button style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 14px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">Upload logo</button>
+      </div>
+      <input aria-label="Nama restoran" value="[Nama Restoran]" style="height: 46px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 12px; font-size: 16px; box-sizing: border-box">
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b style="font-size: 16px">Jam operasional</b>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><label for="buka" style="font-size: 13px; font-weight: 700">Buka</label><input id="buka" value="08.00" style="height: 50px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 12px; font-size: 22px; font-weight: 800; width: 100%; box-sizing: border-box"></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><label for="tutup" style="font-size: 13px; font-weight: 700">Tutup</label><input id="tutup" value="03.00" style="height: 50px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 12px; font-size: 22px; font-weight: 800; width: 100%; box-sizing: border-box"></div>
+      </div>
+      <span style="font-size: 12px; color: #667085">Sama setiap hari · lewat tengah malam tetap 1 hari operasional</span>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b style="font-size: 16px; margin-bottom: 4px">Mata uang &amp; kurs</b>
+      <div style="display: flex; align-items: center; height: 44px; border-bottom: 1px solid #F2F4F7"><b style="flex-grow: 1">Riel ៛</b><span style="padding: 4px 10px; border-radius: 8px; background: #101828; color: #FFFFFF; font-size: 12px; font-weight: 700">Utama</span></div>
+      <div style="display: flex; align-items: center; gap: 8px; height: 52px; border-bottom: 1px solid #F2F4F7"><b style="flex-grow: 1">$1 =</b><input aria-label="Kurs dollar" value="4.100" style="width: 96px; height: 42px; border-radius: 10px; border: 1px solid #D0D5DD; padding: 0 8px; font-size: 16px; font-weight: 700; box-sizing: border-box"><span>៛</span></div>
+      <div style="display: flex; align-items: center; gap: 8px; height: 52px"><b style="flex-grow: 1">Rp1.000 =</b><input aria-label="Kurs rupiah" value="250" style="width: 96px; height: 42px; border-radius: 10px; border: 1px solid #D0D5DD; padding: 0 8px; font-size: 16px; font-weight: 700; box-sizing: border-box"><span>៛</span></div>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b style="font-size: 16px">Bot Telegram &amp; AI</b>
+      <div style="display: flex; justify-content: space-between; align-items: center"><span>Bot Telegram</span><span style="padding: 4px 10px; border-radius: 8px; background: #ECFDF5; color: #065F46; font-size: 13px; font-weight: 800">Terhubung</span></div>
+      <div style="display: flex; justify-content: space-between; align-items: center"><span>AI jawab pertanyaan menu</span><span style="width: 56px; height: 32px; border-radius: 16px; background: #047857; display: flex; justify-content: flex-end; padding: 4px; box-sizing: border-box"><span style="width: 24px; height: 24px; border-radius: 12px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)"></span></span></div>
+      <label for="key" style="font-size: 13px; font-weight: 700">Gemini API key</label>
+      <input id="key" type="password" value="xxxxxxxxxxxx" style="height: 46px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 12px; font-size: 16px; box-sizing: border-box; margin-top: -4px">
+      <span style="font-size: 12px; color: #667085">Kalau AI tidak tahu jawabannya, chat diteruskan ke admin</span>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 4px 12px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <a href="KelolaMeja.dc.html" style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F2F4F7; color: #101828; text-decoration: none; font-weight: 600"><span>Meja &amp; QR (10 meja)</span><span>›</span></a>
+      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F2F4F7; color: #101828; text-decoration: none; font-weight: 600"><span>Driver (3)</span><span>›</span></a>
+      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F2F4F7; color: #101828; text-decoration: none; font-weight: 600"><span>Promo &amp; komisi Grab/foodpanda</span><span>›</span></a>
+      <a href="Users.dc.html" style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F2F4F7; color: #101828; text-decoration: none; font-weight: 600"><span>Pengguna &amp; role</span><span>›</span></a>
+      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F2F4F7; color: #101828; text-decoration: none; font-weight: 600"><span>Printer &amp; suara</span><span>›</span></a>
+      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 52px; color: #101828; text-decoration: none; font-weight: 600"><span>Ukuran teks</span><span>›</span></a>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

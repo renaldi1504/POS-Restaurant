@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Aplikasi driver (HP, 4 bahasa)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans+Khmer:wght@400;600;700&amp;family=Noto+Sans+SC:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans','Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+a{color:#047857}a:hover{color:#065F46}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+
+  <header style="flex-shrink: 0; background: #101828; color: #FFFFFF; padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="flex-grow: 1; display: flex; flex-direction: column"><b style="font-size: 19px">{{t.title}}</b><span style="font-size: 13px; color: #D0D5DD">[Nama driver]</span></div>
+      <span style="padding: 6px 12px; border-radius: 16px; background: #047857; font-size: 13px; font-weight: 800">{{t.online}}</span>
+    </div>
+    <div role="group" aria-label="Bahasa" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+      <sc-for list="{{langs}}" as="l" hint-placeholder-count="4">
+        <button onClick="{{l.pick}}" style="height: 42px; border-radius: 10px; border: 1px solid {{l.border}}; background: {{l.bg}}; color: {{l.fg}}; font-size: 15px; font-weight: 700">{{l.label}}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <div aria-label="Peta tujuan antaran" style="flex-shrink: 0; height: 210px; position: relative; background: #E8EDE4; overflow: hidden">
+    <div style="position: absolute; left: -20px; right: -20px; top: 60px; height: 12px; background: #FFFFFF; transform: rotate(-8deg)"></div>
+    <div style="position: absolute; left: -20px; right: -20px; top: 150px; height: 9px; background: #FFFFFF; transform: rotate(5deg)"></div>
+    <div style="position: absolute; top: -20px; bottom: -20px; left: 110px; width: 11px; background: #FFFFFF; transform: rotate(10deg)"></div>
+    <div style="position: absolute; top: -20px; bottom: -20px; left: 270px; width: 9px; background: #FFFFFF; transform: rotate(-6deg)"></div>
+    <div style="position: absolute; left: 172px; top: 92px; width: 36px; height: 36px; border-radius: 18px; background: #101828; color: #FFFFFF; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25)">{{t.restoShort}}</div>
+    <sc-for list="{{pins}}" as="p" hint-placeholder-count="3">
+      <div style="position: absolute; left: {{p.x}}; top: {{p.y}}; display: flex; flex-direction: column; align-items: center">
+        <span style="background: {{p.bg}}; color: #FFFFFF; font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 8px; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.2)">{{p.no}}</span>
+        <span style="width: 2px; height: 10px; background: {{p.bg}}"></span>
+      </div>
+    </sc-for>
+    <span style="position: absolute; right: 10px; top: 10px; background: #FFFFFFE6; padding: 4px 8px; border-radius: 6px; font-size: 11px; color: #667085">[Peta Google Maps]</span>
+  </div>
+
+  <div role="tablist" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #EEF0F3; padding: 4px; margin: 10px 12px 0; border-radius: 12px">
+    <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="2">
+      <button role="tab" onClick="{{tb.pick}}" style="height: 42px; border-radius: 9px; border: none; background: {{tb.bg}}; color: #101828; font-size: 14px; font-weight: {{tb.fw}}; box-shadow: {{tb.shadow}}">{{tb.label}}</button>
+    </sc-for>
+  </div>
+
+  <main style="flex-grow: 1; overflow-y: auto; padding: 10px 12px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 24px 16px; text-align: center; color: #667085; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">{{t.empty}}</div>
+    </sc-if>
+    <sc-if value="{{showRoute}}" hint-placeholder-val="{{false}}">
+      <a href="#" style="height: 48px; border-radius: 12px; border: 1.5px solid #175CD3; background: #EFF8FF; color: #1849A9; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">{{t.route}}</a>
+    </sc-if>
+    <sc-for list="{{cards}}" as="c" hint-placeholder-count="2">
+      <article style="background: #FFFFFF; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+        <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 8px; border-radius: 8px; background: {{c.pinBg}}; color: #FFFFFF; font-size: 13px; font-weight: 800">{{c.no}}</span><b style="font-size: 15px">{{c.km}}</b></span>
+            <span style="font-size: 12px; font-weight: 700; color: {{c.statusColor}}">{{c.status}}</span>
+          </div>
+          <span style="line-height: 1.4">{{c.addr}}</span>
+          <span style="font-size: 13px; color: #667085">{{t.note}}: {{c.patokan}}</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: {{c.payBg}}; border-radius: 10px; padding: 7px 12px; margin-top: 2px"><span style="font-weight: 700; color: {{c.payFg}}">{{c.payLabel}}</span><b style="font-size: 18px; color: {{c.payFg}}">{{c.amount}}</b></div>
+          <sc-if value="{{c.mine}}" hint-placeholder-val="{{false}}">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 4px">
+              <a href="#" style="height: 48px; border-radius: 12px; background: #175CD3; color: #FFFFFF; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; text-decoration: none">{{t.nav}}</a>
+              <a href="#" style="height: 48px; border-radius: 12px; border: 1px solid #D0D5DD; color: #101828; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; text-decoration: none">{{t.call}}</a>
+            </div>
+          </sc-if>
+        </div>
+        <button onClick="{{c.act}}" style="height: 56px; border: none; background: {{c.btnBg}}; color: #FFFFFF; font-size: 17px; font-weight: 800">{{c.btn}}</button>
+      </article>
+    </sc-for>
+  </main>
+
+  <footer style="flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #EAECF0; padding: 10px 14px 14px; display: flex; justify-content: space-between; align-items: center">
+    <span style="font-size: 13px; color: #667085">{{t.cashOnHand}}</span>
+    <b style="font-size: 18px">{{cashLabel}}</b>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { lang: 'kh', tab: 'ready', mine: ['#9'], done: [] }; }
+  renderVals() {
+    const { lang: L, tab, mine, done } = this.state;
+    const T = {
+      id: { title: 'Antaran', online: 'Siap antar', ready: 'Siap diantar', my: 'Antaran saya', take: 'Ambil antaran ini', nav: 'Navigasi', call: 'Telepon', arrived: 'Sudah sampai', cash: 'Tagih cash', paid: 'Sudah bayar ABA', note: 'Patokan', empty: 'Belum ada antaran', waiting: 'Siap di dapur', going: 'Menuju pelanggan', restoShort: 'Resto', route: 'Buka rute semua tujuan (Google Maps)', cashOnHand: 'Cash yang dibawa (setor ke kasir)', km: 'km' },
+      en: { title: 'Deliveries', online: 'Available', ready: 'Ready to deliver', my: 'My deliveries', take: 'Take this delivery', nav: 'Navigate', call: 'Call', arrived: 'Arrived', cash: 'Collect cash', paid: 'Paid via ABA', note: 'Landmark', empty: 'No deliveries yet', waiting: 'Ready in kitchen', going: 'Heading to customer', restoShort: 'Resto', route: 'Open route to all stops (Google Maps)', cashOnHand: 'Cash on hand (give to cashier)', km: 'km' },
+      kh: { title: 'ការដឹកជញ្ជូន', online: 'ទំនេរ', ready: 'រួចរាល់សម្រាប់ដឹក', my: 'ការដឹករបស់ខ្ញុំ', take: 'យកការដឹកនេះ', nav: 'បើកផែនទី', call: 'ហៅទូរស័ព្ទ', arrived: 'បានដល់ហើយ', cash: 'ប្រមូលលុយ', paid: 'បានបង់តាម ABA', note: 'ចំណាំ', empty: 'មិនទាន់មានការដឹក', waiting: 'រួចរាល់នៅផ្ទះបាយ', going: 'កំពុងទៅអតិថិជន', restoShort: 'ហាង', route: 'បើកផ្លូវទៅគ្រប់កន្លែង (Google Maps)', cashOnHand: 'លុយកាន់ដៃ (ប្រគល់ឲ្យអ្នកគិតលុយ)', km: 'គ.ម' },
+      zh: { title: '外送', online: '可接单', ready: '待配送', my: '我的配送', take: '接这单', nav: '导航', call: '打电话', arrived: '已送达', cash: '收现金', paid: '已用ABA付款', note: '地标', empty: '暂无配送', waiting: '厨房已备好', going: '前往顾客', restoShort: '餐厅', route: '打开全部路线 (Google Maps)', cashOnHand: '手上现金（交给收银）', km: '公里' }
+    };
+    const t = T[L];
+    const O = [
+      { no: '#9', km: 3.1, addr: '[Alamat pelanggan 1]', patokan: '[depan hotel]', cash: 0, x: '286px', y: '28px' },
+      { no: '#12', km: 2.4, addr: '[Alamat pelanggan 2]', patokan: '[pagar biru, lantai 2]', cash: 42000, x: '58px', y: '30px' },
+      { no: '#14', km: 1.1, addr: '[Alamat pelanggan 3]', patokan: '[sebelah minimarket]', cash: 0, x: '120px', y: '150px' },
+      { no: '#15', km: 3.8, addr: '[Alamat pelanggan 4]', patokan: '[gang masuk 50 m]', cash: 18000, x: '300px', y: '140px' }
+    ];
+    const fmt = n => n.toLocaleString('id-ID') + ' ៛';
+    const isMine = o => mine.includes(o.no);
+    const visible = O.filter(o => !done.includes(o.no) && (tab === 'mine' ? isMine(o) : !isMine(o)));
+    const cards = visible.map(o => {
+      const m = isMine(o);
+      return {
+        no: o.no, km: o.km.toString().replace('.', ',') + ' ' + t.km, addr: o.addr, patokan: o.patokan, mine: m,
+        pinBg: m ? '#175CD3' : '#F59E0B',
+        status: m ? t.going : t.waiting, statusColor: m ? '#1849A9' : '#93370D',
+        payBg: o.cash ? '#FEF3F2' : '#ECFDF5', payFg: o.cash ? '#B42318' : '#065F46',
+        payLabel: o.cash ? t.cash : t.paid, amount: fmt(o.cash),
+        btn: m ? t.arrived : t.take, btnBg: m ? '#047857' : '#101828',
+        act: m ? () => this.setState({ done: [...done, o.no], mine: mine.filter(x => x !== o.no) }) : () => this.setState({ mine: [...mine, o.no], tab: 'mine' })
+      };
+    });
+    const pins = visible.map(o => ({ no: o.no, x: o.x, y: o.y, bg: isMine(o) ? '#175CD3' : '#F59E0B' }));
+    const readyCount = O.filter(o => !done.includes(o.no) && !isMine(o)).length;
+    const mineCount = mine.length;
+    const tabs = [['ready', t.ready + ' (' + readyCount + ')'], ['mine', t.my + ' (' + mineCount + ')']].map(([k, label]) => ({ label, pick: () => this.setState({ tab: k }), bg: k === tab ? '#FFFFFF' : 'transparent', fw: k === tab ? 800 : 600, shadow: k === tab ? '0 1px 3px rgba(16,24,40,0.12)' : 'none' }));
+    const langs = [['id', 'ID'], ['en', 'EN'], ['kh', 'ខ្មែរ'], ['zh', '中文']].map(([k, label]) => ({ label, pick: () => this.setState({ lang: k }), bg: k === L ? '#FFFFFF' : '#1D2939', fg: k === L ? '#101828' : '#FFFFFF', border: k === L ? '#FFFFFF' : '#344054' }));
+    const cashOnHand = O.filter(o => done.includes(o.no) || isMine(o)).reduce((a, o) => a + o.cash, 0);
+    return { t, langs, tabs, cards, pins, isEmpty: cards.length === 0, showRoute: tab === 'mine' && mineCount > 1, cashLabel: fmt(cashOnHand) };
+  }
+}
+</script>
+</body>
+</html>

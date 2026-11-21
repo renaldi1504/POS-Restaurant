@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Kasir – denah meja (dine-in)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+a{color:#047857}a:hover{color:#065F46}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+
+  <header style="flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #EAECF0; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <a href="Main.dc.html" style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #D0D5DD; color: #101828; font-size: 15px; font-weight: 700; display: flex; align-items: center; text-decoration: none">‹ Kasir</a>
+      <b style="font-size: 19px; flex-grow: 1">Meja</b>
+      <span style="font-size: 13px; color: #667085">5 / 10 terisi</span>
+    </div>
+    <div role="tablist" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #EEF0F3; padding: 4px; border-radius: 12px">
+      <button role="tab" style="height: 40px; border-radius: 9px; border: none; background: #FFFFFF; color: #101828; font-size: 14px; font-weight: 800; box-shadow: 0 1px 3px rgba(16,24,40,0.12)">Semua</button>
+      <button role="tab" style="height: 40px; border-radius: 9px; border: none; background: transparent; color: #101828; font-size: 14px; font-weight: 600">Dalam</button>
+      <button role="tab" style="height: 40px; border-radius: 9px; border: none; background: transparent; color: #101828; font-size: 14px; font-weight: 600">Teras</button>
+    </div>
+    <div style="display: flex; gap: 10px; font-size: 12px; color: #475467; flex-wrap: wrap">
+      <span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #D0D5DD"></span>Kosong</span>
+      <span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #175CD3"></span>Sedang makan</span>
+      <span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #F59E0B"></span>Minta bill</span>
+      <span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #047857"></span>Pesanan QR baru</span>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; overflow-y: auto; padding: 12px; min-height: 0">
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+      <sc-for list="{{tables}}" as="m" hint-placeholder-count="10">
+        <a href="{{m.href}}" style="min-height: 104px; border-radius: 16px; background: {{m.bg}}; border: {{m.border}}; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; color: #101828; text-decoration: none; box-shadow: 0 1px 2px rgba(16,24,40,0.05)">
+          <div style="display: flex; justify-content: space-between; align-items: center"><b style="font-size: 18px">{{m.nama}}</b><span style="font-size: 12px; color: #667085">{{m.kursi}}</span></div>
+          <span style="font-size: 12px; font-weight: 800; color: {{m.statusColor}}">{{m.status}}</span>
+          <div style="flex-grow: 1"></div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline"><b style="font-size: 16px">{{m.total}}</b><span style="font-size: 12px; color: #667085">{{m.waktu}}</span></div>
+        </a>
+      </sc-for>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const S = {
+      kosong: { status: 'Kosong', statusColor: '#667085', bg: '#FFFFFF', border: '1px solid #EAECF0' },
+      makan: { status: 'Sedang makan', statusColor: '#1849A9', bg: '#EFF8FF', border: '1.5px solid #84ADFF' },
+      bill: { status: 'Minta bill', statusColor: '#93370D', bg: '#FFFAEB', border: '2px solid #F59E0B' },
+      qr: { status: 'Pesanan QR baru · terima', statusColor: '#065F46', bg: '#ECFDF5', border: '2px solid #047857' }
+    };
+    const t = (nama, kursi, s, total, waktu) => ({ nama, kursi: kursi + ' kursi', ...S[s], total: total || '', waktu: waktu || '', href: s === 'kosong' ? 'Main.dc.html' : 'MejaDetail.dc.html' });
+    return {
+      tables: [
+        t('Meja 1', 2, 'kosong'), t('Meja 2', 4, 'makan', '38.000 ៛', '25 mnt'),
+        t('Meja 3', 4, 'kosong'), t('Meja 4', 6, 'bill', '126.000 ៛', '58 mnt'),
+        t('Meja 5', 4, 'makan', '62.000 ៛', '32 mnt'), t('Meja 6', 2, 'qr', '18.000 ៛', 'baru'),
+        t('Teras 1', 4, 'makan', '52.000 ៛', '15 mnt'), t('Teras 2', 4, 'kosong'),
+        t('Teras 3', 6, 'kosong'), t('Teras 4', 2, 'kosong')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

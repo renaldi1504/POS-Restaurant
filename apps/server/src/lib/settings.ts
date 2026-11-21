@@ -1,0 +1,33 @@
+import { DEFAULT_SETTINGS, Settings, type SettingsKey, type SettingsPatch } from '@pos/shared';
+import { sql } from 'drizzle-orm';
+import type { DbOrTx } from '../db/client';
+import { settings as settingsTable } from '../db/schema';
+
+/** Ambil semua settings (digabung dengan default untuk key/field yang belum ada). */
+export async function getSettings(db: DbOrTx): Promise<Settings> {
+  const rows = await db.select().from(settingsTable);
+  const merged: Record<string, unknown> = {};
+  for (const key of Object.keys(DEFAULT_SETTINGS) as SettingsKey[]) {
+    const row = rows.find((r) => r.key === key);
+    merged[key] = { ...DEFAULT_SETTINGS[key], ...((row?.value as object | undefined) ?? {}) };
+  }
+  return Settings.parse(merged);
+}
+
+/** Terapkan patch parsial per bagian; return settings baru. */
+export async function patchSettings(db: DbOrTx, patch: SettingsPatch): Promise<Settings> {
+  const current = await getSettings(db);
+  const next: Record<string, unknown> = { ...current };
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === undefined) continue;
+    next[key] = { ...(current[key as SettingsKey] as object), ...value };
+  }
+  const parsed = Settings.parse(next);
+  for (const key of Object.keys(patch) as SettingsKey[]) {
+    await db
+      .insert(settingsTable)
+      .values({ key, value: parsed[key] })
+      .onConflictDoUpdate({ target: settingsTable.key, set: { value: parsed[key], updatedAt: sql`now()` } });
+  }
+  return parsed;
+}

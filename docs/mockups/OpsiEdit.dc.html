@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Atur grup pilihan (HP)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+button,input{font-family:inherit}
+button{cursor:pointer}
+a{color:#047857}a:hover{color:#065F46}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+
+  <header style="flex-shrink: 0; height: 60px; background: #FFFFFF; border-bottom: 1px solid #EAECF0; display: flex; align-items: center; gap: 10px; padding: 0 12px">
+    <a href="MenuEdit.dc.html" style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #D0D5DD; color: #101828; font-size: 15px; font-weight: 700; display: flex; align-items: center; text-decoration: none">‹ Menu</a>
+    <b style="font-size: 18px">Grup pilihan</b>
+  </header>
+
+  <main style="flex-grow: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <div style="display: flex; justify-content: space-between; align-items: center"><label for="ng" style="font-weight: 700">Nama grup</label><button style="height: 36px; padding: 0 10px; border-radius: 10px; border: none; background: #175CD3; color: #FFFFFF; font-size: 12px; font-weight: 800">Terjemahkan otomatis</button></div>
+      <input id="ng" value="Tambahan" style="height: 48px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 12px; font-size: 17px; font-weight: 700; box-sizing: border-box">
+      <span style="font-size: 12px; color: #667085">EN: Add-ons · ខ្មែរ: បន្ថែម · 中文: 加点</span>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b>Aturan pilih</b>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #EEF0F3; padding: 4px; border-radius: 12px">
+        <button style="height: 42px; border-radius: 9px; border: none; background: transparent; color: #101828; font-size: 14px; font-weight: 600">Wajib dipilih</button>
+        <button style="height: 42px; border-radius: 9px; border: none; background: #FFFFFF; color: #101828; font-size: 14px; font-weight: 800; box-shadow: 0 1px 3px rgba(16,24,40,0.12)">Opsional</button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; font-weight: 700; color: #475467">Minimal pilih</span><div style="display: flex; align-items: center; justify-content: space-between; height: 48px; border: 1px solid #D0D5DD; border-radius: 12px; padding: 0 4px"><button aria-label="Kurangi minimal" style="width: 40px; height: 40px; border: none; background: transparent; font-size: 20px; font-weight: 800">−</button><b style="font-size: 17px">0</b><button aria-label="Tambah minimal" style="width: 40px; height: 40px; border: none; background: transparent; font-size: 20px; font-weight: 800">+</button></div></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; font-weight: 700; color: #475467">Maksimal pilih</span><div style="display: flex; align-items: center; justify-content: space-between; height: 48px; border: 1px solid #D0D5DD; border-radius: 12px; padding: 0 4px"><button aria-label="Kurangi maksimal" style="width: 40px; height: 40px; border: none; background: transparent; font-size: 20px; font-weight: 800">−</button><b style="font-size: 17px">3</b><button aria-label="Tambah maksimal" style="width: 40px; height: 40px; border: none; background: transparent; font-size: 20px; font-weight: 800">+</button></div></div>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 6px 12px; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b style="padding: 6px 0 4px">Pilihan &amp; harga tambahan (៛)</b>
+      <sc-for list="{{opts}}" as="o" hint-placeholder-count="5">
+        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #F2F4F7">
+          <span style="flex-grow: 1; font-weight: 600">{{o.nama}}</span>
+          <input aria-label="Harga {{o.nama}}" value="{{o.harga}}" style="width: 80px; height: 42px; border-radius: 10px; border: 1px solid #D0D5DD; padding: 0 8px; font-size: 15px; font-weight: 700; text-align: right; box-sizing: border-box">
+          <span style="width: 72px; height: 36px; border-radius: 18px; background: {{o.bg}}; color: #FFFFFF; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">{{o.status}}</span>
+        </div>
+      </sc-for>
+      <button style="height: 48px; border: none; background: transparent; color: #047857; font-size: 15px; font-weight: 800; text-align: left">+ Tambah pilihan</button>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b>Dipakai di menu</b>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px">
+        <span style="padding: 8px 12px; border-radius: 18px; background: #ECFDF5; color: #065F46; font-size: 14px; font-weight: 700">Ayam Goreng</span>
+        <span style="padding: 8px 12px; border-radius: 18px; background: #ECFDF5; color: #065F46; font-size: 14px; font-weight: 700">Ayam Bakar</span>
+        <button style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1.5px dashed #98A2B3; background: transparent; color: #101828; font-size: 14px; font-weight: 700">+ Pilih menu</button>
+      </div>
+      <span style="font-size: 12px; color: #667085">Satu grup bisa dipakai banyak menu. Ubah sekali, semua ikut berubah.</span>
+    </section>
+  </main>
+
+  <footer style="flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #EAECF0; padding: 10px 14px 14px">
+    <button style="width: 100%; height: 56px; border-radius: 14px; border: none; background: #047857; color: #FFFFFF; font-size: 18px; font-weight: 800">Simpan grup</button>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const o = (nama, harga, habis) => ({ nama, harga, status: habis ? 'Habis' : 'Tersedia', bg: habis ? '#B42318' : '#047857' });
+    return { opts: [o('Nasi putih', '2.000'), o('Telur ceplok', '3.000'), o('Sambal ekstra', '1.000'), o('Tahu goreng', '2.000'), o('Tempe goreng', '2.000', true)] };
+  }
+}
+</script>
+</body>
+</html>

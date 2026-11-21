@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Layar dapur (HP, 4 bahasa)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans+Khmer:wght@400;600;700&amp;family=Noto+Sans+SC:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans','Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+a{color:#047857}a:hover{color:#065F46}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 17px; overflow: hidden">
+
+  <header style="flex-shrink: 0; background: #101828; color: #FFFFFF; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <span style="font-size: 24px; font-weight: 800">{{t.title}}</span>
+      <span style="font-size: 16px; color: #D0D5DD">{{t.active}}</span>
+      <div style="flex-grow: 1"></div>
+      <button aria-label="{{t.sound}}" style="height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #344054; background: #1D2939; color: #FFFFFF; font-size: 14px; font-weight: 700">{{t.sound}}</button>
+    </div>
+    <div role="group" aria-label="Bahasa" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+      <sc-for list="{{langs}}" as="l" hint-placeholder-count="4">
+        <button onClick="{{l.pick}}" style="height: 44px; border-radius: 10px; border: 2px solid {{l.border}}; background: {{l.bg}}; color: {{l.fg}}; font-size: 16px; font-weight: 700">{{l.label}}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; overflow-y: auto; padding: 12px 12px 24px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
+    <section style="background: #FFFFFF; border: 1px solid #EAECF0; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+      <b style="font-size: 18px">{{t.toMake}}</b>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px">
+        <sc-for list="{{recap}}" as="r" hint-placeholder-count="6">
+          <span style="padding: 6px 10px; border-radius: 10px; background: #F5F6F8; font-size: 15px; font-weight: 600"><b style="font-size: 18px">{{r.q}}</b> × {{r.name}}</span>
+        </sc-for>
+      </div>
+    </section>
+
+    <sc-for list="{{orders}}" as="o" hint-placeholder-count="3">
+      <article style="background: #FFFFFF; border: {{o.border}}; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+        <div style="background: {{o.headBg}}; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px">
+          <span style="font-size: 30px; font-weight: 800">{{o.no}}</span>
+          <span style="font-size: 16px; font-weight: 800; color: {{o.timeColor}}; text-align: right">{{o.time}}</span>
+        </div>
+        <div style="padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 14px; font-weight: 700; color: #667085">{{o.type}}</span>
+          <sc-for list="{{o.items}}" as="it" hint-placeholder-count="2">
+            <div style="display: flex; gap: 8px; align-items: baseline">
+              <b style="font-size: 22px; flex-shrink: 0">{{it.q}}×</b>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 19px; font-weight: 600; line-height: 1.3">{{it.name}}</span>
+                <sc-if value="{{it.hasNote}}" hint-placeholder-val="{{false}}">
+                  <span style="font-size: 15px; color: #B42318; font-weight: 700">{{it.note}}</span>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <button style="height: 58px; border: none; background: {{o.btnBg}}; color: {{o.btnFg}}; font-size: 20px; font-weight: 800">{{o.btn}}</button>
+      </article>
+    </sc-for>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { lang: 'id' }; }
+  renderVals() {
+    const L = this.state.lang;
+    const T = {
+      id: { title: 'Dapur', active: '3 order aktif', sound: 'Bunyi ON', min: 'menit', nu: 'Baru', ready: 'Siap', start: 'Mulai masak', cooking: 'dimasak', dine: 'MAKAN SINI · MEJA 2', grab: 'GRAB', deliv: 'DELIVERY · driver ambil saat Siap', toMake: 'Yang harus dibuat' },
+      en: { title: 'Kitchen', active: '3 active orders', sound: 'Sound ON', min: 'min', nu: 'New', ready: 'Ready', start: 'Start cooking', cooking: 'cooking', dine: 'DINE-IN · TABLE 2', grab: 'GRAB', deliv: 'DELIVERY · driver picks up when Ready', toMake: 'To make' },
+      kh: { title: 'ផ្ទះបាយ', active: 'ការកម្ម៉ង់ 3', sound: 'សំឡេង បើក', min: 'នាទី', nu: 'ថ្មី', ready: 'រួចរាល់', start: 'ចាប់ផ្តើមចម្អិន', cooking: 'កំពុងចម្អិន', dine: 'ញ៉ាំនៅហាង · តុ 2', grab: 'GRAB', deliv: 'ដឹកជញ្ជូន · អ្នកដឹកមកយកពេលរួចរាល់', toMake: 'ត្រូវធ្វើ' },
+      zh: { title: '厨房', active: '3 个订单', sound: '声音 开', min: '分钟', nu: '新', ready: '完成', start: '开始做', cooking: '正在做', dine: '堂食 · 2号桌', grab: 'GRAB', deliv: '外送 · 完成后司机取餐', toMake: '需要做' }
+    };
+    const N = {
+      goreng: { id: 'Ayam Goreng', en: 'Fried Chicken', kh: 'មាន់បំពង', zh: '炸鸡' },
+      bakar: { id: 'Ayam Bakar', en: 'Grilled Chicken', kh: 'មាន់អាំង', zh: '烤鸡' },
+      pks: { id: 'Pempek Kapal Selam', en: 'Pempek with Egg', kh: 'ប៉េមប៉េកពងមាន់', zh: '巨港鱼饼（含蛋）' },
+      nasi: { id: 'Nasi Putih', en: 'Steamed Rice', kh: 'បាយស', zh: '白饭' },
+      esteh: { id: 'Es Teh Manis', en: 'Sweet Iced Tea', kh: 'តែទឹកកកផ្អែម', zh: '冰甜茶' },
+      kopi: { id: 'Kopi Susu', en: 'Milk Coffee', kh: 'កាហ្វេទឹកដោះគោ', zh: '奶咖啡' },
+      nopedas: { id: 'Paha atas · Tidak pedas · + Nasi', en: 'Thigh · Not spicy · + Rice', kh: 'ភ្លៅ · មិនហឹរ · + បាយ', zh: '鸡腿 · 不辣 · + 白饭' },
+      cuko: { id: 'Tambah cuko', en: 'Extra cuko sauce', kh: 'ថែមទឹកជ្រលក់', zh: '多加醋酱' }
+    };
+    const t = T[L];
+    const tone = {
+      late: { border: '2px solid #F04438', headBg: '#FEF3F2', timeColor: '#B42318' },
+      cook: { border: '2px solid #175CD3', headBg: '#EFF8FF', timeColor: '#1849A9' },
+      nu: { border: '2px solid #F59E0B', headBg: '#FFFAEB', timeColor: '#93370D' }
+    };
+    const raw = [
+      { no: '#12', m: 1, tone: 'nu', type: t.deliv, items: [['goreng', 2, 'nopedas'], ['pks', 1, 'cuko'], ['esteh', 2]] },
+      { no: '#10', m: 18, tone: 'late', type: t.dine, items: [['bakar', 1], ['nasi', 2]] },
+      { no: 'GF-482', m: 9, tone: 'cook', type: t.grab, items: [['pks', 2], ['kopi', 1]] }
+    ];
+    const orders = raw.map(o => {
+      const isNew = o.tone === 'nu';
+      return {
+        ...tone[o.tone], no: o.no, type: o.type,
+        time: isNew ? t.nu + ' · ' + o.m + ' ' + t.min : o.m + ' ' + t.min + ' · ' + t.cooking,
+        btn: isNew ? t.start : t.ready, btnBg: isNew ? '#F59E0B' : '#047857', btnFg: isNew ? '#101828' : '#FFFFFF',
+        items: o.items.map(([k, q, n]) => ({ q, name: N[k][L], hasNote: !!n, note: n ? N[n][L] : '' }))
+      };
+    });
+    const tot = {};
+    raw.forEach(o => o.items.forEach(([k, q]) => { tot[k] = (tot[k] || 0) + q; }));
+    const recap = Object.keys(tot).sort((a, b) => tot[b] - tot[a]).map(k => ({ name: N[k][L], q: tot[k] }));
+    const langs = [['id', 'ID'], ['en', 'EN'], ['kh', 'ខ្មែរ'], ['zh', '中文']].map(([k, label]) => ({
+      label, pick: () => this.setState({ lang: k }),
+      bg: k === L ? '#FFFFFF' : '#1D2939', fg: k === L ? '#101828' : '#FFFFFF', border: k === L ? '#FFFFFF' : '#667085'
+    }));
+    return { t, orders, recap, langs };
+  }
+}
+</script>
+</body>
+</html>
