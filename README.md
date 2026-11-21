@@ -74,6 +74,76 @@ pnpm build         # build server (tsup → apps/server/dist) + kedua web (Vite 
 pnpm db:generate   # buat file migrasi setelah mengubah apps/server/src/db/schema.ts
 ```
 
+## Testing & QA
+
+Laporan QA terakhir: [`docs/QA-REPORT.md`](docs/QA-REPORT.md).
+
+### Gerbang lengkap (jalankan sebelum commit/deploy)
+
+```bash
+pnpm install
+pnpm typecheck      # semua paket + folder e2e
+pnpm lint           # ESLint, 0 warning
+pnpm format:check   # Prettier
+pnpm test           # Vitest semua paket (shared → order-web → pos-web → server)
+pnpm build          # build + cek bundel web memakai React produksi (scripts/check-prod-bundle.mjs)
+pnpm test:e2e       # Playwright (jalankan 2x untuk memastikan stabil)
+```
+
+### Per suite
+
+| Suite                        | Perintah                                               | Catatan                                                               |
+| ---------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------- |
+| shared (unit)                | `pnpm --filter @pos/shared test`                       | util uang, business_date, validator opsi, kamus i18n                  |
+| server (integrasi)           | `pnpm --filter @pos/server test`                       | DB `pos_test` di-reset otomatis; file berjalan berurutan              |
+| pos-web (komponen)           | `pnpm --filter @pos/pos-web test`                      | Testing Library + MSW; termasuk cek kunci i18n (kh/zh dapur & driver) |
+| order-web (komponen)         | `pnpm --filter @pos/order-web test`                    | Testing Library + MSW                                                 |
+| e2e (Playwright)             | `pnpm test:e2e`                                        | Chrome sistem `/usr/bin/google-chrome`, viewport HP 390×844           |
+| satu file e2e                | `npx playwright test e2e/03-dine-in-qr.spec.ts`        | project `setup` ikut jalan otomatis                                   |
+| laporan/trace e2e yang gagal | `npx playwright show-trace test-results/<…>/trace.zip` | trace disimpan hanya saat gagal                                       |
+
+**Cara kerja e2e:** Playwright menyalakan sendiri server API (`:3101`, DB `pos_e2e` dibuat/di-reset/di-seed
+setiap run), pos-web (`:5183`) dan order-web (`:5184`). Port tersebut harus kosong. Project `setup`
+(`e2e/global.setup.ts`) menyetel jam buka **24 jam** dan rekening ABA contoh supaya test tidak tergantung jam.
+Font Google & SDK Telegram diblokir di test (tidak bisa dijangkau dari CI).
+
+| File e2e                     | Alur                                                                                          |
+| ---------------------------- | --------------------------------------------------------------------------------------------- |
+| `01-kasir.spec.ts`           | login PIN → buka shift → opsi wajib → bayar cash (uang cepat, kembalian) → dapur masak → siap |
+| `02-delivery.spec.ts`        | order Telegram oleh kasir (HP) → dapur → driver ambil/diambil/sampai; driver kedua ditolak    |
+| `03-dine-in-qr.spec.ts`      | QR Meja 1 → 2 ronde → kasir terima → minta bill → nota sementara → bayar → meja kosong        |
+| `04-telegram-online.spec.ts` | `/tg` + initData palsu → alamat manual → ABA + bukti → kasir terima → status live             |
+| `05-closing.spec.ts`         | modal + jual cash/ABA + pengeluaran → closing: cash seharusnya & selisih wajib catatan        |
+| `06-admin.spec.ts`           | Habis live di web, tambah pilihan berharga, PDF QR meja, user baru login PIN baru             |
+| `07-i18n.spec.ts`            | dapur & driver dalam Khmer                                                                    |
+| `08-permissions.spec.ts`     | dapur/kasir dialihkan dari rute terlarang; API 403/401                                        |
+| `09-overflow.spec.ts`        | tidak ada scroll horizontal / isi terpotong di 360 px (kedua aplikasi)                        |
+| `smoke.spec.ts`              | login, PIN salah, menu web                                                                    |
+
+### Akun e2e / dev (PIN)
+
+Owner `1234` · Kasir Pagi `1111` · Kasir Malam `2222` · Dapur `3333` · Driver `4444` (bahasa kh).
+Test e2e membuat sendiri: driver kedua **Rudi Antar** `4545` dan kasir **Kasir Sore** `5678` (DB e2e di-reset tiap run).
+
+### Membuka mode meja & Telegram di lokal
+
+- **Mode meja (QR):** scan QR di POS → Admin → Meja & QR dengan HP (satu jaringan), atau ambil token lewat SQL
+  `psql postgres://pos:pos@localhost:5432/pos -c "select name, qr_token from dine_tables"` lalu buka
+  `http://localhost:5174/m/<qr_token>`. (Owner juga bisa `GET /api/admin/tables` → field `qrUrl`.)
+- **Mode Telegram (tanpa bot token):** di luar produksi server tidak memeriksa tanda tangan initData, hanya bentuk & umur
+  (≤ 24 jam). Buat URL di konsol browser lalu buka:
+  ```js
+  const init = new URLSearchParams({
+    auth_date: Math.floor(Date.now() / 1000),
+    hash: '0'.repeat(64),
+    user: JSON.stringify({ id: 12345, first_name: 'Sokha', username: 'sokha', language_code: 'id' }),
+  });
+  location.href = 'http://localhost:5174/tg#tgWebAppData=' + encodeURIComponent(init);
+  ```
+  Di produksi (`NODE_ENV=production`) wajib `TELEGRAM_BOT_TOKEN` dan initData harus valid (HMAC).
+- **Mode biasa:** `http://localhost:5174/` (Makan di sini sengaja meminta scan QR meja).
+- **Restoran tutup saat dev?** Ubah jam di Admin → Settings → Jam operasional (atau samakan buka = tutup untuk 24 jam).
+
 ## Arsitektur singkat
 
 - **Kontrak API** ada di `packages/shared/src/api.ts` (registri `endpoints`: method, path, auth, permission, schema Zod). Server mendaftarkan route dengan `defineRoute(app, 'key', handler)`; frontend memanggil `api.call('key', {...})`. Respons divalidasi di kedua sisi.

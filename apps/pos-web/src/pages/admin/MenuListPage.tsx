@@ -93,7 +93,12 @@ export default function MenuListPage() {
             className="h-11 min-w-0 grow rounded-xl border border-line-strong px-3.5"
           />
           {tab === 'menu' ? (
-            <Button variant="outline" size="md" className="h-11 min-h-11 shrink-0" onClick={() => setCatOpen(true)}>
+            <Button
+              variant="outline"
+              size="md"
+              className="h-11 min-h-11 shrink-0"
+              onClick={() => setCatOpen(true)}
+            >
               {t('admin.category')}
             </Button>
           ) : null}
