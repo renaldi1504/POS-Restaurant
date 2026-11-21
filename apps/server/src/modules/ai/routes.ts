@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { defineRoute } from '../../lib/route';
 import { getSettings } from '../../lib/settings';
-import { answerQuestion, translateEntries } from './service';
+import { answerQuestion, currentGeminiModel, translateEntries } from './service';
 
 export default async function aiRoutes(app: FastifyInstance) {
   defineRoute(app, 'adminAiTest', async ({ body }) => {
@@ -10,7 +10,7 @@ export default async function aiRoutes(app: FastifyInstance) {
     return {
       keySet: !!app.config.GEMINI_API_KEY,
       aiEnabled: settings.ai.enabled,
-      model: app.config.GEMINI_MODEL,
+      model: currentGeminiModel(app),
       reason: r.reason,
       lang: r.lang,
       answer: r.text,

@@ -27,15 +27,28 @@ const LANG_NAMES: Record<Lang, string> = {
   zh: 'Simplified Chinese',
 };
 
-async function generateJson<T>(app: FastifyInstance, system: string, prompt: string): Promise<T> {
-  const ai = genai(app);
-  if (!ai) throw new Error('gemini disabled');
-  const res = await ai.models.generateContent({
-    model: app.config.GEMINI_MODEL,
-    contents: prompt,
-    config: { systemInstruction: system, responseMimeType: 'application/json', temperature: 0.2 },
-  });
-  const text = (res.text ?? '').trim();
+/** Cadangan bila model di .env tidak tersedia (dihentikan Google) atau kuota gratisnya habis. */
+export const MODEL_FALLBACKS = [
+  'gemini-3.8-flash',
+  'gemini-3.7-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+];
+let workingModel: string | null = null;
+
+/** Model tidak ada / dihentikan untuk pengguna baru → coba model berikutnya. */
+export function isModelUnavailable(err: unknown): boolean {
+  const e = err as { status?: number; message?: string };
+  return (
+    e?.status === 404 ||
+    /NOT_FOUND|no longer available|is not found|not supported for generateContent|Unknown name/i.test(
+      e?.message ?? '',
+    )
+  );
+}
+
+function parseJson<T>(raw: string | undefined): T {
+  const text = (raw ?? '').trim();
   try {
     return JSON.parse(text) as T;
   } catch {
@@ -44,6 +57,42 @@ async function generateJson<T>(app: FastifyInstance, system: string, prompt: str
     if (m) return JSON.parse(m[0]) as T;
     throw new Error(`Balasan Gemini bukan JSON: ${text.slice(0, 120)}`);
   }
+}
+
+async function generateJson<T>(app: FastifyInstance, system: string, prompt: string): Promise<T> {
+  const ai = genai(app);
+  if (!ai) throw new Error('gemini disabled');
+  const configured = app.config.GEMINI_MODEL;
+  const candidates = [...new Set([workingModel ?? configured, configured, ...MODEL_FALLBACKS])];
+  let lastErr: unknown;
+  for (const model of candidates) {
+    try {
+      const res = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: { systemInstruction: system, responseMimeType: 'application/json', temperature: 0.2 },
+      });
+      if (workingModel !== model) {
+        if (model !== configured)
+          app.log.warn(
+            { configured, using: model },
+            `Model Gemini "${configured}" tidak bisa dipakai, pakai "${model}"`,
+          );
+        workingModel = model;
+      }
+      return parseJson<T>(res.text);
+    } catch (err) {
+      lastErr = err;
+      if (!isModelUnavailable(err) && !isQuotaError(err)) throw err;
+      if (workingModel === model) workingModel = null;
+    }
+  }
+  throw lastErr;
+}
+
+/** Model yang terakhir berhasil (untuk Tes AI). */
+export function currentGeminiModel(app: FastifyInstance): string {
+  return workingModel ?? app.config.GEMINI_MODEL;
 }
 
 export function isQuotaError(err: unknown): boolean {

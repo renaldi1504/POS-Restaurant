@@ -33,7 +33,7 @@ const EnvSchema = z.object({
   TELEGRAM_WEBHOOK_SECRET: optionalString,
 
   GEMINI_API_KEY: optionalString,
-  GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
+  GEMINI_MODEL: z.string().default('gemini-3.8-flash'),
   /** Opsional: email untuk kuota terjemahan gratis MyMemory lebih besar (50.000 karakter/hari). */
   TRANSLATE_EMAIL: optionalString,
   /** Terjemahan gratis MyMemory bila Gemini tidak ada/gagal (matikan di e2e agar tidak ke internet). */

@@ -89,7 +89,7 @@ TELEGRAM_BOT_USERNAME=
 TELEGRAM_ADMIN_CHAT_ID=
 TELEGRAM_WEBHOOK_SECRET=$(openssl rand -hex 24)
 GEMINI_API_KEY=
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.8-flash
 # Opsional: email agar kuota terjemahan gratis (tanpa Gemini) jadi 50.000 karakter/hari
 TRANSLATE_EMAIL=
 GOOGLE_MAPS_API_KEY=
