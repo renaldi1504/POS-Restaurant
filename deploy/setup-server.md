@@ -133,6 +133,7 @@ Selalu membuat backup dulu ke `/srv/pos/backups/` dan meminta konfirmasi `RESET`
 
 ```bash
 bash /srv/pos/app/deploy/reset-db.sh transaksi   # hapus order/shift/pengeluaran/closing/pelanggan; menu, user, meja, pengaturan tetap
+bash /srv/pos/app/deploy/reset-db.sh menu        # hapus menu, kategori, opsi & promo; order lama, user, meja, pengaturan tetap
 bash /srv/pos/app/deploy/reset-db.sh semua       # kosongkan semuanya, isi ulang data awal (PIN default)
 ```
 

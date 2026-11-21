@@ -3,6 +3,7 @@
 #  Reset database produksi — POS Rumah Makan Berkat
 #  Pakai (sebagai root):
 #    bash /srv/pos/app/deploy/reset-db.sh transaksi   # hapus data transaksi, menu/user/setting tetap
+#    bash /srv/pos/app/deploy/reset-db.sh menu        # hapus semua menu, kategori, opsi & promo; lainnya tetap
 #    bash /srv/pos/app/deploy/reset-db.sh semua       # kosongkan SEMUA, isi ulang data awal (PIN default)
 #  Selalu membuat backup dulu di /srv/pos/backups/ (bisa di-restore).
 # =============================================================================
@@ -20,6 +21,12 @@ case "$MODE" in
     echo "            sesi meja, pelanggan & alamat, nomor order harian, log, sesi login."
     echo "  Tetap   : menu, harga, opsi, promo, kategori, meja & QR, user & PIN, role, pengaturan, logo."
     ;;
+  menu)
+    echo "MODE: MENU"
+    echo "  Dihapus : semua menu, harga per channel, kategori, grup opsi & opsinya, promo, foto menu."
+    echo "  Tetap   : order lama (nama & harga item tersimpan di order), shift, closing, laporan,"
+    echo "            meja & QR, user & PIN, pengaturan, logo, QR ABA."
+    ;;
   semua)
     echo "MODE: SEMUA"
     echo "  SEMUA data & foto upload dihapus, lalu diisi ulang data awal:"
@@ -27,7 +34,7 @@ case "$MODE" in
     echo "  QR meja lama TIDAK berlaku lagi (harus cetak ulang)."
     ;;
   *)
-    echo "Pakai: bash $0 transaksi|semua"; exit 1 ;;
+    echo "Pakai: bash $0 transaksi|menu|semua"; exit 1 ;;
 esac
 
 read -r -p "Ketik RESET untuk melanjutkan: " ok </dev/tty
@@ -58,6 +65,25 @@ COMMIT;
 SQL
   # bukti bayar & foto struk pengeluaran ikut dihapus; foto menu & logo tetap
   rm -rf /srv/pos/uploads/private/proofs /srv/pos/uploads/private/expenses 2>/dev/null || true
+elif [[ "$MODE" == "menu" ]]; then
+  echo "==> Hapus menu & kategori"
+  as_pos "psql '$DATABASE_URL' -v ON_ERROR_STOP=1 -q" <<'SQL'
+BEGIN;
+DELETE FROM item_option_groups;
+DELETE FROM item_prices;
+DELETE FROM options;
+DELETE FROM option_groups;
+DELETE FROM menu_items;   -- order_items.item_id otomatis jadi NULL (riwayat order tetap)
+DELETE FROM categories;
+DELETE FROM promos;
+ALTER TABLE options ALTER COLUMN id RESTART WITH 1;
+ALTER TABLE option_groups ALTER COLUMN id RESTART WITH 1;
+ALTER TABLE menu_items ALTER COLUMN id RESTART WITH 1;
+ALTER TABLE categories ALTER COLUMN id RESTART WITH 1;
+ALTER TABLE promos ALTER COLUMN id RESTART WITH 1;
+COMMIT;
+SQL
+  rm -rf /srv/pos/uploads/public/menu 2>/dev/null || true
 else
   echo "==> Kosongkan database"
   as_pos "psql '$DATABASE_URL' -v ON_ERROR_STOP=1 -q -c 'DROP SCHEMA IF EXISTS public CASCADE; DROP SCHEMA IF EXISTS drizzle CASCADE; DROP SCHEMA IF EXISTS pgboss CASCADE; CREATE SCHEMA public;'"
