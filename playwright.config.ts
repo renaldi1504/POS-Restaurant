@@ -34,7 +34,21 @@ export default defineConfig({
     {
       name: 'mobile-chrome',
       dependencies: ['setup'],
+      grepInvert: /@tablet-only/,
       use: { ...devices['Pixel 7'], channel: 'chrome', viewport: { width: 390, height: 844 } },
+    },
+    // Tablet landscape (SKILL §8b): alur kasir, dapur, driver, kelola menu & web pelanggan (tag @tablet).
+    {
+      name: 'tablet',
+      dependencies: ['setup'],
+      grep: /@tablet/,
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+        viewport: { width: 1024, height: 768 },
+        deviceScaleFactor: 1,
+        hasTouch: true,
+      },
     },
   ],
   webServer: [

@@ -3,7 +3,17 @@
  * → dapur Siap → driver melihatnya di "Siap diantar" → Ambil → Sudah diambil → Sudah sampai.
  * Driver kedua tidak bisa mengambil order yang sudah diambil.
  */
-import { apiAs, collectErrors, ensureShift, json, loginUI, newPhone, orderCard, orderNo } from './helpers';
+import {
+  apiAs,
+  collectErrors,
+  ensureShift,
+  json,
+  loginUI,
+  newPhone,
+  openKasirCart,
+  orderCard,
+  orderNo,
+} from './helpers';
 import { expect, test } from './test';
 
 const DRIVER2 = { name: 'Rudi Antar', pin: '4545' };
@@ -29,7 +39,7 @@ test.beforeAll(async () => {
   await owner.dispose();
 });
 
-test('delivery Telegram oleh kasir → dapur → driver ambil & antar; driver lain ditolak', async ({
+test('delivery Telegram oleh kasir → dapur → driver ambil & antar; driver lain ditolak @tablet', async ({
   page,
   browser,
 }) => {
@@ -40,7 +50,7 @@ test('delivery Telegram oleh kasir → dapur → driver ambil & antar; driver la
     .getByRole('dialog', { name: 'Kopi Susu' })
     .getByRole('button', { name: /^Tambah ·/ })
     .click();
-  await page.getByRole('button', { name: /Lihat pesanan/ }).click();
+  await openKasirCart(page);
 
   await page.getByRole('radio', { name: 'Telegram' }).click();
   await expect(page.getByText('Driver tidak perlu dipilih')).toBeVisible();
@@ -101,6 +111,12 @@ test('delivery Telegram oleh kasir → dapur → driver ambil & antar; driver la
   await expect(avail1).toContainText(/Tagih cash\s*6\.000 ៛/);
   await expect(avail2).toBeVisible();
 
+  // Cash yang dibawa bertambah 6.000 (bisa sudah berisi dari run project lain di DB yang sama).
+  const d1Api = await apiAs('Driver');
+  const { cashCarried: cashBefore } = await json<{ cashCarried: number }>(
+    await d1Api.get('/api/driver/mine'),
+  );
+  await d1Api.dispose();
   await avail1.getByRole('button', { name: 'Ambil antaran ini' }).click();
   await expect(d1.getByRole('tab', { name: 'Antaran saya (1)' })).toHaveAttribute('aria-selected', 'true');
   const mine = orderCard(d1, 'driver-card', no);
@@ -120,7 +136,7 @@ test('delivery Telegram oleh kasir → dapur → driver ambil & antar; driver la
   await expect(confirm).toContainText('Cash diterima: 6.000 ៛');
   await confirm.getByRole('button', { name: 'Sudah sampai' }).click();
   await expect(mine).toBeHidden();
-  await expect(d1.getByRole('contentinfo')).toContainText('6.000 ៛');
+  await expect(d1.getByTestId('cash-carried')).toHaveText(`${(cashBefore + 6000).toLocaleString('id-ID')} ៛`);
 
   const after = await json<{ order: { status: string; paymentStatus: string } }>(
     await kasirApi.get(`/api/orders/${order.id}`),

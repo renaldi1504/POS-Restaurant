@@ -18,14 +18,21 @@ describe('kamus i18n', () => {
   for (const f of files(root)) {
     const src = readFileSync(f, 'utf8');
     for (const m of src.matchAll(/\bt\(\s*['`]([a-zA-Z]+\.[a-zA-Z0-9_.]+)['`]/g)) keys.add(m[1]!);
-    for (const m of src.matchAll(/key: '([a-z]+\.[a-zA-Z]+)'/g)) keys.add(m[1]!);
+    for (const m of src.matchAll(/(?:key|short): '([a-z]+\.[a-zA-Z.]+)'/g)) keys.add(m[1]!);
   }
   it('menemukan kunci', () => expect(keys.size).toBeGreaterThan(200));
   // SPEC §7: layar dapur & driver lengkap dalam kh & zh (tanpa jatuh ke en/id).
   const screenKeys = new Set<string>();
-  for (const f of ['pages/kitchen/KitchenPage.tsx', 'pages/driver/DriverPage.tsx']) {
+  // Navigation bar / rail & lembar "Lainnya" juga tampil di layar dapur & driver.
+  for (const f of [
+    'pages/kitchen/KitchenPage.tsx',
+    'pages/driver/DriverPage.tsx',
+    'components/common/NavigationBar.tsx',
+    'lib/navUsage.ts',
+  ]) {
     const src = readFileSync(join(root, f), 'utf8');
     for (const m of src.matchAll(/\bt\(\s*['`]([a-zA-Z]+\.[a-zA-Z0-9_.]+)['`]/g)) screenKeys.add(m[1]!);
+    for (const m of src.matchAll(/(?:key|short): '([a-z]+\.[a-zA-Z.]+)'/g)) screenKeys.add(m[1]!);
   }
   for (const lng of ['kh', 'zh'] as const) {
     it(`layar dapur & driver lengkap di ${lng}`, () => {

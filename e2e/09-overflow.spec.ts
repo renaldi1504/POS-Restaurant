@@ -132,3 +132,42 @@ test('order-web 360 px: tanpa scroll horizontal', async ({ browser }) => {
   expect(await overflowProblems(tgPage), 'overflow /tg').toEqual([]);
   await Promise.all([ctx.close(), tg.close()]);
 });
+
+// Tablet (SKILL §8b): portrait 768, landscape 1024 & 1280 — rail kiri, list-detail, panel keranjang.
+for (const [w, h] of [
+  [768, 1024],
+  [1024, 768],
+  [1280, 800],
+] as const) {
+  test(`pos-web & order-web ${w}×${h}: tanpa scroll horizontal`, async ({ browser }) => {
+    const ctx = await newPhone(browser, w, h);
+    const page = await ctx.newPage();
+    await check(page, `${POS}/login`);
+    await loginUI(page, 'Owner');
+    for (const path of [
+      '/kasir',
+      '/kasir/meja',
+      '/kasir/meja/1',
+      '/kasir/online',
+      '/kasir/riwayat',
+      '/kasir/pengeluaran',
+      '/dapur',
+      '/driver',
+      '/admin',
+      '/admin/menu',
+      '/admin/menu/1',
+      '/admin/opsi/1',
+      '/admin/pengguna',
+      '/admin/settings',
+      '/printer',
+    ])
+      await check(page, `${POS}${path}`);
+    const web = await ctx.newPage();
+    await check(web, `${ORDER}/`);
+    await web.getByRole('button', { name: 'Tambah Kerupuk' }).click();
+    await web.waitForTimeout(200);
+    expect(await overflowProblems(web), `overflow menu + keranjang ${w}`).toEqual([]);
+    await check(web, `${ORDER}/keranjang`);
+    await ctx.close();
+  });
+}

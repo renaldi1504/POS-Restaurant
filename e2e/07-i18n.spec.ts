@@ -25,7 +25,7 @@ test('dapur: pilih ខ្មែរ → judul, tombol & nama menu Khmer', async (
   await expect(page.getByRole('heading', { name: 'ត្រូវធ្វើ' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'ចាប់ផ្តើមចម្អិន' }).first()).toBeVisible();
   await expect(page.getByTestId('kitchen-card').filter({ hasText: 'បាយស' }).first()).toBeVisible();
-  await expect(page.getByRole('button', { name: 'ម៉ឺនុយផ្សេងទៀត' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'ផ្សេងៗ' })).toBeVisible();
   // Pilihan disimpan per perangkat.
   await page.reload();
   await expect(page.getByRole('heading', { name: 'ផ្ទះបាយ', level: 1 })).toBeVisible();
@@ -46,6 +46,6 @@ test('driver: bahasa default dari user (kh), ganti ke ID lalu kembali ke ខ្�
   await page.getByRole('radio', { name: 'ខ្មែរ' }).click();
   await expect(page.getByRole('heading', { name: 'ការដឹកជញ្ជូន', level: 1 })).toBeVisible();
   await expect(page.getByRole('tab', { name: /ការដឹករបស់ខ្ញុំ/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'ម៉ឺនុយផ្សេងទៀត' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'ផ្សេងៗ' })).toBeVisible();
   expect(errors).toEqual([]);
 });

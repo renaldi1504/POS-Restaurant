@@ -5,7 +5,7 @@
 import { collectErrors, loginUI, newPhone, ORDER } from './helpers';
 import { expect, test } from './test';
 
-test('admin: toggle Habis tampil live di web pelanggan', async ({ page, browser }) => {
+test('admin: toggle Habis tampil live di web pelanggan @tablet', async ({ page, browser }) => {
   const errors = collectErrors(page);
   const cctx = await newPhone(browser);
   const web = await cctx.newPage();
@@ -40,7 +40,7 @@ test('admin: tambah pilihan berharga di grup → muncul di lembar opsi web', asy
   await page.getByRole('button', { name: /^Tambahan Opsional/ }).click();
   await expect(page.getByRole('heading', { name: 'Grup pilihan' })).toBeVisible();
   const before = await page.getByRole('textbox', { name: /^Nama pilihan \d+$/ }).count();
-  await page.getByRole('button', { name: '+ Tambah pilihan' }).click();
+  await page.getByRole('button', { name: 'Tambah pilihan' }).click();
   const nameBox = page.getByRole('textbox', { name: `Nama pilihan ${before + 1}` });
   await nameBox.fill('Perkedel');
   await page.getByRole('textbox', { name: 'Harga Perkedel' }).fill('2500');
@@ -88,8 +88,8 @@ test('admin: buat pengguna baru lalu login dengan PIN barunya', async ({ page })
   const errors = collectErrors(page);
   await loginUI(page, 'Owner');
   await page.goto('/admin/pengguna');
-  await page.getByRole('button', { name: '+ Tambah pengguna' }).click();
-  const dlg = page.getByRole('dialog', { name: '+ Tambah pengguna' });
+  await page.getByRole('button', { name: 'Tambah pengguna' }).click();
+  const dlg = page.getByRole('dialog', { name: 'Tambah pengguna' });
   await dlg.getByRole('textbox', { name: 'Nama' }).fill('Kasir Sore');
   await dlg.getByRole('combobox', { name: 'Role' }).selectOption({ label: 'Kasir' });
   await dlg.getByRole('textbox', { name: 'PIN' }).fill('5678');
@@ -98,8 +98,8 @@ test('admin: buat pengguna baru lalu login dengan PIN barunya', async ({ page })
   await expect(page.getByRole('button', { name: /Kasir Sore/ })).toBeVisible();
 
   // Keluar → login sebagai Kasir Sore.
-  await page.getByRole('button', { name: 'Menu lainnya' }).click();
-  await page.getByRole('dialog', { name: 'Menu lainnya' }).getByRole('button', { name: 'Keluar' }).click();
+  await page.getByRole('button', { name: 'Lainnya' }).click();
+  await page.getByRole('dialog', { name: 'Lainnya' }).getByRole('button', { name: 'Keluar' }).click();
   await expect(page).toHaveURL(/\/login/);
   await loginUI(page, 'Kasir Sore', '5678');
   await expect(page).toHaveURL(/\/kasir$/);

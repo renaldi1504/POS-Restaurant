@@ -5,6 +5,7 @@
 import {
   expect,
   request,
+  test as pwTest,
   type APIRequestContext,
   type Browser,
   type BrowserContext,
@@ -32,10 +33,26 @@ export async function blockExternal(ctx: BrowserContext): Promise<void> {
   );
 }
 
-/** Konteks HP baru (390×844) — untuk peran kedua/ketiga dalam satu test. */
-export async function newPhone(browser: Browser, width = 390): Promise<BrowserContext> {
+/** Viewport project yang sedang jalan (HP 390×844 atau tablet 1024×768). */
+function projectViewport(): { width: number; height: number } {
+  try {
+    return pwTest.info().project.use.viewport ?? { width: 390, height: 844 };
+  } catch {
+    return { width: 390, height: 844 };
+  }
+}
+
+/**
+ * Konteks perangkat baru untuk peran kedua/ketiga dalam satu test. Ukuran default = viewport project
+ * (HP di project mobile-chrome, tablet di project tablet).
+ */
+export async function newPhone(
+  browser: Browser,
+  width = projectViewport().width,
+  height = projectViewport().height,
+): Promise<BrowserContext> {
   const ctx = await browser.newContext({
-    viewport: { width, height: 844 },
+    viewport: { width, height },
     deviceScaleFactor: 2,
     isMobile: true,
     hasTouch: true,
@@ -59,6 +76,29 @@ export function collectErrors(page: Page): string[] {
     errors.push(`console: ${text}`);
   });
   return errors;
+}
+
+/** Lebar expanded (tablet landscape ≥ 840px): kasir & web pelanggan memakai panel pesanan di samping. */
+export function isExpanded(page: Page): boolean {
+  return (page.viewportSize()?.width ?? 0) >= 840;
+}
+
+/** Kasir: buka keranjang — HP lewat bar "Lihat pesanan", tablet panel pesanan sudah tampil. */
+export async function openKasirCart(page: Page, summary: RegExp = /Lihat pesanan/): Promise<void> {
+  if (isExpanded(page)) {
+    await expect(page.locator('[data-pane="detail"]').getByTestId('cart-screen')).toBeVisible();
+    return;
+  }
+  await page.getByRole('button', { name: summary }).click();
+}
+
+/** Web pelanggan: buka keranjang — HP lewat bar keranjang, tablet panel keranjang di kanan. */
+export async function openWebCart(page: Page, summary: RegExp): Promise<void> {
+  if (isExpanded(page)) {
+    await expect(page.getByTestId('cart-pane')).toBeVisible();
+    return;
+  }
+  await page.getByRole('button', { name: summary }).click();
 }
 
 export async function loginUI(page: Page, name: SeedUser | string, pin?: string): Promise<void> {

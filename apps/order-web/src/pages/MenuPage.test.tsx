@@ -147,3 +147,24 @@ describe('MenuPage (mode biasa)', () => {
     expect(document.documentElement.lang).toBe('en');
   });
 });
+
+describe('MenuPage (tablet, SKILL §8b)', () => {
+  it('≥ 840px: keranjang jadi panel samping (tanpa bar keranjang), tombol lanjut langsung tersedia', async () => {
+    const user = userEvent.setup();
+    window.innerWidth = 1024;
+    try {
+      await openMenu();
+      const pane = screen.getByTestId('cart-pane');
+      expect(within(pane).getByRole('heading', { name: 'Pesanan Anda' })).toBeInTheDocument();
+      expect(within(pane).getByText('Keranjang masih kosong')).toBeInTheDocument();
+      await user.click(within(screen.getByTestId('item-9')).getByRole('button', { name: 'Tambah Kerupuk' }));
+      expect(screen.queryByTestId('cart-bar')).toBeNull();
+      expect(within(pane).getByRole('group', { name: 'Jumlah Kerupuk' })).toHaveTextContent('1');
+      expect(within(pane).getByRole('button', { name: /Lanjut ke alamat/ })).toBeEnabled();
+      // Tidak ada tombol kembali / "Tambah menu lain" di panel.
+      expect(within(pane).queryByRole('button', { name: 'Kembali ke menu' })).toBeNull();
+    } finally {
+      window.innerWidth = 390;
+    }
+  });
+});

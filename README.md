@@ -1,7 +1,7 @@
 # POS Rumah Makan Berkat
 
 Sistem POS restoran (Sihanoukville, Kamboja): kasir, meja & QR, dapur, driver, admin, website pelanggan, Telegram Mini App.
-Spesifikasi lengkap: [`docs/SPEC.md`](docs/SPEC.md) · desain: [`docs/mockups/`](docs/mockups) (buka di browser).
+Spesifikasi lengkap: [`docs/SPEC.md`](docs/SPEC.md) · desain: Material Design 3 ([`.claude/skills/material-design-pos/SKILL.md`](.claude/skills/material-design-pos/SKILL.md)) · alur layar: [`docs/mockups/`](docs/mockups) (buka di browser).
 
 ## Struktur monorepo (pnpm workspaces)
 
@@ -72,6 +72,7 @@ pnpm test          # Vitest: shared (unit), server (integrasi, DB pos_test di-re
 pnpm test:e2e      # Playwright + Chrome sistem; DB pos_e2e dibuat/di-reset otomatis
 pnpm build         # build server (tsup → apps/server/dist) + kedua web (Vite → dist/)
 pnpm db:generate   # buat file migrasi setelah mengubah apps/server/src/db/schema.ts
+pnpm icons:font    # buat ulang subset font Material Symbols setelah menambah ikon di packages/shared/src/icons.ts (Python + fonttools + brotli)
 ```
 
 ## Testing & QA
@@ -102,23 +103,27 @@ pnpm test:e2e       # Playwright (jalankan 2x untuk memastikan stabil)
 | satu file e2e                | `npx playwright test e2e/03-dine-in-qr.spec.ts`        | project `setup` ikut jalan otomatis                                   |
 | laporan/trace e2e yang gagal | `npx playwright show-trace test-results/<…>/trace.zip` | trace disimpan hanya saat gagal                                       |
 
+**Project:** `mobile-chrome` (HP 390×844, semua test) dan `tablet` (1024×768 landscape, test bertanda `@tablet`:
+kasir, dapur, driver, kelola menu, web pelanggan Telegram, rail & list-detail).
+
 **Cara kerja e2e:** Playwright menyalakan sendiri server API (`:3101`, DB `pos_e2e` dibuat/di-reset/di-seed
 setiap run), pos-web (`:5183`) dan order-web (`:5184`). Port tersebut harus kosong. Project `setup`
 (`e2e/global.setup.ts`) menyetel jam buka **24 jam** dan rekening ABA contoh supaya test tidak tergantung jam.
 Font Google & SDK Telegram diblokir di test (tidak bisa dijangkau dari CI).
 
-| File e2e                     | Alur                                                                                          |
-| ---------------------------- | --------------------------------------------------------------------------------------------- |
-| `01-kasir.spec.ts`           | login PIN → buka shift → opsi wajib → bayar cash (uang cepat, kembalian) → dapur masak → siap |
-| `02-delivery.spec.ts`        | order Telegram oleh kasir (HP) → dapur → driver ambil/diambil/sampai; driver kedua ditolak    |
-| `03-dine-in-qr.spec.ts`      | QR Meja 1 → 2 ronde → kasir terima → minta bill → nota sementara → bayar → meja kosong        |
-| `04-telegram-online.spec.ts` | `/tg` + initData palsu → alamat manual → ABA + bukti → kasir terima → status live             |
-| `05-closing.spec.ts`         | modal + jual cash/ABA + pengeluaran → closing: cash seharusnya & selisih wajib catatan        |
-| `06-admin.spec.ts`           | Habis live di web, tambah pilihan berharga, PDF QR meja, user baru login PIN baru             |
-| `07-i18n.spec.ts`            | dapur & driver dalam Khmer                                                                    |
-| `08-permissions.spec.ts`     | dapur/kasir dialihkan dari rute terlarang; API 403/401                                        |
-| `09-overflow.spec.ts`        | tidak ada scroll horizontal / isi terpotong di 360 px (kedua aplikasi)                        |
-| `smoke.spec.ts`              | login, PIN salah, menu web                                                                    |
+| File e2e                     | Alur                                                                                                                  |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `01-kasir.spec.ts`           | login PIN → buka shift → opsi wajib → bayar cash (uang cepat, kembalian) → dapur masak → siap                         |
+| `02-delivery.spec.ts`        | order Telegram oleh kasir (HP) → dapur → driver ambil/diambil/sampai; driver kedua ditolak                            |
+| `03-dine-in-qr.spec.ts`      | QR Meja 1 → 2 ronde → kasir terima → minta bill → nota sementara → bayar → meja kosong                                |
+| `04-telegram-online.spec.ts` | `/tg` + initData palsu → alamat manual → ABA + bukti → kasir terima → status live                                     |
+| `05-closing.spec.ts`         | modal + jual cash/ABA + pengeluaran → closing: cash seharusnya & selisih wajib catatan                                |
+| `06-admin.spec.ts`           | Habis live di web, tambah pilihan berharga, PDF QR meja, user baru login PIN baru                                     |
+| `07-i18n.spec.ts`            | dapur & driver dalam Khmer                                                                                            |
+| `08-permissions.spec.ts`     | dapur/kasir dialihkan dari rute terlarang; API 403/401                                                                |
+| `09-overflow.spec.ts`        | tidak ada scroll horizontal / isi terpotong di 360 px, 768, 1024 & 1280 px (kedua aplikasi)                           |
+| `10-navigation.spec.ts`      | bottom nav adaptif kasir (navigasi, pin, tersembunyi saat bayar), dapur tanpa tujuan admin; rail + list-detail tablet |
+| `smoke.spec.ts`              | login, PIN salah, menu web                                                                                            |
 
 ### Akun e2e / dev (PIN)
 
@@ -175,4 +180,7 @@ Langkah lengkap: [`deploy/setup-server.md`](deploy/setup-server.md).
 - `api.call('ordersList', { query: { active: 'true' } })` — tipe input/output dari kontrak; error = `ApiError` (`errorMessage(err, t)`).
 - Realtime: `useSocketEvent('order.created', handler)`, `useResync((since) => ...)`, `useSocketStatus()` di `src/lib/socket.ts`.
 - Teks UI dari kamus `@pos/shared/i18n` (`t('kitchen.startCooking')`); nama menu `tl(item.name, lang)`.
-- Komponen dasar di `src/components/ui` (Button, Card, Segmented, Chip, Stepper, Badge, HeaderBar, BottomBar, Sheet, MoneyText, LangSwitcher, EmptyState, Toast).
+- Desain Material 3: token & kelas di `packages/shared/styles/m3.css` (nama M3: `bg-primary`, `text-on-surface-variant`, `text-title-large`, `rounded-md`, `shadow-e1`, `state-layer`; breakpoint `medium:` 600px, `expanded:` 840px, `large:` 1200px). Tanpa hex di komponen.
+- Komponen dasar M3 di `src/components/ui` (Icon, Button, IconButton, Card, Segmented, Chip, Stepper, Badge, HeaderBar, BottomBar, Sheet, Switch, LinearProgress, MoneyText, LangSwitcher, EmptyState, Toast/snackbar); pos-web juga `components/common` (Screen/AppFrame, TopBar, Tabs, Section, ListRow, ExtendedFab, ListDetail, NavigationBar/Rail + lembar Lainnya, form outlined).
+- Ikon: `<Icon name="point_of_sale" filled />` (nama dicek TypeScript & test terhadap daftar subset font).
+- Navigasi staf adaptif: `src/lib/navUsage.ts` (logika murni + test), `src/lib/navSession.ts` (urutan stabil per login), `useWindowSizeClass()` di `src/lib/windowSize.ts` (bar bawah di HP, rail di tablet).

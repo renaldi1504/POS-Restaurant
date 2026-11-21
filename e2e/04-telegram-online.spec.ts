@@ -13,6 +13,7 @@ import {
   newPhone,
   ORDER,
   orderCard,
+  openWebCart,
   orderNo,
 } from './helpers';
 import { expect, test } from './test';
@@ -25,7 +26,7 @@ test.beforeAll(async () => {
   await kasir.dispose();
 });
 
-test('Telegram: order delivery + bukti ABA → kasir terima → status live Diterima', async ({
+test('Telegram: order delivery + bukti ABA → kasir terima → status live Diterima @tablet', async ({
   page,
   browser,
 }) => {
@@ -47,7 +48,7 @@ test('Telegram: order delivery + bukti ABA → kasir terima → status live Dite
     .getByRole('dialog', { name: 'Kopi Hitam' })
     .getByRole('button', { name: /^Tambah ·/ })
     .click();
-  await page.getByRole('button', { name: /1 item · 5\.000 ៛/ }).click();
+  await openWebCart(page, /1 item · 5\.000 ៛/);
 
   // Delivery terkunci: tidak ada pilihan Ambil sendiri / Makan di sini.
   await expect(page.getByRole('heading', { name: 'Pesanan Anda' })).toBeVisible();

@@ -13,6 +13,8 @@ vi.mock('socket.io-client', async () => {
 });
 
 beforeAll(() => {
+  // Ukuran HP (compact) secara default; test tablet mengubah innerWidth sendiri.
+  Object.defineProperty(window, 'innerWidth', { value: 390, writable: true, configurable: true });
   server.listen({ onUnhandledRequest: 'error' });
   // API client memakai URL relatif ('/api/...'); fetch Node butuh URL absolut.
   const patched = globalThis.fetch;

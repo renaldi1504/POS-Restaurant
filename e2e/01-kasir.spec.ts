@@ -2,7 +2,16 @@
  * Alur kasir: login PIN → buka shift → menu dengan opsi wajib → Pesanan → bayar cash KHR (uang cepat)
  * → kembalian → order muncul di layar Dapur (konteks kedua) → Mulai masak → Siap.
  */
-import { apiAs, closeShiftIfOpen, collectErrors, loginUI, newPhone, orderCard, orderNo } from './helpers';
+import {
+  apiAs,
+  closeShiftIfOpen,
+  collectErrors,
+  loginUI,
+  newPhone,
+  openKasirCart,
+  orderCard,
+  orderNo,
+} from './helpers';
 import { expect, test } from './test';
 
 test.beforeAll(async () => {
@@ -12,7 +21,10 @@ test.beforeAll(async () => {
   await kasir.dispose();
 });
 
-test('kasir: buka shift → order dengan opsi → bayar cash → dapur masak → siap', async ({ page, browser }) => {
+test('kasir: buka shift → order dengan opsi → bayar cash → dapur masak → siap @tablet', async ({
+  page,
+  browser,
+}) => {
   const errors = collectErrors(page);
   await loginUI(page, 'Kasir Pagi');
   await expect(page).toHaveURL(/\/kasir$/);
@@ -45,7 +57,7 @@ test('kasir: buka shift → order dengan opsi → bayar cash → dapur masak →
   await expect(page.getByRole('button', { name: /Ayam Goreng, .*1 di keranjang/ })).toBeVisible();
 
   // Pesanan (keranjang) → Bayar.
-  await page.getByRole('button', { name: /2 item 15\.000 ៛ Lihat pesanan/ }).click();
+  await openKasirCart(page, /2 item 15\.000 ៛ Lihat pesanan/);
   await expect(page.getByTestId('cart-screen')).toBeVisible();
   await expect(page.getByText('Paha · Extra pedas')).toBeVisible();
   await expect(page.getByText('Kurang gula')).toBeVisible();

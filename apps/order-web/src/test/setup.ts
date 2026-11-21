@@ -8,6 +8,8 @@ vi.mock('../lib/socket', () => import('./socketMock'));
 
 // fetch relatif ('/api/...') → absolut terhadap origin jsdom (Node fetch butuh URL lengkap).
 beforeAll(() => {
+  // Ukuran HP (compact) secara default; test tablet mengubah innerWidth sendiri.
+  Object.defineProperty(window, 'innerWidth', { value: 390, writable: true, configurable: true });
   server.listen({ onUnhandledRequest: 'error' });
   const patched = globalThis.fetch;
   globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) =>
