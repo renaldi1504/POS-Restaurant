@@ -129,3 +129,24 @@ describe('order events routing', () => {
     await closeAllShifts(app);
   });
 });
+
+describe('shutdown', () => {
+  it('app.close() selesai walau masih ada socket terhubung; klien menerima "io server disconnect"', async () => {
+    const other = await createTestApp();
+    await other.listen({ port: 0, host: '127.0.0.1' });
+    const url = `http://127.0.0.1:${(other.server.address() as AddressInfo).port}`;
+    const s = ioc(url, { path: '/ws', transports: ['websocket'], reconnection: false });
+    await new Promise<void>((resolve, reject) => {
+      s.on('connect', () => resolve());
+      s.on('connect_error', reject);
+    });
+    const reason = new Promise<string>((resolve) => s.on('disconnect', (r) => resolve(r)));
+    const closed = await Promise.race([
+      other.close().then(() => 'closed'),
+      new Promise((r) => setTimeout(() => r('timeout'), 5000)),
+    ]);
+    expect(closed).toBe('closed');
+    expect(await reason).toBe('io server disconnect');
+    s.close();
+  });
+});

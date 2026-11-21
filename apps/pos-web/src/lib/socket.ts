@@ -53,9 +53,12 @@ export function getSocket(): AppSocket {
       resyncListeners.forEach((l) => l(since));
     }
   });
-  socket.on('disconnect', () => {
+  socket.on('disconnect', (reason) => {
     hadDisconnect = true;
     setConnected(false);
+    // Server dimatikan dengan rapi (restart/deploy) → socket.io TIDAK menyambung ulang otomatis
+    // untuk alasan ini; sambung lagi sendiri (manager lalu mencoba ulang sampai server hidup).
+    if (reason === 'io server disconnect') window.setTimeout(() => socket?.connect(), 1000);
   });
   socket.onAny((_event, payload: unknown) => {
     const at = (payload as { at?: unknown } | null)?.at;

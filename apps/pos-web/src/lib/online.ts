@@ -66,7 +66,8 @@ export function useOnlineAlarm(onOnlineScreen: boolean): { count: number; unseen
   const orders = pending.data ?? [];
   const unseen = orders.filter((o) => !seen.has(o.id)).length;
   useSocketEvent('order.created', (p) => {
-    if (isOnlineOrder(p.order) && p.order.status === 'pending_accept' && onOnlineScreen) beep('order');
+    // Bunyi langsung saat order baru masuk (alarm berulang di bawah tetap jalan sampai dilihat).
+    if (isOnlineOrder(p.order) && p.order.status === 'pending_accept') beep('order');
   });
   useRepeatingAlarm(unseen > 0 && !onOnlineScreen, 'order', 4000);
   return { count: orders.length, unseen };

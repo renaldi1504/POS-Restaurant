@@ -6,7 +6,7 @@ import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ClosingPreview, DailyReport, OrderDto } from '@pos/shared';
 import { call, createTestApp, loginAs } from './helpers';
-import { closeAllShifts, menuIds, openShift, resetSettings, tableByName, type MenuIds } from './fixtures';
+import { closeAllShifts, menuIds, openShift, resetSettings, type MenuIds } from './fixtures';
 
 let app: FastifyInstance;
 let kasir: string;
@@ -185,8 +185,15 @@ describe('gabung meja', () => {
     const before = ClosingPreview.parse((await call(app, 'closingPreview', { cookie: kasir })).json());
     const reportBefore = DailyReport.parse((await call(app, 'reportsDaily', { cookie: owner })).json());
 
-    const a = await tableByName(app, 'Teras 3');
-    const b = await tableByName(app, 'Teras 4');
+    // Pakai dua meja yang sedang kosong (file test lain berbagi DB & urutan file bisa berubah).
+    const free = (
+      (await call(app, 'tablesList', { cookie: kasir })).json().tables as {
+        id: number;
+        status: string;
+      }[]
+    ).filter((t) => t.status === 'empty');
+    expect(free.length).toBeGreaterThanOrEqual(2);
+    const [a, b] = [free[free.length - 2]!, free[free.length - 1]!];
     for (const t of [a, b]) {
       const r = await call(app, 'orderCreate', {
         cookie: kasir,

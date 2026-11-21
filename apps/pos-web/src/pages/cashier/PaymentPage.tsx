@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
 import {
   convertMoney,
   formatMoney,
@@ -296,6 +296,8 @@ export default function PaymentPage() {
     onError: (e) => toast.error(errorMessage(e, t)),
   });
 
+  // Tanpa order & meja (mis. URL /kasir/bayar dibuka langsung) → kembali ke layar kasir.
+  if (!orderId && !tableId) return <Navigate to="/kasir" replace />;
   if (orderQ.isLoading || billQ.isLoading) return <LoadingBlock />;
   const err = orderQ.error ?? billQ.error;
   const title = order

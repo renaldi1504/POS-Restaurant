@@ -13,9 +13,17 @@ function audio(): AudioContext | null {
     window.AudioContext ??
     (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!Ctor) return null;
+  // Sebelum ada interaksi pengguna, browser memblokir audio (dan memberi peringatan bila AudioContext
+  // dibuat). Lewati dulu; alarm berulang akan berbunyi setelah layar disentuh.
+  if (!ctx && !userActivated()) return null;
   if (!ctx) ctx = new Ctor();
   if (ctx.state === 'suspended') void ctx.resume().catch(() => undefined);
   return ctx;
+}
+
+function userActivated(): boolean {
+  const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+  return ua ? ua.hasBeenActive : true;
 }
 
 /** Buka kunci audio setelah interaksi pertama (kebijakan autoplay browser). */

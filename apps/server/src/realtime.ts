@@ -105,6 +105,13 @@ export function createRealtime(app: FastifyInstance): Realtime {
     },
   );
 
+  // Putuskan socket SEBELUM server HTTP ditutup: koneksi WebSocket yang masih terbuka membuat
+  // server.close() menunggu selamanya (shutdown SIGTERM menggantung). Klien menerima
+  // "io server disconnect" lalu menyambung ulang sendiri setelah server hidup lagi.
+  app.addHook('preClose', async () => {
+    io.disconnectSockets(true);
+    io.engine.close();
+  });
   app.addHook('onClose', async () => {
     await new Promise<void>((resolve) => io.close(() => resolve()));
   });
