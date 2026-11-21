@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Tablet – Website pemesanan (grid menu + keranjang)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Noto+Sans+Khmer:wght@400;500;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0..1,0&amp;icon_names=add,block,check,chevron_right,circle,close,remove,restaurant,search,search_off,send,shopping_bag,star,two_wheeler&amp;display=block">
+<style>
+body{margin:0;font-family:Roboto,'Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;flex-shrink:0;overflow:hidden;user-select:none}
+.ms.f{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.num{font-variant-numeric:tabular-nums}
+a{color:#006C4E}a:hover{color:#00513A}
+</style>
+</helmet>
+<div style="width: 1024px; height: 768px; box-sizing: border-box; background: #F8FAF6; color: #191C1A; display: flex; flex-direction: column; font-size: 17px; line-height: 24px; overflow: hidden">
+  <header style="flex-shrink: 0; background: #F8FAF6; padding: 8px 24px 8px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 24px; align-items: center; border-bottom: 1px solid #BFC9C2">
+    <div style="display: flex; align-items: center; gap: 8px; min-height: 48px">
+      <div style="width: 36px; height: 36px; border-radius: 10px; background: #E1E3DF; border: 2px dashed #BFC9C2; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; color: #404944; flex-shrink: 0">LOGO</div>
+      <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+        <span style="font-size: 17px; line-height: 22px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">[Nama Restoran]</span>
+        <span style="display: flex; align-items: center; gap: 4px; font-size: 14px; line-height: 18px; color: #006C4E; font-weight: 500"><span class="ms f" aria-hidden="true" style="font-size: 10px">circle</span>{{t.open}}</span>
+      </div>
+      <div role="group" aria-label="Bahasa" style="display: flex; height: 44px; border: 1px solid #707973; border-radius: 22px; overflow: hidden; flex-shrink: 0">
+        <sc-for list="{{langs}}" as="l" hint-placeholder-count="4">
+          <button onClick="{{l.pick}}" aria-pressed="{{l.on}}" style="min-width: 36px; padding: 0 3px; border: none; border-left: {{l.sep}}; background: {{l.bg}}; color: {{l.fg}}; font-size: 14px; font-weight: 500">{{l.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+    <sc-if value="{{fromTg}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; align-items: center; gap: 10px; background: #C1E8FC; border-radius: 12px; padding: 8px 12px">
+        <span style="width: 36px; height: 36px; border-radius: 18px; background: #3E6374; color: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><span class="ms f" aria-hidden="true" style="font-size: 20px">send</span></span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0; color: #001F2A"><span style="font-size: 15px; line-height: 20px; font-weight: 500">{{t.tgHello}} [Nama Telegram]</span><span style="font-size: 14px; line-height: 18px">{{t.tgNote}}</span></span>
+        <span style="display: flex; align-items: center; gap: 4px; padding: 0 10px 0 6px; height: 32px; border-radius: 8px; background: #3E6374; color: #FFFFFF; font-size: 14px; font-weight: 500; flex-shrink: 0; white-space: nowrap"><span class="ms" aria-hidden="true" style="font-size: 18px">two_wheeler</span>{{t.delivery}}</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{atMeja}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; align-items: center; gap: 10px; background: #87F8C9; border-radius: 12px; padding: 8px 12px; color: #002115">
+        <span style="width: 40px; height: 40px; border-radius: 12px; background: #006C4E; color: #FFFFFF; font-size: 18px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0">5</span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><span style="font-size: 15px; line-height: 20px; font-weight: 500">{{t.tableName}}</span><span style="font-size: 14px; line-height: 18px">{{t.tableBill}}</span></span>
+        <button style="height: 40px; padding: 0 12px; border-radius: 20px; border: 1px solid #006C4E; background: transparent; color: #002115; font-size: 14px; font-weight: 500; flex-shrink: 0; white-space: nowrap">{{t.askBill}}</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{notTg}}" hint-placeholder-val="{{false}}">
+    <div role="group" aria-label="Tipe pesanan" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); height: 48px; border: 1px solid #707973; border-radius: 24px; overflow: hidden">
+      <sc-for list="{{types}}" as="ty" hint-placeholder-count="3">
+        <button onClick="{{ty.pick}}" aria-pressed="{{ty.on}}" style="border: none; border-left: {{ty.sep}}; background: {{ty.bg}}; color: {{ty.fg}}; font-size: 15px; font-weight: 500; padding: 0 4px">{{ty.label}}</button>
+      </sc-for>
+    </div>
+    </sc-if>
+    </header>
+  <div style="flex: 1 1 0; min-height: 0; display: flex">
+  <section style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column">
+  <main style="flex-grow: 1; overflow-y: auto; padding: 12px 24px 24px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
+    <div style="position: relative; display: flex; align-items: center; height: 56px; border-radius: 28px; background: #E7E9E5; flex-shrink: 0">
+      <span class="ms" aria-hidden="true" style="position: absolute; left: 16px; color: #404944">search</span>
+      <label for="cari" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">{{t.search}}</label>
+      <input id="cari" value="{{q}}" onChange="{{onSearch}}" placeholder="{{t.search}}" style="width: 100%; height: 56px; border-radius: 28px; border: none; background: transparent; padding: 0 52px 0 52px; font-size: 17px; color: #191C1A; box-sizing: border-box; outline: none">
+      <sc-if value="{{hasQ}}" hint-placeholder-val="{{false}}">
+        <button onClick="{{clearQ}}" aria-label="Hapus pencarian" style="position: absolute; right: 4px; top: 4px; width: 48px; height: 48px; border-radius: 24px; border: none; background: transparent; color: #404944; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true">close</span></button>
+      </sc-if>
+    </div>
+    <nav aria-label="Kategori" style="display: flex; gap: 8px; flex-wrap: wrap; padding: 0 0 4px; flex-shrink: 0">
+      <sc-for list="{{cats}}" as="c" hint-placeholder-count="6">
+        <button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="height: 40px; padding: 0 14px 0 {{c.padL}}; border-radius: 8px; border: {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 14px; font-weight: 500; flex-shrink: 0; white-space: nowrap; display: flex; align-items: center; gap: 6px; box-sizing: border-box"><sc-if value="{{c.on}}" hint-placeholder-val="{{false}}"><span class="ms" aria-hidden="true" style="font-size: 18px">check</span></sc-if>{{c.label}} <span style="opacity: 0.75">{{c.n}}</span></button>
+      </sc-for>
+    </nav>
+  
+    <sc-if value="{{showHome}}" hint-placeholder-val="{{true}}">
+      <h2 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 500">{{t.best}}</h2>
+      <div style="display: flex; gap: 12px; overflow-x: auto; margin: -4px -24px 0; padding: 4px 24px 6px; flex-shrink: 0">
+        <sc-for list="{{bestList}}" as="m" hint-placeholder-count="3">
+          <div style="width: 156px; flex-shrink: 0; background: #FFFFFF; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15)">
+            <div style="height: 96px; background: #E1E3DF; position: relative; display: flex; align-items: center; justify-content: center; color: #707973"><span class="ms" aria-hidden="true" style="font-size: 32px">restaurant</span><span style="position: absolute; left: 8px; top: 8px; display: flex; align-items: center; gap: 2px; padding: 0 8px 0 4px; border-radius: 8px; background: #FFDF9F; color: #261A00; font-size: 13px; line-height: 22px; font-weight: 500"><span class="ms f" aria-hidden="true" style="font-size: 14px">star</span>{{t.bestTag}}</span></div>
+            <div style="padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1">
+              <span style="font-size: 16px; line-height: 22px; font-weight: 500">{{m.name}}</span>
+              <span class="num" style="font-size: 16px; line-height: 22px; color: #404944">{{m.price}}</span>
+              <div style="flex-grow: 1; min-height: 4px"></div>
+              <sc-if value="{{m.canAdd}}" hint-placeholder-val="{{true}}">
+                <button onClick="{{m.inc}}" style="height: 44px; border-radius: 22px; border: none; background: #CFE9DA; color: #092017; font-size: 15px; font-weight: 500">+ {{t.add}}</button>
+              </sc-if>
+              <sc-if value="{{m.inCart}}" hint-placeholder-val="{{false}}">
+                <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; border-radius: 22px; background: #006C4E; color: #FFFFFF">
+                  <button onClick="{{m.dec}}" aria-label="Kurangi" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: transparent; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true">remove</span></button>
+                  <span class="num" style="font-weight: 500">{{m.qty}}</span>
+                  <button onClick="{{m.inc}}" aria-label="Tambah" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: transparent; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true">add</span></button>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showCount}}" hint-placeholder-val="{{false}}">
+      <span style="font-size: 16px; color: #404944">{{countLabel}}</span>
+    </sc-if>
+    <sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+      <div style="background: #ECEEEB; border-radius: 12px; padding: 28px 16px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px"><span class="ms" aria-hidden="true" style="font-size: 36px; color: #707973">search_off</span><span style="font-size: 18px; font-weight: 500">{{t.empty}}</span><span style="font-size: 16px; color: #404944">{{t.emptyHint}}</span></div>
+    </sc-if>
+
+    <sc-for list="{{sections}}" as="s" hint-placeholder-count="2">
+      <sc-if value="{{s.hasTitle}}" hint-placeholder-val="{{true}}">
+        <h2 style="margin: 6px 0 0; font-size: 18px; line-height: 24px; font-weight: 500">{{s.title}}</h2>
+      </sc-if>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{s.items}}" as="m" hint-placeholder-count="3">
+        <div style="background: #FFFFFF; border-radius: 12px; padding: 0 0 12px; display: flex; flex-direction: column; gap: 8px; align-items: stretch; overflow: hidden; opacity: {{m.op}}; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15)">
+          <div style="height: 96px; background: #E1E3DF; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #707973"><span class="ms" aria-hidden="true" style="font-size: 28px">restaurant</span></div>
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 0 12px">
+            <span style="font-size: 18px; line-height: 24px; font-weight: 500">{{m.name}}</span>
+            <sc-if value="{{m.best}}" hint-placeholder-val="{{false}}"><span style="align-self: flex-start; display: flex; align-items: center; gap: 2px; padding: 0 8px 0 4px; border-radius: 8px; background: #FFDF9F; color: #261A00; font-size: 13px; line-height: 22px; font-weight: 500"><span class="ms f" aria-hidden="true" style="font-size: 14px">star</span>{{t.bestTag}}</span></sc-if>
+            <span class="num" style="font-size: 17px; line-height: 24px; color: #404944">{{m.price}}</span>
+          </div>
+          <sc-if value="{{m.canAdd}}" hint-placeholder-val="{{true}}">
+            <button onClick="{{m.inc}}" style="height: 48px; margin: 0 12px; padding: 0 16px; border-radius: 24px; border: none; background: #CFE9DA; color: #092017; font-size: 15px; font-weight: 500; flex-shrink: 0; white-space: nowrap">+ {{t.add}}</button>
+          </sc-if>
+          <sc-if value="{{m.inCart}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 2px; height: 48px; margin: 0 12px; border-radius: 24px; background: #006C4E; flex-shrink: 0">
+              <button onClick="{{m.dec}}" aria-label="Kurangi" style="width: 44px; height: 48px; border-radius: 24px; border: none; background: transparent; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true">remove</span></button>
+              <span class="num" style="color: #FFFFFF; min-width: 16px; text-align: center; font-weight: 500">{{m.qty}}</span>
+              <button onClick="{{m.inc}}" aria-label="Tambah" style="width: 44px; height: 48px; border-radius: 24px; border: none; background: transparent; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true">add</span></button>
+            </div>
+          </sc-if>
+          <sc-if value="{{m.habis}}" hint-placeholder-val="{{false}}">
+            <span style="display: flex; align-items: center; justify-content: center; gap: 4px; height: 40px; margin: 0 12px; border-radius: 8px; background: #FFDAD6; color: #410002; font-size: 14px; font-weight: 500; flex-shrink: 0; white-space: nowrap"><span class="ms" aria-hidden="true" style="font-size: 18px">block</span>{{t.soldout}}</span>
+          </sc-if>
+        </div>
+      </sc-for>
+      </div>
+    </sc-for>
+  </main>
+  </section>
+  <aside aria-label="Keranjang" style="flex: 0 0 340px; display: flex; flex-direction: column; background: #F2F4F0; border-left: 1px solid #BFC9C2">
+    <div style="flex-shrink: 0; padding: 16px 16px 8px; display: flex; align-items: center; gap: 8px"><span class="ms f" aria-hidden="true" style="color: #006C4E">shopping_bag</span><h2 class="num" style="margin: 0; font-size: 22px; line-height: 28px; font-weight: 500">{{cartTitle}}</h2></div>
+    <div style="flex-grow: 1; overflow-y: auto; min-height: 0; padding: 0 16px; display: flex; flex-direction: column; gap: 8px">
+      <sc-if value="{{noCart}}" hint-placeholder-val="{{false}}"><div style="background: #ECEEEB; border-radius: 12px; padding: 20px 12px; text-align: center; color: #404944"><span class="ms" aria-hidden="true" style="font-size: 32px">shopping_bag</span></div></sc-if>
+      <sc-for list="{{cartItems}}" as="c" hint-placeholder-count="2">
+        <div style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; justify-content: space-between; gap: 8px"><span style="font-size: 17px; line-height: 22px; font-weight: 500">{{c.name}}</span><span class="num" style="font-weight: 500; flex-shrink: 0">{{c.line}}</span></div>
+          <div style="display: flex; align-items: center; gap: 4px; align-self: flex-start; height: 48px; border-radius: 24px; border: 1px solid #707973; padding: 0 2px; box-sizing: border-box">
+            <button onClick="{{c.dec}}" aria-label="Kurangi" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: transparent; color: #191C1A; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true">remove</span></button>
+            <span class="num" style="min-width: 18px; text-align: center; font-weight: 500">{{c.qty}}</span>
+            <button onClick="{{c.inc}}" aria-label="Tambah" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: transparent; color: #191C1A; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true">add</span></button>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="flex-shrink: 0; padding: 12px 16px 16px; background: #ECEEEB; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 18px; font-weight: 500">Total</span><span class="num" style="font-size: 28px; line-height: 36px">{{totalLabel}}</span></div>
+      <a href="{{cartHref}}" style="height: 56px; border-radius: 28px; background: #006C4E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 17px; font-weight: 500; text-decoration: none">{{viewLabel}}<span class="ms" aria-hidden="true">chevron_right</span></a>
+    </div>
+  </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["telegram","meja","biasa"],"default":"telegram"},"$preview":{"width":1024,"height":768}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { lang: 'id', type: 'delivery', q: '', cat: 'all', cart: { goreng: 2, pks: 1 } }; }
+  renderVals() {
+    const { lang: L, q, cat, cart } = this.state;
+    const mode = this.props.mode ?? 'telegram';
+    const fromTg = mode === 'telegram', atMeja = mode === 'meja';
+    const type = fromTg ? 'delivery' : atMeja ? 'dine' : this.state.type;
+    const T = {
+      id: { tableName: 'Meja 5 · Makan di sini', tableBill: 'Tagihan meja: 62.000 ៛ · bayar di kasir', askBill: 'Minta bill', sendKitchen: 'Kirim ke dapur', tgHello: 'Halo,', tgNote: 'Masuk otomatis via Telegram · alamat tersimpan siap', open: 'Buka · sampai 03.00', search: 'Cari menu, mis. ayam, kopi', best: 'Paling laris', bestTag: 'Terlaris', add: 'Tambah', soldout: 'Habis', results: 'hasil untuk', empty: 'Menu tidak ditemukan', emptyHint: 'Coba kata lain atau pilih kategori', view: 'Lihat pesanan', items: 'item', delivery: 'Delivery', pickup: 'Ambil sendiri', dine: 'Makan di sini' },
+      en: { tableName: 'Table 5 · Dine-in', tableBill: 'Table bill: 62,000 ៛ · pay at cashier', askBill: 'Ask for bill', sendKitchen: 'Send to kitchen', tgHello: 'Hi,', tgNote: 'Signed in via Telegram · saved addresses ready', open: 'Open · until 03:00', search: 'Search menu, e.g. chicken', best: 'Best sellers', bestTag: 'Best seller', add: 'Add', soldout: 'Sold out', results: 'results for', empty: 'No menu found', emptyHint: 'Try another word or category', view: 'View order', items: 'items', delivery: 'Delivery', pickup: 'Pickup', dine: 'Dine-in' },
+      kh: { tableName: 'តុ 5 · ញ៉ាំនៅហាង', tableBill: 'វិក្កយបត្រតុ: 62.000 ៛', askBill: 'សុំវិក្កយបត្រ', sendKitchen: 'ផ្ញើទៅផ្ទះបាយ', tgHello: 'សួស្តី', tgNote: 'ចូលតាម Telegram ស្វ័យប្រវត្តិ', open: 'បើក · ដល់ម៉ោង 03:00', search: 'ស្វែងរកម្ហូប', best: 'លក់ដាច់ជាងគេ', bestTag: 'លក់ដាច់', add: 'បន្ថែម', soldout: 'អស់', results: 'លទ្ធផលសម្រាប់', empty: 'រកមិនឃើញ', emptyHint: 'សាកពាក្យផ្សេង', view: 'មើលការកម្ម៉ង់', items: 'មុខ', delivery: 'ដឹកជញ្ជូន', pickup: 'មកយក', dine: 'ញ៉ាំនៅហាង' },
+      zh: { tableName: '5号桌 · 堂食', tableBill: '本桌账单：62.000 ៛ · 到收银台付款', askBill: '请求结账', sendKitchen: '发送到厨房', tgHello: '你好，', tgNote: '已通过 Telegram 自动登录', open: '营业中 · 至 03:00', search: '搜索菜品', best: '热销', bestTag: '热销', add: '加入', soldout: '售完', results: '个结果：', empty: '没有找到', emptyHint: '换个关键词试试', view: '查看订单', items: '件', delivery: '外送', pickup: '自取', dine: '堂食' }
+    };
+    const t = T[L];
+    const C = {
+      all: { id: 'Semua', en: 'All', kh: 'ទាំងអស់', zh: '全部' },
+      best: { id: 'Terlaris', en: 'Best sellers', kh: 'លក់ដាច់', zh: '热销' },
+      ayam: { id: 'Ayam', en: 'Chicken', kh: 'មាន់', zh: '鸡肉' },
+      pempek: { id: 'Pempek', en: 'Pempek', kh: 'ប៉េមប៉េក', zh: '鱼饼' },
+      minum: { id: 'Minuman', en: 'Drinks', kh: 'ភេសជ្ជៈ', zh: '饮料' },
+      extra: { id: 'Tambahan', en: 'Extras', kh: 'បន្ថែម', zh: '加点' }
+    };
+    const M = [
+      { k: 'goreng', c: 'ayam', p: 10000, best: true, n: { id: 'Ayam Goreng', en: 'Fried Chicken', kh: 'មាន់បំពង', zh: '炸鸡' } },
+      { k: 'bakar', c: 'ayam', p: 12000, n: { id: 'Ayam Bakar', en: 'Grilled Chicken', kh: 'មាន់អាំង', zh: '烤鸡' } },
+      { k: 'pks', c: 'pempek', p: 14000, best: true, n: { id: 'Pempek Kapal Selam', en: 'Pempek with Egg', kh: 'ប៉េមប៉េកពងមាន់', zh: '巨港鱼饼（含蛋）' } },
+      { k: 'lenjer', c: 'pempek', p: 10000, habis: true, n: { id: 'Pempek Lenjer', en: 'Long Pempek', kh: 'ប៉េមប៉េកវែង', zh: '长条鱼饼' } },
+      { k: 'kopi', c: 'minum', p: 6000, best: true, n: { id: 'Kopi Susu', en: 'Milk Coffee', kh: 'កាហ្វេទឹកដោះគោ', zh: '奶咖啡' } },
+      { k: 'hitam', c: 'minum', p: 5000, n: { id: 'Kopi Hitam', en: 'Black Coffee', kh: 'កាហ្វេខ្មៅ', zh: '黑咖啡' } },
+      { k: 'esteh', c: 'minum', p: 4000, n: { id: 'Es Teh Manis', en: 'Sweet Iced Tea', kh: 'តែទឹកកកផ្អែម', zh: '冰甜茶' } },
+      { k: 'nasi', c: 'extra', p: 2000, n: { id: 'Nasi Putih', en: 'Steamed Rice', kh: 'បាយស', zh: '白饭' } },
+      { k: 'kerupuk', c: 'extra', p: 2000, n: { id: 'Kerupuk', en: 'Crackers', kh: 'នំក្រៀប', zh: '虾片' } }
+    ];
+    const fmt = n => n.toLocaleString('id-ID') + ' ៛';
+    const setQty = (k, d) => { const c = { ...this.state.cart }; c[k] = Math.max(0, (c[k] || 0) + d); if (!c[k]) delete c[k]; this.setState({ cart: c }); };
+    const view = m => {
+      const qty = cart[m.k] || 0;
+      return { name: m.n[L], price: fmt(m.p), best: !!m.best, habis: !!m.habis, qty, inCart: !m.habis && qty > 0, canAdd: !m.habis && qty === 0, op: m.habis ? 0.55 : 1, inc: () => setQty(m.k, 1), dec: () => setQty(m.k, -1) };
+    };
+    const ql = q.trim().toLowerCase();
+    const match = m => !ql || Object.values(m.n).some(s => s.toLowerCase().includes(ql)) || Object.values(C[m.c]).some(s => s.toLowerCase().includes(ql));
+    const order = (a, b) => (a.habis ? 1 : 0) - (b.habis ? 1 : 0);
+    const inCat = m => cat === 'all' || (cat === 'best' ? m.best : m.c === cat);
+    const filtered = M.filter(m => match(m) && inCat(m)).sort(order);
+    const showHome = !ql && cat === 'all';
+    let sections;
+    if (showHome) {
+      sections = ['ayam', 'pempek', 'minum', 'extra'].map(c => ({ hasTitle: true, title: C[c][L], items: M.filter(m => m.c === c).sort(order).map(view) }));
+    } else {
+      sections = [{ hasTitle: false, title: '', items: filtered.map(view) }];
+    }
+    const cats = Object.keys(C).map(k => {
+      const on = k === cat;
+      const n = k === 'all' ? M.length : M.filter(m => (k === 'best' ? m.best : m.c === k)).length;
+      return { label: C[k][L], n, on, pick: () => this.setState({ cat: k }), bg: on ? '#CFE9DA' : 'transparent', fg: on ? '#092017' : '#404944', border: on ? 'none' : '1px solid #707973', padL: on ? '8px' : '14px' };
+    });
+    const langs = [['id', 'ID'], ['en', 'EN'], ['kh', 'ខ្មែរ'], ['zh', '中文']].map(([k, label], i) => ({ label, pick: () => this.setState({ lang: k }), on: k === L ? 'true' : 'false', bg: k === L ? '#CFE9DA' : 'transparent', fg: k === L ? '#092017' : '#191C1A', sep: i ? '1px solid #707973' : 'none' }));
+    const types = ['delivery', 'pickup', 'dine'].map((k, i) => ({ label: t[k], pick: () => this.setState({ type: k }), on: k === type ? 'true' : 'false', bg: k === type ? '#CFE9DA' : 'transparent', fg: k === type ? '#092017' : '#191C1A', sep: i ? '1px solid #707973' : 'none' }));
+    const count = Object.values(cart).reduce((a, b) => a + b, 0);
+    const total = M.reduce((a, m) => a + (cart[m.k] || 0) * m.p, 0);
+    return {
+      t, q, hasQ: !!q, langs, types, fromTg, atMeja, notTg: mode === 'biasa', cartHref: atMeja ? '#' : 'Alamat.dc.html', cats, sections, showHome,
+      bestList: M.filter(m => m.best).map(view),
+      showCount: !!ql, countLabel: L === 'zh' ? filtered.length + ' ' + t.results + ' “' + q + '”' : filtered.length + ' ' + t.results + ' “' + q + '”',
+      empty: filtered.length === 0,
+      onSearch: e => this.setState({ q: e.target.value }),
+      clearQ: () => this.setState({ q: '' }),
+      cartItems: M.filter(m => cart[m.k]).map(m => ({ name: m.n[L], qty: cart[m.k], line: fmt(cart[m.k] * m.p), inc: () => setQty(m.k, 1), dec: () => setQty(m.k, -1) })), totalLabel: fmt(total), cartTitle: count + ' ' + t.items,
+      hasCart: count > 0, noCart: count === 0, viewLabel: atMeja ? t.sendKitchen : t.view, cartLabel: count + ' ' + t.items + ' · ' + fmt(total)
+    };
+  }
+}
+</script>
+</body>
+</html>

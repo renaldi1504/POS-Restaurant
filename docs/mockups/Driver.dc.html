@@ -2,87 +2,99 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>Aplikasi driver (HP, 4 bahasa)</title>
+<title>Aplikasi driver (ambil order, peta, 4 bahasa)</title>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans+Khmer:wght@400;600;700&amp;family=Noto+Sans+SC:wght@400;600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Noto+Sans+Khmer:wght@400;500;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0..1,0&amp;icon_names=add_task,apps,call,check_circle,history,map,navigation,payments,route,two_wheeler,verified,where_to_vote&amp;display=block">
 <style>
-body{margin:0;font-family:'Plus Jakarta Sans','Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif}
-button{font-family:inherit;cursor:pointer}
-a{color:#047857}a:hover{color:#065F46}
+body{margin:0;font-family:Roboto,'Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;flex-shrink:0;overflow:hidden;user-select:none}
+.ms.f{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.num{font-variant-numeric:tabular-nums}
+a{color:#006C4E}a:hover{color:#00513A}
 </style>
 </helmet>
-<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F8FAF6; color: #191C1A; display: flex; flex-direction: column; font-size: 17px; line-height: 24px; overflow: hidden">
 
-  <header style="flex-shrink: 0; background: #101828; color: #FFFFFF; padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 10px">
-    <div style="display: flex; align-items: center; gap: 10px">
-      <div style="flex-grow: 1; display: flex; flex-direction: column"><b style="font-size: 19px">{{t.title}}</b><span style="font-size: 13px; color: #D0D5DD">[Nama driver]</span></div>
-      <span style="padding: 6px 12px; border-radius: 16px; background: #047857; font-size: 13px; font-weight: 800">{{t.online}}</span>
+  <header style="flex-shrink: 0; background: #F8FAF6; padding: 6px 16px 8px; display: flex; flex-direction: column; gap: 8px">
+    <div style="display: flex; align-items: center; gap: 10px; min-height: 52px">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><h1 style="margin: 0; font-size: 24px; line-height: 32px; font-weight: 400">{{t.title}}</h1><span style="font-size: 14px; line-height: 18px; color: #404944">[Nama driver]</span></div>
+      <span style="display: flex; align-items: center; gap: 4px; height: 36px; padding: 0 12px 0 8px; border-radius: 8px; background: #87F8C9; color: #002115; font-size: 14px; font-weight: 500; flex-shrink: 0; white-space: nowrap"><span class="ms f" aria-hidden="true" style="font-size: 18px">check_circle</span>{{t.online}}</span>
     </div>
-    <div role="group" aria-label="Bahasa" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+    <div role="group" aria-label="Bahasa" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); height: 48px; border: 1px solid #707973; border-radius: 24px; overflow: hidden">
       <sc-for list="{{langs}}" as="l" hint-placeholder-count="4">
-        <button onClick="{{l.pick}}" style="height: 42px; border-radius: 10px; border: 1px solid {{l.border}}; background: {{l.bg}}; color: {{l.fg}}; font-size: 15px; font-weight: 700">{{l.label}}</button>
+        <button onClick="{{l.pick}}" aria-pressed="{{l.on}}" style="border: none; border-left: {{l.sep}}; background: {{l.bg}}; color: {{l.fg}}; font-size: 16px; font-weight: 500">{{l.label}}</button>
       </sc-for>
     </div>
   </header>
 
-  <div aria-label="Peta tujuan antaran" style="flex-shrink: 0; height: 210px; position: relative; background: #E8EDE4; overflow: hidden">
-    <div style="position: absolute; left: -20px; right: -20px; top: 60px; height: 12px; background: #FFFFFF; transform: rotate(-8deg)"></div>
-    <div style="position: absolute; left: -20px; right: -20px; top: 150px; height: 9px; background: #FFFFFF; transform: rotate(5deg)"></div>
+  <div aria-label="Peta tujuan antaran" style="flex-shrink: 0; height: 170px; position: relative; background: #E1E3DF; overflow: hidden">
+    <div style="position: absolute; left: -20px; right: -20px; top: 50px; height: 12px; background: #FFFFFF; transform: rotate(-8deg)"></div>
+    <div style="position: absolute; left: -20px; right: -20px; top: 125px; height: 9px; background: #FFFFFF; transform: rotate(5deg)"></div>
     <div style="position: absolute; top: -20px; bottom: -20px; left: 110px; width: 11px; background: #FFFFFF; transform: rotate(10deg)"></div>
     <div style="position: absolute; top: -20px; bottom: -20px; left: 270px; width: 9px; background: #FFFFFF; transform: rotate(-6deg)"></div>
-    <div style="position: absolute; left: 172px; top: 92px; width: 36px; height: 36px; border-radius: 18px; background: #101828; color: #FFFFFF; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25)">{{t.restoShort}}</div>
+    <div style="position: absolute; left: 170px; top: 72px; width: 40px; height: 40px; border-radius: 20px; background: #006C4E; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15)">{{t.restoShort}}</div>
     <sc-for list="{{pins}}" as="p" hint-placeholder-count="3">
       <div style="position: absolute; left: {{p.x}}; top: {{p.y}}; display: flex; flex-direction: column; align-items: center">
-        <span style="background: {{p.bg}}; color: #FFFFFF; font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 8px; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.2)">{{p.no}}</span>
+        <span class="num" style="background: {{p.bg}}; color: #FFFFFF; font-size: 14px; font-weight: 500; padding: 2px 8px; border-radius: 8px; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15)">{{p.no}}</span>
         <span style="width: 2px; height: 10px; background: {{p.bg}}"></span>
       </div>
     </sc-for>
-    <span style="position: absolute; right: 10px; top: 10px; background: #FFFFFFE6; padding: 4px 8px; border-radius: 6px; font-size: 11px; color: #667085">[Peta Google Maps]</span>
+    <span style="position: absolute; right: 8px; bottom: 8px; background: #FFFFFFE6; padding: 2px 8px; border-radius: 8px; font-size: 12px; color: #404944">[Peta Google Maps]</span>
   </div>
 
-  <div role="tablist" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #EEF0F3; padding: 4px; margin: 10px 12px 0; border-radius: 12px">
+  <div role="tablist" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); height: 48px; margin: 12px 16px 0; border: 1px solid #707973; border-radius: 24px; overflow: hidden">
     <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="2">
-      <button role="tab" onClick="{{tb.pick}}" style="height: 42px; border-radius: 9px; border: none; background: {{tb.bg}}; color: #101828; font-size: 14px; font-weight: {{tb.fw}}; box-shadow: {{tb.shadow}}">{{tb.label}}</button>
+      <button role="tab" onClick="{{tb.pick}}" aria-selected="{{tb.on}}" style="border: none; border-left: {{tb.sep}}; background: {{tb.bg}}; color: {{tb.fg}}; font-size: 15px; font-weight: 500; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{tb.label}}</button>
     </sc-for>
   </div>
 
-  <main style="flex-grow: 1; overflow-y: auto; padding: 10px 12px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+  <main style="flex-grow: 1; overflow-y: auto; padding: 12px 16px 12px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
     <sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
-      <div style="background: #FFFFFF; border-radius: 14px; padding: 24px 16px; text-align: center; color: #667085; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">{{t.empty}}</div>
+      <div style="background: #ECEEEB; border-radius: 12px; padding: 24px 16px; text-align: center; color: #404944">{{t.empty}}</div>
     </sc-if>
     <sc-if value="{{showRoute}}" hint-placeholder-val="{{false}}">
-      <a href="#" style="height: 48px; border-radius: 12px; border: 1.5px solid #175CD3; background: #EFF8FF; color: #1849A9; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">{{t.route}}</a>
+      <a href="#" style="min-height: 48px; border-radius: 24px; background: #C1E8FC; color: #001F2A; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 4px 16px; box-sizing: border-box; text-align: center; text-decoration: none; flex-shrink: 0"><span class="ms" aria-hidden="true">route</span>{{t.route}}</a>
     </sc-if>
     <sc-for list="{{cards}}" as="c" hint-placeholder-count="2">
-      <article style="background: #FFFFFF; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-        <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
-          <div style="display: flex; justify-content: space-between; align-items: center">
-            <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 8px; border-radius: 8px; background: {{c.pinBg}}; color: #FFFFFF; font-size: 13px; font-weight: 800">{{c.no}}</span><b style="font-size: 15px">{{c.km}}</b></span>
-            <span style="font-size: 12px; font-weight: 700; color: {{c.statusColor}}">{{c.status}}</span>
+      <article style="background: #FFFFFF; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15)">
+        <div style="padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+            <span style="display: flex; align-items: center; gap: 8px"><span class="num" style="padding: 2px 8px; border-radius: 8px; background: {{c.pinBg}}; color: #FFFFFF; font-size: 14px; font-weight: 500">{{c.no}}</span><span class="num" style="font-size: 16px; font-weight: 500">{{c.km}}</span></span>
+            <span style="font-size: 14px; line-height: 18px; font-weight: 500; color: {{c.statusColor}}; text-align: right">{{c.status}}</span>
           </div>
-          <span style="line-height: 1.4">{{c.addr}}</span>
-          <span style="font-size: 13px; color: #667085">{{t.note}}: {{c.patokan}}</span>
-          <div style="display: flex; justify-content: space-between; align-items: center; background: {{c.payBg}}; border-radius: 10px; padding: 7px 12px; margin-top: 2px"><span style="font-weight: 700; color: {{c.payFg}}">{{c.payLabel}}</span><b style="font-size: 18px; color: {{c.payFg}}">{{c.amount}}</b></div>
+          <span style="line-height: 24px">{{c.addr}}</span>
+          <span style="font-size: 16px; line-height: 22px; color: #404944">{{t.note}}: {{c.patokan}}</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; background: {{c.payBg}}; border-radius: 12px; padding: 8px 12px; margin-top: 2px"><span style="display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 500; color: {{c.payFg}}"><span class="ms" aria-hidden="true" style="font-size: 20px">{{c.payIcon}}</span>{{c.payLabel}}</span><span class="num" style="font-size: 18px; font-weight: 500; color: {{c.payFg}}">{{c.amount}}</span></div>
           <sc-if value="{{c.mine}}" hint-placeholder-val="{{false}}">
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 4px">
-              <a href="#" style="height: 48px; border-radius: 12px; background: #175CD3; color: #FFFFFF; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; text-decoration: none">{{t.nav}}</a>
-              <a href="#" style="height: 48px; border-radius: 12px; border: 1px solid #D0D5DD; color: #101828; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; text-decoration: none">{{t.call}}</a>
+            <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 8px; margin-top: 4px">
+              <a href="#" style="height: 48px; border-radius: 24px; background: #CFE9DA; color: #092017; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none"><span class="ms" aria-hidden="true" style="font-size: 20px">navigation</span>{{t.nav}}</a>
+              <a href="#" style="height: 48px; border-radius: 24px; border: 1px solid #707973; color: #006C4E; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; box-sizing: border-box"><span class="ms" aria-hidden="true" style="font-size: 20px">call</span>{{t.call}}</a>
             </div>
           </sc-if>
+          <button onClick="{{c.act}}" style="height: 56px; margin-top: 6px; border-radius: 28px; border: none; background: {{c.btnBg}}; color: #FFFFFF; font-size: 17px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px"><span class="ms" aria-hidden="true">{{c.btnIcon}}</span>{{c.btn}}</button>
         </div>
-        <button onClick="{{c.act}}" style="height: 56px; border: none; background: {{c.btnBg}}; color: #FFFFFF; font-size: 17px; font-weight: 800">{{c.btn}}</button>
       </article>
     </sc-for>
   </main>
 
-  <footer style="flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #EAECF0; padding: 10px 14px 14px; display: flex; justify-content: space-between; align-items: center">
-    <span style="font-size: 13px; color: #667085">{{t.cashOnHand}}</span>
-    <b style="font-size: 18px">{{cashLabel}}</b>
-  </footer>
+  <div style="flex-shrink: 0; background: #F2F4F0; border-top: 1px solid #BFC9C2; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; gap: 8px">
+    <span style="font-size: 14px; line-height: 18px; color: #404944">{{t.cashOnHand}}</span>
+    <span class="num" style="font-size: 18px; font-weight: 500; flex-shrink: 0">{{cashLabel}}</span>
+  </div>
+  <nav aria-label="Navigasi utama" style="flex-shrink: 0; height: 80px; background: #ECEEEB; display: flex; padding: 0 4px">
+    <a href="Driver.dc.html" aria-label="{{t.n_antaran}}, 2 baru" aria-current="page" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #191C1A"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: #CFE9DA; display: flex; align-items: center; justify-content: center"><span class="ms f" aria-hidden="true" style="color: #092017">two_wheeler</span><span aria-hidden="true" style="position: absolute; top: -4px; left: 36px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 10px; background: #BA1A1A; color: #FFFFFF; font-size: 14px; font-weight: 500; line-height: 20px; text-align: center">2</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.n_antaran}}</span></a>
+    <a href="#" aria-label="{{t.n_peta}}" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">map</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.n_peta}}</span></a>
+    <a href="#" aria-label="{{t.n_riwayat}}" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">history</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.n_riwayat}}</span></a>
+    <a href="#" aria-label="{{t.n_setoran}}" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">payments</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.n_setoran}}</span></a>
+    <a href="Lainnya.dc.html" aria-label="{{t.n_lainnya}}" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">apps</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.n_lainnya}}</span></a>
+  </nav>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
@@ -91,17 +103,17 @@ class Component extends DCLogic {
   renderVals() {
     const { lang: L, tab, mine, done } = this.state;
     const T = {
-      id: { title: 'Antaran', online: 'Siap antar', ready: 'Siap diantar', my: 'Antaran saya', take: 'Ambil antaran ini', nav: 'Navigasi', call: 'Telepon', arrived: 'Sudah sampai', cash: 'Tagih cash', paid: 'Sudah bayar ABA', note: 'Patokan', empty: 'Belum ada antaran', waiting: 'Siap di dapur', going: 'Menuju pelanggan', restoShort: 'Resto', route: 'Buka rute semua tujuan (Google Maps)', cashOnHand: 'Cash yang dibawa (setor ke kasir)', km: 'km' },
-      en: { title: 'Deliveries', online: 'Available', ready: 'Ready to deliver', my: 'My deliveries', take: 'Take this delivery', nav: 'Navigate', call: 'Call', arrived: 'Arrived', cash: 'Collect cash', paid: 'Paid via ABA', note: 'Landmark', empty: 'No deliveries yet', waiting: 'Ready in kitchen', going: 'Heading to customer', restoShort: 'Resto', route: 'Open route to all stops (Google Maps)', cashOnHand: 'Cash on hand (give to cashier)', km: 'km' },
-      kh: { title: 'ការដឹកជញ្ជូន', online: 'ទំនេរ', ready: 'រួចរាល់សម្រាប់ដឹក', my: 'ការដឹករបស់ខ្ញុំ', take: 'យកការដឹកនេះ', nav: 'បើកផែនទី', call: 'ហៅទូរស័ព្ទ', arrived: 'បានដល់ហើយ', cash: 'ប្រមូលលុយ', paid: 'បានបង់តាម ABA', note: 'ចំណាំ', empty: 'មិនទាន់មានការដឹក', waiting: 'រួចរាល់នៅផ្ទះបាយ', going: 'កំពុងទៅអតិថិជន', restoShort: 'ហាង', route: 'បើកផ្លូវទៅគ្រប់កន្លែង (Google Maps)', cashOnHand: 'លុយកាន់ដៃ (ប្រគល់ឲ្យអ្នកគិតលុយ)', km: 'គ.ម' },
-      zh: { title: '外送', online: '可接单', ready: '待配送', my: '我的配送', take: '接这单', nav: '导航', call: '打电话', arrived: '已送达', cash: '收现金', paid: '已用ABA付款', note: '地标', empty: '暂无配送', waiting: '厨房已备好', going: '前往顾客', restoShort: '餐厅', route: '打开全部路线 (Google Maps)', cashOnHand: '手上现金（交给收银）', km: '公里' }
+      id: { title: 'Antaran', online: 'Siap antar', ready: 'Siap diantar', my: 'Antaran saya', take: 'Ambil antaran ini', nav: 'Navigasi', call: 'Telepon', arrived: 'Sudah sampai', cash: 'Tagih cash', paid: 'Sudah bayar ABA', note: 'Patokan', empty: 'Belum ada antaran', waiting: 'Siap di dapur', going: 'Menuju pelanggan', restoShort: 'Resto', route: 'Buka rute semua tujuan (Google Maps)', cashOnHand: 'Cash yang dibawa (setor ke kasir)', km: 'km', n_antaran: 'Antaran', n_peta: 'Peta', n_riwayat: 'Riwayat', n_setoran: 'Setoran', n_lainnya: 'Lainnya' },
+      en: { title: 'Deliveries', online: 'Available', ready: 'Ready to deliver', my: 'My deliveries', take: 'Take this delivery', nav: 'Navigate', call: 'Call', arrived: 'Arrived', cash: 'Collect cash', paid: 'Paid via ABA', note: 'Landmark', empty: 'No deliveries yet', waiting: 'Ready in kitchen', going: 'Heading to customer', restoShort: 'Resto', route: 'Open route to all stops (Google Maps)', cashOnHand: 'Cash on hand (give to cashier)', km: 'km', n_antaran: 'Deliveries', n_peta: 'Map', n_riwayat: 'History', n_setoran: 'Cash in', n_lainnya: 'More' },
+      kh: { title: 'ការដឹកជញ្ជូន', online: 'ទំនេរ', ready: 'រួចរាល់សម្រាប់ដឹក', my: 'ការដឹករបស់ខ្ញុំ', take: 'យកការដឹកនេះ', nav: 'បើកផែនទី', call: 'ហៅទូរស័ព្ទ', arrived: 'បានដល់ហើយ', cash: 'ប្រមូលលុយ', paid: 'បានបង់តាម ABA', note: 'ចំណាំ', empty: 'មិនទាន់មានការដឹក', waiting: 'រួចរាល់នៅផ្ទះបាយ', going: 'កំពុងទៅអតិថិជន', restoShort: 'ហាង', route: 'បើកផ្លូវទៅគ្រប់កន្លែង (Google Maps)', cashOnHand: 'លុយកាន់ដៃ (ប្រគល់ឲ្យអ្នកគិតលុយ)', km: 'គ.ម', n_antaran: 'ការដឹក', n_peta: 'ផែនទី', n_riwayat: 'ប្រវត្តិ', n_setoran: 'ប្រគល់លុយ', n_lainnya: 'ផ្សេងៗ' },
+      zh: { title: '外送', online: '可接单', ready: '待配送', my: '我的配送', take: '接这单', nav: '导航', call: '打电话', arrived: '已送达', cash: '收现金', paid: '已用ABA付款', note: '地标', empty: '暂无配送', waiting: '厨房已备好', going: '前往顾客', restoShort: '餐厅', route: '打开全部路线 (Google Maps)', cashOnHand: '手上现金（交给收银）', km: '公里', n_antaran: '配送', n_peta: '地图', n_riwayat: '记录', n_setoran: '交款', n_lainnya: '更多' }
     };
     const t = T[L];
     const O = [
-      { no: '#9', km: 3.1, addr: '[Alamat pelanggan 1]', patokan: '[depan hotel]', cash: 0, x: '286px', y: '28px' },
-      { no: '#12', km: 2.4, addr: '[Alamat pelanggan 2]', patokan: '[pagar biru, lantai 2]', cash: 42000, x: '58px', y: '30px' },
-      { no: '#14', km: 1.1, addr: '[Alamat pelanggan 3]', patokan: '[sebelah minimarket]', cash: 0, x: '120px', y: '150px' },
-      { no: '#15', km: 3.8, addr: '[Alamat pelanggan 4]', patokan: '[gang masuk 50 m]', cash: 18000, x: '300px', y: '140px' }
+      { no: '#9', km: 3.1, addr: '[Alamat pelanggan 1]', patokan: '[depan hotel]', cash: 0, x: '286px', y: '20px' },
+      { no: '#12', km: 2.4, addr: '[Alamat pelanggan 2]', patokan: '[pagar biru, lantai 2]', cash: 42000, x: '58px', y: '22px' },
+      { no: '#14', km: 1.1, addr: '[Alamat pelanggan 3]', patokan: '[sebelah minimarket]', cash: 0, x: '120px', y: '118px' },
+      { no: '#15', km: 3.8, addr: '[Alamat pelanggan 4]', patokan: '[gang masuk 50 m]', cash: 18000, x: '300px', y: '110px' }
     ];
     const fmt = n => n.toLocaleString('id-ID') + ' ៛';
     const isMine = o => mine.includes(o.no);
@@ -110,19 +122,19 @@ class Component extends DCLogic {
       const m = isMine(o);
       return {
         no: o.no, km: o.km.toString().replace('.', ',') + ' ' + t.km, addr: o.addr, patokan: o.patokan, mine: m,
-        pinBg: m ? '#175CD3' : '#F59E0B',
-        status: m ? t.going : t.waiting, statusColor: m ? '#1849A9' : '#93370D',
-        payBg: o.cash ? '#FEF3F2' : '#ECFDF5', payFg: o.cash ? '#B42318' : '#065F46',
+        pinBg: m ? '#3E6374' : '#795900',
+        status: m ? t.going : t.waiting, statusColor: m ? '#3E6374' : '#795900',
+        payBg: o.cash ? '#FFDAD6' : '#87F8C9', payFg: o.cash ? '#410002' : '#002115', payIcon: o.cash ? 'payments' : 'verified',
         payLabel: o.cash ? t.cash : t.paid, amount: fmt(o.cash),
-        btn: m ? t.arrived : t.take, btnBg: m ? '#047857' : '#101828',
+        btn: m ? t.arrived : t.take, btnBg: m ? '#006C4E' : '#3E6374', btnIcon: m ? 'where_to_vote' : 'add_task',
         act: m ? () => this.setState({ done: [...done, o.no], mine: mine.filter(x => x !== o.no) }) : () => this.setState({ mine: [...mine, o.no], tab: 'mine' })
       };
     });
-    const pins = visible.map(o => ({ no: o.no, x: o.x, y: o.y, bg: isMine(o) ? '#175CD3' : '#F59E0B' }));
+    const pins = visible.map(o => ({ no: o.no, x: o.x, y: o.y, bg: isMine(o) ? '#3E6374' : '#795900' }));
     const readyCount = O.filter(o => !done.includes(o.no) && !isMine(o)).length;
     const mineCount = mine.length;
-    const tabs = [['ready', t.ready + ' (' + readyCount + ')'], ['mine', t.my + ' (' + mineCount + ')']].map(([k, label]) => ({ label, pick: () => this.setState({ tab: k }), bg: k === tab ? '#FFFFFF' : 'transparent', fw: k === tab ? 800 : 600, shadow: k === tab ? '0 1px 3px rgba(16,24,40,0.12)' : 'none' }));
-    const langs = [['id', 'ID'], ['en', 'EN'], ['kh', 'ខ្មែរ'], ['zh', '中文']].map(([k, label]) => ({ label, pick: () => this.setState({ lang: k }), bg: k === L ? '#FFFFFF' : '#1D2939', fg: k === L ? '#101828' : '#FFFFFF', border: k === L ? '#FFFFFF' : '#344054' }));
+    const tabs = [['ready', t.ready + ' (' + readyCount + ')'], ['mine', t.my + ' (' + mineCount + ')']].map(([k, label], i) => ({ label, pick: () => this.setState({ tab: k }), on: k === tab ? 'true' : 'false', bg: k === tab ? '#CFE9DA' : 'transparent', fg: k === tab ? '#092017' : '#191C1A', sep: i ? '1px solid #707973' : 'none' }));
+    const langs = [['id', 'ID'], ['en', 'EN'], ['kh', 'ខ្មែរ'], ['zh', '中文']].map(([k, label], i) => ({ label, pick: () => this.setState({ lang: k }), on: k === L ? 'true' : 'false', bg: k === L ? '#CFE9DA' : 'transparent', fg: k === L ? '#092017' : '#191C1A', sep: i ? '1px solid #707973' : 'none' }));
     const cashOnHand = O.filter(o => done.includes(o.no) || isMine(o)).reduce((a, o) => a + o.cash, 0);
     return { t, langs, tabs, cards, pins, isEmpty: cards.length === 0, showRoute: tab === 'mine' && mineCount > 1, cashLabel: fmt(cashOnHand) };
   }

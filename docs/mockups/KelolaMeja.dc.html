@@ -8,55 +8,60 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans+Khmer:wght@400;600&amp;family=Noto+Sans+SC:wght@400;600&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Noto+Sans+Khmer:wght@400;500;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0..1,0&amp;icon_names=arrow_back,print&amp;display=block">
 <style>
-body{margin:0;font-family:'Plus Jakarta Sans','Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif}
-button{font-family:inherit;cursor:pointer}
-a{color:#047857}a:hover{color:#065F46}
+body{margin:0;font-family:Roboto,'Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;flex-shrink:0;overflow:hidden;user-select:none}
+.ms.f{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.num{font-variant-numeric:tabular-nums}
+a{color:#006C4E}a:hover{color:#00513A}
 </style>
 </helmet>
-<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F8FAF6; color: #191C1A; display: flex; flex-direction: column; font-size: 17px; line-height: 24px; overflow: hidden">
 
-  <header style="flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #EAECF0; padding: 10px 12px; display: flex; align-items: center; gap: 10px">
-    <a href="Settings.dc.html" style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #D0D5DD; color: #101828; font-size: 15px; font-weight: 700; display: flex; align-items: center; text-decoration: none">‹ Settings</a>
-    <b style="font-size: 19px">Meja &amp; QR</b>
+  <header style="flex-shrink: 0; height: 64px; background: #F8FAF6; display: flex; align-items: center; gap: 4px; padding: 0 16px 0 4px">
+    <a href="Settings.dc.html" aria-label="Kembali ke Settings" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #191C1A; text-decoration: none; flex-shrink: 0"><span class="ms" aria-hidden="true">arrow_back</span></a>
+    <h1 style="margin: 0; font-size: 22px; line-height: 28px; font-weight: 500">Meja &amp; QR</h1>
   </header>
 
-  <main style="flex-grow: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 0">
-    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; gap: 12px; align-items: center; flex-shrink: 0; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-      <div aria-label="Contoh QR yang dicetak untuk {{sel}}" style="width: 150px; flex-shrink: 0; border: 1px solid #EAECF0; border-radius: 12px; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; background: #FFFFFF">
-        <span style="font-size: 9px; font-weight: 700; color: #667085">[NAMA RESTORAN]</span>
-        <b style="font-size: 18px">{{sel}}</b>
+  <main style="flex-grow: 1; overflow-y: auto; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
+    <section style="background: #E1E3DF; border-radius: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; flex-shrink: 0">
+      <div aria-label="Contoh QR yang dicetak untuk {{sel}}" style="width: 150px; flex-shrink: 0; border-radius: 12px; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15)">
+        <span style="font-size: 9px; font-weight: 700; color: #404944">[NAMA RESTORAN]</span>
+        <b style="font-size: 18px; font-weight: 500">{{sel}}</b>
         <div style="display: grid; grid-template-columns: repeat(21, 5px); gap: 0; padding: 4px; background: #FFFFFF">
           <sc-for list="{{cells}}" as="c" hint-placeholder-count="441">
             <span style="width: 5px; height: 5px; background: {{c.bg}}"></span>
           </sc-for>
         </div>
-        <span style="font-size: 9px; text-align: center; line-height: 1.35; color: #475467">Scan untuk pesan · Scan to order<br>ស្កេនដើម្បីកម្ម៉ង់ · 扫码点餐</span>
+        <span style="font-size: 9px; text-align: center; line-height: 1.35; color: #404944">Scan untuk pesan · Scan to order<br>ស្កេនដើម្បីកម្ម៉ង់ · 扫码点餐</span>
       </div>
-      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px">
-        <b style="font-size: 15px">QR {{sel}}</b>
-        <span style="font-size: 12px; color: #667085">Scan langsung membuka menu dengan meja ini terpilih.</span>
-        <button style="height: 44px; border-radius: 12px; border: none; background: #047857; color: #FFFFFF; font-size: 14px; font-weight: 800">Cetak QR</button>
-        <button style="height: 40px; border-radius: 12px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 13px; font-weight: 700">Buat ulang QR</button>
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0">
+        <span style="font-size: 18px; line-height: 24px; font-weight: 500">QR {{sel}}</span>
+        <span style="font-size: 14px; line-height: 20px; color: #404944">Scan langsung membuka menu dengan meja ini terpilih.</span>
+        <button style="height: 48px; border-radius: 24px; border: none; background: #006C4E; color: #FFFFFF; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px"><span class="ms" aria-hidden="true" style="font-size: 20px">print</span>Cetak QR</button>
+        <button style="height: 48px; border-radius: 24px; border: 1px solid #707973; background: transparent; color: #006C4E; font-size: 14px; font-weight: 500; padding: 0 6px">Buat ulang QR</button>
       </div>
     </section>
 
-    <section style="background: #FFFFFF; border-radius: 16px; padding: 4px 12px; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
+    <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden">
       <sc-for list="{{tables}}" as="m" hint-placeholder-count="10">
-        <button onClick="{{m.pick}}" style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 4px; border: none; border-bottom: 1px solid #F2F4F7; background: {{m.bg}}; color: #101828; text-align: left; border-radius: 8px">
-          <b style="width: 76px; font-size: 15px">{{m.nama}}</b>
-          <span style="flex-grow: 1; font-size: 13px; color: #667085">{{m.area}} · {{m.kursi}} kursi</span>
-          <span style="padding: 6px 10px; border-radius: 8px; border: 1px solid #D0D5DD; font-size: 12px; font-weight: 700">Cetak QR</span>
+        <button onClick="{{m.pick}}" aria-pressed="{{m.on}}" style="display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 0 12px 0 16px; border: none; border-bottom: 1px solid #ECEEEB; background: {{m.bg}}; color: #191C1A; text-align: left">
+          <span style="width: 80px; font-size: 17px; font-weight: 500">{{m.nama}}</span>
+          <span style="flex-grow: 1; font-size: 15px; color: #404944">{{m.area}} · {{m.kursi}} kursi</span>
+          <span style="display: flex; align-items: center; gap: 4px; height: 36px; padding: 0 12px 0 8px; border-radius: 18px; border: 1px solid #707973; color: #006C4E; font-size: 14px; font-weight: 500; box-sizing: border-box"><span class="ms" aria-hidden="true" style="font-size: 18px">print</span>Cetak QR</span>
         </button>
       </sc-for>
-      <button style="height: 48px; border: none; background: transparent; color: #047857; font-size: 15px; font-weight: 800; text-align: left">+ Tambah meja</button>
+      <button style="height: 56px; border: none; background: transparent; color: #006C4E; font-size: 16px; font-weight: 500; text-align: left; padding: 0 16px">+ Tambah meja</button>
     </section>
   </main>
 
-  <footer style="flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #EAECF0; padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 6px">
-    <button style="height: 56px; border-radius: 14px; border: none; background: #101828; color: #FFFFFF; font-size: 17px; font-weight: 800">Cetak semua QR (10 meja)</button>
-    <span style="font-size: 12px; color: #667085; text-align: center">Ukuran: stand meja A6 atau stiker 7×7 cm · PDF siap print</span>
+  <footer style="flex-shrink: 0; background: #ECEEEB; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 6px">
+    <button style="height: 56px; border-radius: 28px; border: none; background: #006C4E; color: #FFFFFF; font-size: 17px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px"><span class="ms" aria-hidden="true">print</span>Cetak semua QR (10 meja)</button>
+    <span style="font-size: 14px; line-height: 20px; color: #404944; text-align: center">Ukuran: stand meja A6 atau stiker 7×7 cm · PDF siap print</span>
   </footer>
 </div>
 </x-dc>
@@ -66,7 +71,7 @@ class Component extends DCLogic {
   renderVals() {
     const sel = this.state.sel;
     const list = [['Meja 1', 'Dalam', 2], ['Meja 2', 'Dalam', 4], ['Meja 3', 'Dalam', 4], ['Meja 4', 'Dalam', 6], ['Meja 5', 'Dalam', 4], ['Meja 6', 'Dalam', 2], ['Teras 1', 'Teras', 4], ['Teras 2', 'Teras', 4], ['Teras 3', 'Teras', 6], ['Teras 4', 'Teras', 2]];
-    const tables = list.map(([nama, area, kursi]) => ({ nama, area, kursi, pick: () => this.setState({ sel: nama }), bg: nama === sel ? '#ECFDF5' : 'transparent' }));
+    const tables = list.map(([nama, area, kursi]) => ({ nama, area, kursi, pick: () => this.setState({ sel: nama }), on: nama === sel ? 'true' : 'false', bg: nama === sel ? '#CFE9DA' : 'transparent' }));
     let seed = 0;
     for (const ch of sel) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
     const rnd = () => { seed = (seed * 1103515245 + 12345) >>> 0; return (seed >>> 16) & 1; };
@@ -89,7 +94,7 @@ class Component extends DCLogic {
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
       const f = finder(r, c);
       const on = f === -1 ? rnd() : f;
-      cells.push({ bg: on ? '#101828' : '#FFFFFF' });
+      cells.push({ bg: on ? '#191C1A' : '#FFFFFF' });
     }
     return { sel, tables, cells };
   }

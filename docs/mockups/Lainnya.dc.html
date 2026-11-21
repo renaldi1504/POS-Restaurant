@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Lainnya – menu lengkap (bottom sheet)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Noto+Sans+Khmer:wght@400;500;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0..1,0&amp;icon_names=account_balance_wallet,check,history,inventory_2,keep,logout,notifications_active,payments,point_of_sale,print,table_restaurant,volume_off,volume_up&amp;display=block">
+<style>
+body{margin:0;font-family:Roboto,'Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;flex-shrink:0;overflow:hidden;user-select:none}
+.ms.f{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.num{font-variant-numeric:tabular-nums}
+a{color:#006C4E}a:hover{color:#00513A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F8FAF6; color: #191C1A; font-size: 17px; line-height: 24px">
+  <div aria-hidden="true" style="position: absolute; inset: 0">
+    <dc-import name="Main" hint-size="390px,844px"></dc-import>
+  </div>
+  <a href="Main.dc.html" aria-label="Tutup menu" style="position: absolute; inset: 0; background: rgba(0,0,0,0.32)"></a>
+
+  <section role="dialog" aria-modal="true" aria-label="Menu lengkap" style="position: absolute; left: 0; right: 0; bottom: 0; top: 32px; background: #E7E9E5; border-radius: 28px 28px 0 0; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15)">
+    <div style="flex-shrink: 0; display: flex; justify-content: center; padding: 16px 0 8px"><span style="width: 32px; height: 4px; border-radius: 2px; background: #707973"></span></div>
+
+    <div style="flex-grow: 1; overflow-y: auto; min-height: 0; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px">
+      <div style="background: #F8FAF6; border-radius: 12px; padding: 12px 12px 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+        <span style="width: 48px; height: 48px; border-radius: 24px; background: #006C4E; color: #FFFFFF; font-size: 17px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0">N2</span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+          <span style="font-size: 18px; line-height: 24px; font-weight: 500">[Nama kasir]</span>
+          <span style="font-size: 14px; line-height: 20px; color: #404944">Kasir · Shift Pagi</span>
+        </div>
+        <a href="Closing.dc.html" style="height: 48px; padding: 0 16px; border-radius: 24px; background: #CFE9DA; color: #092017; font-size: 15px; font-weight: 500; display: flex; align-items: center; text-decoration: none; flex-shrink: 0; white-space: nowrap">Tutup shift</a>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 4px 4px 0">
+        <h2 style="margin: 0; font-size: 22px; line-height: 28px; font-weight: 500">Semua fitur</h2>
+        <span class="num" style="font-size: 14px; font-weight: 500; color: #404944">Disematkan {{pinCount}}/4</span>
+      </div>
+      <span style="font-size: 14px; line-height: 20px; color: #404944; margin-top: -8px; padding: 0 4px">Fitur yang di-pin tampil di bar bawah (maks 4).</span>
+
+      <nav aria-label="Semua fitur" style="background: #F8FAF6; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0">
+        <sc-for list="{{items}}" as="it" hint-placeholder-count="8">
+          <div style="display: flex; align-items: center; min-height: 56px; border-bottom: 1px solid #E1E3DF">
+            <a href="{{it.href}}" style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 0 8px 0 16px; color: #191C1A; text-decoration: none">
+              <span style="position: relative; display: flex"><span class="ms" aria-hidden="true" style="color: #404944">{{it.icon}}</span>
+                <sc-if value="{{it.hasBadge}}" hint-placeholder-val="{{false}}"><span style="position: absolute; top: -6px; left: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 10px; background: #BA1A1A; color: #FFFFFF; font-size: 14px; line-height: 20px; text-align: center">{{it.badge}}</span></sc-if>
+              </span>
+              <span style="flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{it.label}}</span>
+            </a>
+            <button onClick="{{it.toggle}}" aria-pressed="{{it.pinnedStr}}" aria-label="{{it.pinLabel}}" style="width: 48px; height: 48px; margin-right: 4px; border-radius: 24px; border: none; background: {{it.pinBg}}; color: {{it.pinFg}}; opacity: {{it.pinOp}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><span class="ms{{it.fill}}" aria-hidden="true">keep</span></button>
+          </div>
+        </sc-for>
+      </nav>
+
+      <div style="background: #F8FAF6; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0">
+        <div style="display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 0 16px; border-bottom: 1px solid #E1E3DF">
+          <span class="ms" aria-hidden="true" style="color: #404944">{{soundIcon}}</span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column"><span>Bunyi order baru</span><span style="font-size: 14px; line-height: 20px; color: #404944">{{soundNote}}</span></span>
+          <button role="switch" aria-checked="{{soundStr}}" aria-label="Bunyi order baru" onClick="{{toggleSound}}" style="width: 52px; height: 32px; border-radius: 16px; border: {{swBorder}}; background: {{swBg}}; display: flex; justify-content: {{swJustify}}; align-items: center; padding: 0 4px; box-sizing: border-box; flex-shrink: 0"><span style="width: {{thumb}}; height: {{thumb}}; border-radius: 12px; background: {{thumbBg}}; color: #006C4E; display: flex; align-items: center; justify-content: center"><sc-if value="{{sound}}" hint-placeholder-val="{{true}}"><span class="ms" aria-hidden="true" style="font-size: 16px">check</span></sc-if></span></button>
+        </div>
+        <a href="Login.dc.html" style="display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 0 16px; color: #BA1A1A; text-decoration: none; font-weight: 500"><span class="ms" aria-hidden="true">logout</span><span>Keluar</span></a>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { pins: ['kasir', 'meja', 'online', 'riwayat'], sound: true }; }
+  renderVals() {
+    const { pins, sound } = this.state;
+    const F = [
+      { k: 'kasir', icon: 'point_of_sale', label: 'Kasir', href: 'Main.dc.html' },
+      { k: 'meja', icon: 'table_restaurant', label: 'Meja', href: 'Meja.dc.html', badge: '1' },
+      { k: 'online', icon: 'notifications_active', label: 'Order online', href: 'OrderWeb.dc.html', badge: '2' },
+      { k: 'riwayat', icon: 'history', label: 'Riwayat order', href: '#' },
+      { k: 'keluar', icon: 'payments', label: 'Pengeluaran', href: 'Pengeluaran.dc.html' },
+      { k: 'closing', icon: 'account_balance_wallet', label: 'Closing shift', href: 'Closing.dc.html' },
+      { k: 'stok', icon: 'inventory_2', label: 'Stok menu (tandai habis)', href: '#' },
+      { k: 'printer', icon: 'print', label: 'Printer', href: '#' }
+    ];
+    const full = pins.length >= 4;
+    const items = F.map(f => {
+      const on = pins.includes(f.k);
+      const can = on || !full;
+      return {
+        ...f, hasBadge: !!f.badge, pinnedStr: on ? 'true' : 'false', fill: on ? ' f' : '',
+        pinLabel: (on ? 'Lepas sematan ' : 'Sematkan ') + f.label + ' di bar bawah',
+        pinBg: on ? '#CFE9DA' : 'transparent', pinFg: on ? '#092017' : '#404944', pinOp: can ? 1 : 0.38,
+        toggle: () => { if (on) this.setState({ pins: pins.filter(x => x !== f.k) }); else if (!full) this.setState({ pins: [...pins, f.k] }); }
+      };
+    });
+    return {
+      items, pinCount: pins.length, sound, soundStr: sound ? 'true' : 'false',
+      soundIcon: sound ? 'volume_up' : 'volume_off', soundNote: sound ? 'Nyala · order online & QR meja' : 'Mati',
+      swBg: sound ? '#006C4E' : '#E1E3DF', swBorder: sound ? 'none' : '2px solid #707973', swJustify: sound ? 'flex-end' : 'flex-start',
+      thumb: sound ? '24px' : '16px', thumbBg: sound ? '#FFFFFF' : '#707973',
+      toggleSound: () => this.setState({ sound: !sound })
+    };
+  }
+}
+</script>
+</body>
+</html>

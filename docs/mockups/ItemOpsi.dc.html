@@ -8,61 +8,67 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Noto+Sans+Khmer:wght@400;500;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0..1,0&amp;icon_names=add,arrow_back,check_box,check_box_outline_blank,error,radio_button_checked,radio_button_unchecked,remove,restaurant&amp;display=block">
 <style>
-body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
-button,input{font-family:inherit}
+body{margin:0;font-family:Roboto,'Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
 button{cursor:pointer}
-a{color:#047857}a:hover{color:#065F46}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;flex-shrink:0;overflow:hidden;user-select:none}
+.ms.f{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.num{font-variant-numeric:tabular-nums}
+a{color:#006C4E}a:hover{color:#00513A}
 </style>
 </helmet>
-<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F8FAF6; color: #191C1A; display: flex; flex-direction: column; font-size: 17px; line-height: 24px; overflow: hidden">
 
   <main style="flex-grow: 1; overflow-y: auto; min-height: 0; display: flex; flex-direction: column">
-    <div style="height: 190px; flex-shrink: 0; background: #EEF1F5; position: relative; display: flex; align-items: center; justify-content: center; color: #98A2B3">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"></path></svg>
-      <a href="Website.dc.html" aria-label="Kembali ke menu" style="position: absolute; left: 12px; top: 12px; width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; color: #101828; font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 1px 3px rgba(16,24,40,0.15)">‹</a>
+    <div style="height: 190px; flex-shrink: 0; background: #E1E3DF; position: relative; display: flex; align-items: center; justify-content: center; color: #707973">
+      <span class="ms" aria-hidden="true" style="font-size: 48px">restaurant</span>
+      <a href="Website.dc.html" aria-label="Kembali ke menu" style="position: absolute; left: 8px; top: 8px; width: 48px; height: 48px; border-radius: 24px; background: #F8FAF6; color: #191C1A; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15)"><span class="ms" aria-hidden="true">arrow_back</span></a>
     </div>
 
-    <div style="background: #FFFFFF; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
-      <b style="font-size: 21px">Ayam Goreng</b>
-      <span style="font-size: 13px; color: #667085">[Deskripsi singkat menu]</span>
-      <b style="font-size: 17px; color: #065F46; margin-top: 2px">mulai 10.000 ៛</b>
+    <div style="background: #F8FAF6; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-size: 24px; line-height: 32px; font-weight: 400">Ayam Goreng</h1>
+      <span style="font-size: 16px; line-height: 22px; color: #404944">[Deskripsi singkat menu]</span>
+      <span class="num" style="font-size: 18px; line-height: 24px; color: #006C4E; font-weight: 500; margin-top: 2px">mulai 10.000 ៛</span>
     </div>
 
     <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
-      <section style="background: #FFFFFF; margin-top: 8px; padding: 12px 16px 6px; display: flex; flex-direction: column">
+      <section style="margin: 8px 16px 0; background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 12px 16px 4px; display: flex; flex-direction: column">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px">
-          <div style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">{{g.nama}}</b><span style="font-size: 12px; color: #667085">{{g.rule}}</span></div>
-          <span style="padding: 4px 8px; border-radius: 7px; background: {{g.badgeBg}}; color: {{g.badgeFg}}; font-size: 12px; font-weight: 800; flex-shrink: 0">{{g.badge}}</span>
+          <div style="display: flex; flex-direction: column"><span style="font-size: 18px; line-height: 24px; font-weight: 500">{{g.nama}}</span><span style="font-size: 14px; line-height: 20px; color: #404944">{{g.rule}}</span></div>
+          <span style="padding: 2px 8px; border-radius: 8px; background: {{g.badgeBg}}; color: {{g.badgeFg}}; font-size: 14px; line-height: 20px; font-weight: 500; flex-shrink: 0">{{g.badge}}</span>
         </div>
         <sc-for list="{{g.opts}}" as="o" hint-placeholder-count="3">
-          <button onClick="{{o.pick}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0; border: none; border-bottom: 1px solid #F2F4F7; background: transparent; color: {{o.color}}; text-align: left; font-size: 15px; opacity: {{o.op}}">
-            <span style="width: 22px; height: 22px; border-radius: {{o.radius}}; border: 2px solid {{o.ring}}; background: {{o.fill}}; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 13px; font-weight: 800; flex-shrink: 0; box-sizing: border-box">{{o.mark}}</span>
+          <button onClick="{{o.pick}}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0; border: none; border-top: 1px solid #ECEEEB; background: transparent; color: {{o.color}}; text-align: left; font-size: 17px; opacity: {{o.op}}">
+            <span class="ms{{o.fill}}" aria-hidden="true" style="color: {{o.ring}}">{{o.icon}}</span>
             <span style="flex-grow: 1">{{o.nama}}</span>
-            <span style="color: #667085">{{o.harga}}</span>
+            <span class="num" style="font-size: 16px; color: #404944">{{o.harga}}</span>
           </button>
         </sc-for>
       </section>
     </sc-for>
 
-    <section style="background: #FFFFFF; margin-top: 8px; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 6px">
-      <label for="cat" style="font-weight: 700">Catatan untuk dapur <span style="font-weight: 500; color: #667085">(opsional)</span></label>
-      <input id="cat" placeholder="mis. sambal dipisah" style="height: 46px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 12px; font-size: 15px; box-sizing: border-box">
+    <section style="margin: 8px 16px 16px; display: flex; flex-direction: column; padding-top: 10px">
+      <div style="position: relative">
+        <label for="cat" style="position: absolute; left: 12px; top: -9px; padding: 0 4px; background: #F8FAF6; font-size: 14px; line-height: 18px; font-weight: 500; color: #404944">Catatan untuk dapur (opsional)</label>
+        <input id="cat" placeholder="mis. sambal dipisah" style="width: 100%; height: 56px; border-radius: 4px; border: 1px solid #707973; background: transparent; padding: 0 16px; font-size: 17px; box-sizing: border-box">
+      </div>
     </section>
   </main>
 
-  <footer style="flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #EAECF0; padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 8px">
+  <footer style="flex-shrink: 0; background: #ECEEEB; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px">
     <sc-if value="{{missing}}" hint-placeholder-val="{{false}}">
-      <span style="font-size: 13px; color: #B42318; font-weight: 700; text-align: center">{{missingLabel}}</span>
+      <span style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; color: #BA1A1A; font-weight: 500"><span class="ms" aria-hidden="true" style="font-size: 20px">error</span>{{missingLabel}}</span>
     </sc-if>
-    <div style="display: flex; gap: 10px; align-items: center">
-      <div style="display: flex; align-items: center; gap: 4px; border: 1px solid #D0D5DD; border-radius: 14px; height: 54px; padding: 0 4px">
-        <button onClick="{{dec}}" aria-label="Kurangi" style="width: 40px; height: 44px; border: none; background: transparent; font-size: 22px; font-weight: 800; color: #101828">−</button>
-        <b style="min-width: 18px; text-align: center; font-size: 17px">{{qty}}</b>
-        <button onClick="{{inc}}" aria-label="Tambah" style="width: 40px; height: 44px; border: none; background: transparent; font-size: 22px; font-weight: 800; color: #101828">+</button>
+    <div style="display: flex; gap: 12px; align-items: center">
+      <div style="display: flex; align-items: center; gap: 2px; border: 1px solid #707973; border-radius: 28px; height: 56px; padding: 0 4px; box-sizing: border-box">
+        <button onClick="{{dec}}" aria-label="Kurangi" style="width: 48px; height: 48px; border-radius: 24px; border: none; background: transparent; color: #191C1A; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true">remove</span></button>
+        <span class="num" style="min-width: 18px; text-align: center; font-size: 18px; font-weight: 500">{{qty}}</span>
+        <button onClick="{{inc}}" aria-label="Tambah" style="width: 48px; height: 48px; border-radius: 24px; border: none; background: transparent; color: #191C1A; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true">add</span></button>
       </div>
-      <button style="flex-grow: 1; height: 54px; border-radius: 14px; border: none; background: {{btnBg}}; color: {{btnFg}}; font-size: 16px; font-weight: 800">Tambah · {{total}}</button>
+      <button class="num" style="flex-grow: 1; height: 56px; border-radius: 28px; border: none; background: {{btnBg}}; color: {{btnFg}}; font-size: 17px; font-weight: 500">Tambah · {{total}}</button>
     </div>
   </footer>
 </div>
@@ -76,7 +82,7 @@ class Component extends DCLogic {
     const fmt = n => n.toLocaleString('id-ID') + ' ៛';
     const radio = (key, cur, list) => list.map(([k, nama, harga, habis]) => {
       const on = cur === k;
-      return { nama, harga: habis ? 'Habis' : (harga ? '+' + fmt(harga) : ''), op: habis ? 0.45 : 1, color: '#101828', radius: '11px', ring: on ? '#047857' : '#98A2B3', fill: on ? '#047857' : '#FFFFFF', mark: on ? '•' : '', pick: habis ? () => {} : () => this.setState({ [key]: k }) };
+      return { nama, harga: habis ? 'Habis' : (harga ? '+' + fmt(harga) : ''), op: habis ? 0.45 : 1, color: '#191C1A', icon: on ? 'radio_button_checked' : 'radio_button_unchecked', fill: '', ring: on ? '#006C4E' : '#404944', pick: habis ? () => {} : () => this.setState({ [key]: k }) };
     });
     const MAX = 3;
     const extras = [['nasi', 'Nasi putih', 2000], ['telur', 'Telur ceplok', 3000], ['sambal', 'Sambal ekstra', 1000], ['tahu', 'Tahu goreng', 2000], ['tempe', 'Tempe goreng', 2000, true]];
@@ -84,20 +90,20 @@ class Component extends DCLogic {
       const on = extra.includes(k);
       const full = !on && extra.length >= MAX;
       const off = habis || full;
-      return { nama, harga: habis ? 'Habis' : '+' + fmt(harga), op: off ? 0.45 : 1, color: '#101828', radius: '6px', ring: on ? '#047857' : '#98A2B3', fill: on ? '#047857' : '#FFFFFF', mark: on ? '✓' : '', pick: off ? () => {} : () => this.setState({ extra: on ? extra.filter(x => x !== k) : [...extra, k] }) };
+      return { nama, harga: habis ? 'Habis' : '+' + fmt(harga), op: off ? 0.45 : 1, color: '#191C1A', icon: on ? 'check_box' : 'check_box_outline_blank', fill: on ? ' f' : '', ring: on ? '#006C4E' : '#404944', pick: off ? () => {} : () => this.setState({ extra: on ? extra.filter(x => x !== k) : [...extra, k] }) };
     });
-    const req = (ok) => ok ? { badge: 'Sudah dipilih', badgeBg: '#ECFDF5', badgeFg: '#065F46' } : { badge: 'Wajib', badgeBg: '#FEF3F2', badgeFg: '#B42318' };
+    const req = (ok) => ok ? { badge: 'Sudah dipilih', badgeBg: '#87F8C9', badgeFg: '#002115' } : { badge: 'Wajib', badgeBg: '#FFDAD6', badgeFg: '#410002' };
     const groups = [
       { nama: 'Bagian ayam', rule: 'Pilih 1', ...req(!!bagian), opts: radio('bagian', bagian, [['dada', 'Dada', 0], ['paha-atas', 'Paha atas', 0], ['paha-bawah', 'Paha bawah', 0], ['sayap', 'Sayap', 0, true]]) },
       { nama: 'Level pedas', rule: 'Pilih 1', ...req(!!pedas), opts: radio('pedas', pedas, [['tidak', 'Tidak pedas', 0], ['sedang', 'Sedang', 0], ['pedas', 'Pedas', 0], ['extra', 'Extra pedas', 1000]]) },
-      { nama: 'Tambahan', rule: 'Opsional · maksimal ' + MAX + ' (' + extra.length + '/' + MAX + ')', badge: 'Opsional', badgeBg: '#F2F4F7', badgeFg: '#475467', opts: extraOpts }
+      { nama: 'Tambahan', rule: 'Opsional · maksimal ' + MAX + ' (' + extra.length + '/' + MAX + ')', badge: 'Opsional', badgeBg: '#E1E3DF', badgeFg: '#191C1A', opts: extraOpts }
     ];
     const extraSum = extras.filter(e => extra.includes(e[0])).reduce((a, e) => a + e[2], 0) + (pedas === 'extra' ? 1000 : 0);
     const missing = !bagian;
     return {
       groups, qty, missing, missingLabel: 'Pilih Bagian ayam dulu',
       total: fmt((base + extraSum) * qty),
-      btnBg: missing ? '#E4E7EC' : '#047857', btnFg: missing ? '#475467' : '#FFFFFF',
+      btnBg: missing ? '#E1E3DF' : '#006C4E', btnFg: missing ? '#404944' : '#FFFFFF',
       inc: () => this.setState({ qty: qty + 1 }), dec: () => this.setState({ qty: Math.max(1, qty - 1) })
     };
   }

@@ -2,76 +2,128 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>Settings (HP)</title>
+<title>Settings</title>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Noto+Sans+Khmer:wght@400;500;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0..1,0&amp;icon_names=check,check_circle,chevron_right,delete,format_size,group,print,qr_code_2,schedule,sell,swap_horiz,two_wheeler,upload,visibility&amp;display=block">
 <style>
-body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
-button,input{font-family:inherit}
+body{margin:0;font-family:Roboto,'Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
 button{cursor:pointer}
-a{color:#047857}a:hover{color:#065F46}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;flex-shrink:0;overflow:hidden;user-select:none}
+.ms.f{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.num{font-variant-numeric:tabular-nums}
+a{color:#006C4E}a:hover{color:#00513A}
 </style>
 </helmet>
-<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F8FAF6; color: #191C1A; display: flex; flex-direction: column; font-size: 17px; line-height: 24px; overflow: hidden">
 
-  <header style="flex-shrink: 0; height: 64px; background: #FFFFFF; border-bottom: 1px solid #EAECF0; display: flex; align-items: center; gap: 10px; padding: 0 14px">
-    <b style="font-size: 20px; flex-grow: 1">Settings</b>
-    <span style="font-size: 12px; color: #667085">Admin / Owner</span>
+  <header style="flex-shrink: 0; height: 64px; background: #F8FAF6; display: flex; align-items: center; gap: 10px; padding: 0 16px">
+    <h1 style="margin: 0; font-size: 24px; line-height: 32px; font-weight: 400; flex-grow: 1">Settings</h1>
+    <span style="padding: 2px 8px; border-radius: 8px; background: #2E312F; color: #EFF1ED; font-size: 14px; line-height: 20px; font-weight: 500">Admin / Owner</span>
   </header>
 
-  <main style="flex-grow: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
-    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-      <b style="font-size: 16px">Profil &amp; logo</b>
-      <div style="display: flex; gap: 10px; align-items: center">
-        <div style="width: 64px; height: 64px; border-radius: 14px; background: #F2F4F7; border: 2px dashed #D0D5DD; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #667085; flex-shrink: 0">LOGO</div>
-        <button style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 14px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">Upload logo</button>
+  <main style="flex-grow: 1; overflow-y: auto; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
+    <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+      <h2 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 500">Profil &amp; logo</h2>
+      <div style="display: flex; gap: 12px; align-items: center">
+        <div style="width: 64px; height: 64px; border-radius: 12px; background: #E1E3DF; border: 2px dashed #BFC9C2; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #404944; flex-shrink: 0">LOGO</div>
+        <button style="height: 48px; padding: 0 16px 0 12px; border-radius: 24px; border: none; background: #CFE9DA; color: #092017; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 6px"><span class="ms" aria-hidden="true" style="font-size: 20px">upload</span>Upload logo</button>
       </div>
-      <input aria-label="Nama restoran" value="[Nama Restoran]" style="height: 46px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 12px; font-size: 16px; box-sizing: border-box">
-    </section>
-
-    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-      <b style="font-size: 16px">Jam operasional</b>
-      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
-        <div style="display: flex; flex-direction: column; gap: 4px"><label for="buka" style="font-size: 13px; font-weight: 700">Buka</label><input id="buka" value="08.00" style="height: 50px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 12px; font-size: 22px; font-weight: 800; width: 100%; box-sizing: border-box"></div>
-        <div style="display: flex; flex-direction: column; gap: 4px"><label for="tutup" style="font-size: 13px; font-weight: 700">Tutup</label><input id="tutup" value="03.00" style="height: 50px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 12px; font-size: 22px; font-weight: 800; width: 100%; box-sizing: border-box"></div>
+      <div style="position: relative">
+        <label for="nr" style="position: absolute; left: 12px; top: -9px; padding: 0 4px; background: #FFFFFF; font-size: 14px; line-height: 18px; font-weight: 500; color: #404944">Nama restoran</label>
+        <input id="nr" value="[Nama Restoran]" style="width: 100%; height: 56px; border-radius: 4px; border: 1px solid #707973; padding: 0 16px; font-size: 17px; box-sizing: border-box">
       </div>
-      <span style="font-size: 12px; color: #667085">Sama setiap hari · lewat tengah malam tetap 1 hari operasional</span>
     </section>
 
-    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-      <b style="font-size: 16px; margin-bottom: 4px">Mata uang &amp; kurs</b>
-      <div style="display: flex; align-items: center; height: 44px; border-bottom: 1px solid #F2F4F7"><b style="flex-grow: 1">Riel ៛</b><span style="padding: 4px 10px; border-radius: 8px; background: #101828; color: #FFFFFF; font-size: 12px; font-weight: 700">Utama</span></div>
-      <div style="display: flex; align-items: center; gap: 8px; height: 52px; border-bottom: 1px solid #F2F4F7"><b style="flex-grow: 1">$1 =</b><input aria-label="Kurs dollar" value="4.100" style="width: 96px; height: 42px; border-radius: 10px; border: 1px solid #D0D5DD; padding: 0 8px; font-size: 16px; font-weight: 700; box-sizing: border-box"><span>៛</span></div>
-      <div style="display: flex; align-items: center; gap: 8px; height: 52px"><b style="flex-grow: 1">Rp1.000 =</b><input aria-label="Kurs rupiah" value="250" style="width: 96px; height: 42px; border-radius: 10px; border: 1px solid #D0D5DD; padding: 0 8px; font-size: 16px; font-weight: 700; box-sizing: border-box"><span>៛</span></div>
+    <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+      <h2 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 500">Jam operasional</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <div style="position: relative"><label for="buka" style="position: absolute; left: 12px; top: -9px; padding: 0 4px; background: #FFFFFF; font-size: 14px; line-height: 18px; font-weight: 500; color: #404944">Buka</label><input id="buka" class="num" value="08.00" style="width: 100%; height: 56px; border-radius: 4px; border: 1px solid #707973; padding: 0 16px; font-size: 22px; box-sizing: border-box"><span class="ms" aria-hidden="true" style="position: absolute; right: 12px; top: 16px; color: #404944">schedule</span></div>
+        <div style="position: relative"><label for="tutup" style="position: absolute; left: 12px; top: -9px; padding: 0 4px; background: #FFFFFF; font-size: 14px; line-height: 18px; font-weight: 500; color: #404944">Tutup</label><input id="tutup" class="num" value="03.00" style="width: 100%; height: 56px; border-radius: 4px; border: 1px solid #707973; padding: 0 16px; font-size: 22px; box-sizing: border-box"><span class="ms" aria-hidden="true" style="position: absolute; right: 12px; top: 16px; color: #404944">schedule</span></div>
+      </div>
+      <span style="font-size: 14px; line-height: 20px; color: #404944; margin-top: -6px">Sama setiap hari · lewat tengah malam tetap 1 hari operasional</span>
     </section>
 
-    <section style="background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-      <b style="font-size: 16px">Bot Telegram &amp; AI</b>
-      <div style="display: flex; justify-content: space-between; align-items: center"><span>Bot Telegram</span><span style="padding: 4px 10px; border-radius: 8px; background: #ECFDF5; color: #065F46; font-size: 13px; font-weight: 800">Terhubung</span></div>
-      <div style="display: flex; justify-content: space-between; align-items: center"><span>AI jawab pertanyaan menu</span><span style="width: 56px; height: 32px; border-radius: 16px; background: #047857; display: flex; justify-content: flex-end; padding: 4px; box-sizing: border-box"><span style="width: 24px; height: 24px; border-radius: 12px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)"></span></span></div>
-      <label for="key" style="font-size: 13px; font-weight: 700">Gemini API key</label>
-      <input id="key" type="password" value="xxxxxxxxxxxx" style="height: 46px; border-radius: 12px; border: 1px solid #D0D5DD; padding: 0 12px; font-size: 16px; box-sizing: border-box; margin-top: -4px">
-      <span style="font-size: 12px; color: #667085">Kalau AI tidak tahu jawabannya, chat diteruskan ke admin</span>
+    <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 12px 16px 8px; display: flex; flex-direction: column">
+      <h2 style="margin: 0 0 4px; font-size: 18px; line-height: 24px; font-weight: 500">Mata uang &amp; kurs</h2>
+      <div style="display: flex; align-items: center; min-height: 56px; border-bottom: 1px solid #ECEEEB"><span style="flex-grow: 1; font-weight: 500">Riel ៛</span><span style="padding: 2px 10px; border-radius: 8px; background: #87F8C9; color: #002115; font-size: 14px; line-height: 20px; font-weight: 500">Utama</span></div>
+      <div style="display: flex; align-items: center; gap: 8px; min-height: 64px; border-bottom: 1px solid #ECEEEB"><span style="flex-grow: 1; font-weight: 500">$1 =</span><input aria-label="Kurs dollar" class="num" value="4.100" style="width: 104px; height: 48px; border-radius: 4px; border: 1px solid #707973; padding: 0 12px; font-size: 17px; text-align: right; box-sizing: border-box"><span style="width: 18px">៛</span></div>
+      <div style="display: flex; align-items: center; gap: 8px; min-height: 64px"><span style="flex-grow: 1; font-weight: 500">Rp1.000 =</span><input aria-label="Kurs rupiah" class="num" value="250" style="width: 104px; height: 48px; border-radius: 4px; border: 1px solid #707973; padding: 0 12px; font-size: 17px; text-align: right; box-sizing: border-box"><span style="width: 18px">៛</span></div>
     </section>
 
-    <section style="background: #FFFFFF; border-radius: 16px; padding: 4px 12px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-      <a href="KelolaMeja.dc.html" style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F2F4F7; color: #101828; text-decoration: none; font-weight: 600"><span>Meja &amp; QR (10 meja)</span><span>›</span></a>
-      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F2F4F7; color: #101828; text-decoration: none; font-weight: 600"><span>Driver (3)</span><span>›</span></a>
-      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F2F4F7; color: #101828; text-decoration: none; font-weight: 600"><span>Promo &amp; komisi Grab/foodpanda</span><span>›</span></a>
-      <a href="Users.dc.html" style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F2F4F7; color: #101828; text-decoration: none; font-weight: 600"><span>Pengguna &amp; role</span><span>›</span></a>
-      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 52px; border-bottom: 1px solid #F2F4F7; color: #101828; text-decoration: none; font-weight: 600"><span>Printer &amp; suara</span><span>›</span></a>
-      <a href="#" style="display: flex; justify-content: space-between; align-items: center; height: 52px; color: #101828; text-decoration: none; font-weight: 600"><span>Ukuran teks</span><span>›</span></a>
+    <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 500">Pembayaran ABA</h2>
+      <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #404944">Gambar QR ABA (ditampilkan ke pelanggan saat bayar)</span>
+      <div style="display: flex; gap: 14px; align-items: flex-start">
+        <sc-if value="{{hasQr}}" hint-placeholder-val="{{true}}">
+          <div aria-label="Pratinjau QR ABA" style="width: 132px; height: 132px; flex-shrink: 0; border-radius: 12px; border: 1px solid #BFC9C2; background: #FFFFFF; box-sizing: border-box; padding: 10px; display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 0">
+            <sc-for list="{{qr}}" as="c" hint-placeholder-count="121">
+              <span style="aspect-ratio: 1; background: {{c.bg}}"></span>
+            </sc-for>
+          </div>
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0">
+            <span style="font-size: 14px; line-height: 20px; color: #404944">qr-aba.png · persegi, dipotong otomatis</span>
+            <button onClick="{{upload}}" style="height: 48px; border-radius: 24px; border: none; background: #CFE9DA; color: #092017; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px"><span class="ms" aria-hidden="true" style="font-size: 20px">swap_horiz</span>Ganti</button>
+            <button onClick="{{remove}}" style="height: 48px; border-radius: 24px; border: none; background: transparent; color: #BA1A1A; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px"><span class="ms" aria-hidden="true" style="font-size: 20px">delete</span>Hapus</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{noQr}}" hint-placeholder-val="{{false}}">
+          <div style="width: 132px; height: 132px; flex-shrink: 0; border-radius: 12px; border: 2px dashed #BFC9C2; background: #F2F4F0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; color: #707973"><span class="ms" aria-hidden="true" style="font-size: 40px">qr_code_2</span></div>
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0">
+            <span style="font-size: 14px; line-height: 20px; color: #404944">Belum ada gambar. PNG atau JPG dari aplikasi ABA.</span>
+            <button onClick="{{upload}}" style="height: 48px; border-radius: 24px; border: none; background: #CFE9DA; color: #092017; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 8px"><span class="ms" aria-hidden="true" style="font-size: 20px">upload</span>Upload gambar QR</button>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 6px">
+      <h2 style="margin: 0 0 2px; font-size: 18px; line-height: 24px; font-weight: 500">Bot Telegram &amp; AI</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; min-height: 48px"><span>Bot Telegram</span><span style="display: flex; align-items: center; gap: 4px; padding: 2px 10px 2px 6px; border-radius: 8px; background: #87F8C9; color: #002115; font-size: 14px; font-weight: 500"><span class="ms" aria-hidden="true" style="font-size: 18px">check_circle</span>Terhubung</span></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; min-height: 48px"><span>AI jawab pertanyaan menu</span><span role="switch" aria-checked="true" aria-label="AI jawab pertanyaan menu" style="width: 52px; height: 32px; border-radius: 16px; background: #006C4E; display: flex; justify-content: flex-end; align-items: center; padding: 0 4px; box-sizing: border-box"><span style="width: 24px; height: 24px; border-radius: 12px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #006C4E"><span class="ms" aria-hidden="true" style="font-size: 16px">check</span></span></span></div>
+      <div style="position: relative; margin-top: 10px">
+        <label for="key" style="position: absolute; left: 12px; top: -9px; padding: 0 4px; background: #FFFFFF; font-size: 14px; line-height: 18px; font-weight: 500; color: #404944">Gemini API key</label>
+        <input id="key" type="password" value="xxxxxxxxxxxx" style="width: 100%; height: 56px; border-radius: 4px; border: 1px solid #707973; padding: 0 48px 0 16px; font-size: 17px; box-sizing: border-box">
+        <span class="ms" aria-hidden="true" style="position: absolute; right: 12px; top: 16px; color: #404944">visibility</span>
+      </div>
+      <span style="font-size: 14px; line-height: 20px; color: #404944">Kalau AI tidak tahu jawabannya, chat diteruskan ke admin</span>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden">
+      <a href="KelolaMeja.dc.html" style="display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 0 12px 0 16px; border-bottom: 1px solid #ECEEEB; color: #191C1A; text-decoration: none"><span class="ms" aria-hidden="true" style="color: #404944">qr_code_2</span><span style="flex-grow: 1">Meja &amp; QR (10 meja)</span><span class="ms" aria-hidden="true" style="color: #404944">chevron_right</span></a>
+      <a href="#" style="display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 0 12px 0 16px; border-bottom: 1px solid #ECEEEB; color: #191C1A; text-decoration: none"><span class="ms" aria-hidden="true" style="color: #404944">two_wheeler</span><span style="flex-grow: 1">Driver (3)</span><span class="ms" aria-hidden="true" style="color: #404944">chevron_right</span></a>
+      <a href="#" style="display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 0 12px 0 16px; border-bottom: 1px solid #ECEEEB; color: #191C1A; text-decoration: none"><span class="ms" aria-hidden="true" style="color: #404944">sell</span><span style="flex-grow: 1">Promo &amp; komisi Grab/foodpanda</span><span class="ms" aria-hidden="true" style="color: #404944">chevron_right</span></a>
+      <a href="Users.dc.html" style="display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 0 12px 0 16px; border-bottom: 1px solid #ECEEEB; color: #191C1A; text-decoration: none"><span class="ms" aria-hidden="true" style="color: #404944">group</span><span style="flex-grow: 1">Pengguna &amp; role</span><span class="ms" aria-hidden="true" style="color: #404944">chevron_right</span></a>
+      <a href="#" style="display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 0 12px 0 16px; border-bottom: 1px solid #ECEEEB; color: #191C1A; text-decoration: none"><span class="ms" aria-hidden="true" style="color: #404944">print</span><span style="flex-grow: 1">Printer &amp; suara</span><span class="ms" aria-hidden="true" style="color: #404944">chevron_right</span></a>
+      <a href="#" style="display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 0 12px 0 16px; color: #191C1A; text-decoration: none"><span class="ms" aria-hidden="true" style="color: #404944">format_size</span><span style="flex-grow: 1">Ukuran teks</span><span class="ms" aria-hidden="true" style="color: #404944">chevron_right</span></a>
     </section>
   </main>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
-  renderVals() { return {}; }
+  constructor(props) { super(props); this.state = { hasQr: true }; }
+  renderVals() {
+    const N = 11, qr = [];
+    let seed = 7;
+    const rnd = () => { seed = (seed * 1103515245 + 12345) >>> 0; return (seed >>> 16) & 1; };
+    const finder = (r, c) => {
+      for (const [r0, c0] of [[0, 0], [0, N - 4], [N - 4, 0]]) {
+        if (r >= r0 && r < r0 + 4 && c >= c0 && c < c0 + 4) { const y = r - r0, x = c - c0; return (y === 0 || y === 3 || x === 0 || x === 3 || (y > 0 && y < 3 && x > 0 && x < 3)) ? 1 : 0; }
+      }
+      return -1;
+    };
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const f = finder(r, c); qr.push({ bg: (f === -1 ? rnd() : f) ? '#191C1A' : '#FFFFFF' }); }
+    return {
+      qr, hasQr: this.state.hasQr, noQr: !this.state.hasQr,
+      upload: () => this.setState({ hasQr: true }), remove: () => this.setState({ hasQr: false })
+    };
+  }
 }
 </script>
 </body>

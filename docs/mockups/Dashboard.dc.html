@@ -2,62 +2,75 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>Dashboard harian (HP)</title>
+<title>Dashboard harian</title>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Noto+Sans+Khmer:wght@400;500;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0..1,0&amp;icon_names=apps,arrow_drop_down,bar_chart,calendar_today,notifications_active,point_of_sale,restaurant_menu&amp;display=block">
 <style>
-body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
-button{font-family:inherit;cursor:pointer}
-a{color:#047857}a:hover{color:#065F46}
+body{margin:0;font-family:Roboto,'Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;flex-shrink:0;overflow:hidden;user-select:none}
+.ms.f{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.num{font-variant-numeric:tabular-nums}
+a{color:#006C4E}a:hover{color:#00513A}
 </style>
 </helmet>
-<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F8FAF6; color: #191C1A; display: flex; flex-direction: column; font-size: 17px; line-height: 24px; overflow: hidden">
 
-  <header style="flex-shrink: 0; height: 64px; background: #FFFFFF; border-bottom: 1px solid #EAECF0; display: flex; align-items: center; gap: 10px; padding: 0 12px">
-    <b style="font-size: 19px; flex-grow: 1">Penjualan</b>
-    <button style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 14px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">Hari ini · 21 Nov ▾</button>
+  <header style="flex-shrink: 0; height: 72px; background: #F8FAF6; display: flex; align-items: center; gap: 10px; padding: 0 16px">
+    <h1 style="margin: 0; font-size: 24px; line-height: 32px; font-weight: 400; flex-grow: 1">Penjualan</h1>
+    <button style="height: 48px; padding: 0 12px 0 16px; border-radius: 8px; border: 1px solid #707973; background: transparent; color: #191C1A; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 6px"><span class="ms" aria-hidden="true" style="font-size: 20px; color: #404944">calendar_today</span>Hari ini · 21 Nov<span class="ms" aria-hidden="true" style="font-size: 20px">arrow_drop_down</span></button>
   </header>
 
-  <main style="flex-grow: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
-    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
-      <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)"><span style="font-size: 13px; color: #667085">Total penjualan</span><b style="font-size: 21px">3.420.000 ៛</b><span style="font-size: 12px; color: #667085">2 shift</span></div>
-      <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)"><span style="font-size: 13px; color: #667085">Jumlah order</span><b style="font-size: 21px">121</b><span style="font-size: 12px; color: #667085">2 batal</span></div>
-      <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)"><span style="font-size: 13px; color: #667085">Rata-rata / order</span><b style="font-size: 21px">28.300 ៛</b></div>
-      <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)"><span style="font-size: 13px; color: #667085">Pengeluaran</span><b style="font-size: 21px">210.000 ៛</b></div>
+  <main style="flex-grow: 1; overflow-y: auto; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+      <div style="background: #87F8C9; color: #002115; border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; line-height: 18px; font-weight: 500">Total penjualan</span><span class="num" style="font-size: 22px; line-height: 28px; font-weight: 500">3.420.000 ៛</span><span style="font-size: 14px; line-height: 18px">2 shift</span></div>
+      <div style="background: #E1E3DF; border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; line-height: 18px; font-weight: 500; color: #404944">Jumlah order</span><span class="num" style="font-size: 22px; line-height: 28px; font-weight: 500">121</span><span style="font-size: 14px; line-height: 18px; color: #404944">2 batal</span></div>
+      <div style="background: #E1E3DF; border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; line-height: 18px; font-weight: 500; color: #404944">Rata-rata / order</span><span class="num" style="font-size: 22px; line-height: 28px; font-weight: 500">28.300 ៛</span></div>
+      <div style="background: #E1E3DF; border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; line-height: 18px; font-weight: 500; color: #404944">Pengeluaran</span><span class="num" style="font-size: 22px; line-height: 28px; font-weight: 500">210.000 ៛</span></div>
     </div>
 
-    <section style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-      <b style="font-size: 16px">Penjualan per jam</b>
-      <span style="font-size: 12px; color: #667085">Paling ramai 19.00–21.00 · ribu ៛</span>
-      <div style="height: 150px; display: flex; align-items: flex-end; gap: 3px; border-bottom: 1px solid #D0D5DD">
+    <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0">
+      <h2 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 500">Penjualan per jam</h2>
+      <span style="font-size: 14px; line-height: 18px; color: #404944">Paling ramai 19.00–21.00 · ribu ៛</span>
+      <div style="height: 140px; display: flex; align-items: flex-end; gap: 3px; border-bottom: 1px solid #707973">
         <sc-for list="{{jam}}" as="j" hint-placeholder-count="19">
           <div style="flex: 1; border-radius: 4px 4px 0 0; background: {{j.color}}; height: {{j.hpx}}"></div>
         </sc-for>
       </div>
-      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #667085"><span>08</span><span>12</span><span>16</span><span>20</span><span>00</span><span>02</span></div>
+      <div class="num" style="display: flex; justify-content: space-between; font-size: 14px; color: #404944"><span>08</span><span>12</span><span>16</span><span>20</span><span>00</span><span>02</span></div>
     </section>
 
-    <section style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-      <b style="font-size: 16px">Per channel</b>
+    <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+      <h2 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 500">Per channel</h2>
       <sc-for list="{{channel}}" as="c" hint-placeholder-count="6">
-        <div style="display: flex; flex-direction: column; gap: 3px">
-          <div style="display: flex; justify-content: space-between; font-size: 14px"><span>{{c.nama}}</span><b>{{c.nilai}}</b></div>
-          <div style="height: 8px; border-radius: 4px; background: #F2F4F7"><div style="height: 8px; border-radius: 4px; background: #047857; width: {{c.pct}}"></div></div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <div style="display: flex; justify-content: space-between; font-size: 16px; line-height: 22px"><span>{{c.nama}}</span><span class="num" style="font-weight: 500">{{c.nilai}}</span></div>
+          <div style="height: 8px; border-radius: 4px; background: #CFE9DA"><div style="height: 8px; border-radius: 4px; background: #006C4E; width: {{c.pct}}"></div></div>
         </div>
       </sc-for>
     </section>
 
-    <section style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-      <b style="font-size: 16px; margin-bottom: 4px">Menu terlaris</b>
-      <div style="display: flex; justify-content: space-between; padding: 4px 0"><span>1. Pempek Kapal Selam</span><b>48</b></div>
-      <div style="display: flex; justify-content: space-between; padding: 4px 0"><span>2. Ayam Goreng</span><b>41</b></div>
-      <div style="display: flex; justify-content: space-between; padding: 4px 0"><span>3. Kopi Susu</span><b>37</b></div>
+    <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 12px 16px 4px; display: flex; flex-direction: column; flex-shrink: 0">
+      <h2 style="margin: 0 0 4px; font-size: 18px; line-height: 24px; font-weight: 500">Menu terlaris</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; min-height: 48px; border-bottom: 1px solid #ECEEEB"><span>1. Pempek Kapal Selam</span><span class="num" style="font-weight: 500">48</span></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; min-height: 48px; border-bottom: 1px solid #ECEEEB"><span>2. Ayam Goreng</span><span class="num" style="font-weight: 500">41</span></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; min-height: 48px"><span>3. Kopi Susu</span><span class="num" style="font-weight: 500">37</span></div>
     </section>
   </main>
+
+  <nav aria-label="Navigasi utama" style="flex-shrink: 0; height: 80px; background: #ECEEEB; display: flex; padding: 0 4px">
+    <a href="Main.dc.html" aria-label="Kasir" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">point_of_sale</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Kasir</span></a>
+    <a href="OrderWeb.dc.html" aria-label="Online, 2 baru" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">notifications_active</span><span aria-hidden="true" style="position: absolute; top: -4px; left: 36px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 10px; background: #BA1A1A; color: #FFFFFF; font-size: 14px; font-weight: 500; line-height: 20px; text-align: center">2</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Online</span></a>
+    <a href="Dashboard.dc.html" aria-label="Dashboard" aria-current="page" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #191C1A"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: #CFE9DA; display: flex; align-items: center; justify-content: center"><span class="ms f" aria-hidden="true" style="color: #092017">bar_chart</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Dashboard</span></a>
+    <a href="Menu.dc.html" aria-label="Kelola menu" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">restaurant_menu</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Menu</span></a>
+    <a href="Lainnya.dc.html" aria-label="Lainnya" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">apps</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Lainnya</span></a>
+  </nav>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
@@ -65,7 +78,7 @@ class Component extends DCLogic {
   renderVals() {
     const vals = [60, 95, 120, 180, 260, 210, 120, 90, 110, 150, 230, 340, 380, 300, 220, 170, 120, 40, 25];
     const max = Math.max(...vals);
-    const jam = vals.map(v => ({ color: v >= 300 ? '#047857' : '#A7F3D0', hpx: Math.round(v / max * 140) + 'px' }));
+    const jam = vals.map(v => ({ color: v >= 300 ? '#006C4E' : '#6ADBAE', hpx: Math.round(v / max * 130) + 'px' }));
     const ch = [['Makan sini', 1250000], ['Grab', 720000], ['Delivery', 610000], ['Bungkus', 520000], ['foodpanda', 320000], ['Telegram', 0]];
     const fmt = n => n.toLocaleString('id-ID') + ' ៛';
     const channel = ch.map(([nama, n]) => ({ nama, nilai: fmt(n), pct: Math.round(n / 1250000 * 100) + '%' }));

@@ -8,56 +8,68 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Noto+Sans+Khmer:wght@400;500;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0..1,0&amp;icon_names=apps,check,history,notifications_active,point_of_sale,qr_code_2,radio_button_unchecked,receipt_long,restaurant,table_restaurant&amp;display=block">
 <style>
-body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
-button{font-family:inherit;cursor:pointer}
-a{color:#047857}a:hover{color:#065F46}
+body{margin:0;font-family:Roboto,'Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;flex-shrink:0;overflow:hidden;user-select:none}
+.ms.f{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.num{font-variant-numeric:tabular-nums}
+a{color:#006C4E}a:hover{color:#00513A}
 </style>
 </helmet>
-<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F8FAF6; color: #191C1A; display: flex; flex-direction: column; font-size: 17px; line-height: 24px; overflow: hidden">
 
-  <header style="flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #EAECF0; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px">
-    <div style="display: flex; align-items: center; gap: 10px">
-      <a href="Main.dc.html" style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #D0D5DD; color: #101828; font-size: 15px; font-weight: 700; display: flex; align-items: center; text-decoration: none">‹ Kasir</a>
-      <b style="font-size: 19px; flex-grow: 1">Meja</b>
-      <span style="font-size: 13px; color: #667085">5 / 10 terisi</span>
+  <header style="flex-shrink: 0; background: #F8FAF6; padding: 8px 16px 8px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 56px">
+      <h1 style="margin: 0; font-size: 24px; line-height: 32px; font-weight: 400; flex-grow: 1">Meja</h1>
+      <span class="num" style="font-size: 16px; color: #404944">5 / 10 terisi</span>
     </div>
-    <div role="tablist" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #EEF0F3; padding: 4px; border-radius: 12px">
-      <button role="tab" style="height: 40px; border-radius: 9px; border: none; background: #FFFFFF; color: #101828; font-size: 14px; font-weight: 800; box-shadow: 0 1px 3px rgba(16,24,40,0.12)">Semua</button>
-      <button role="tab" style="height: 40px; border-radius: 9px; border: none; background: transparent; color: #101828; font-size: 14px; font-weight: 600">Dalam</button>
-      <button role="tab" style="height: 40px; border-radius: 9px; border: none; background: transparent; color: #101828; font-size: 14px; font-weight: 600">Teras</button>
+    <div role="tablist" aria-label="Area" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); height: 48px; border: 1px solid #707973; border-radius: 24px; overflow: hidden">
+      <button role="tab" aria-selected="true" style="border: none; background: #CFE9DA; color: #092017; font-size: 16px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px"><span class="ms" aria-hidden="true" style="font-size: 18px">check</span>Semua</button>
+      <button role="tab" style="border: none; border-left: 1px solid #707973; background: transparent; color: #191C1A; font-size: 16px; font-weight: 500">Dalam</button>
+      <button role="tab" style="border: none; border-left: 1px solid #707973; background: transparent; color: #191C1A; font-size: 16px; font-weight: 500">Teras</button>
     </div>
-    <div style="display: flex; gap: 10px; font-size: 12px; color: #475467; flex-wrap: wrap">
-      <span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #D0D5DD"></span>Kosong</span>
-      <span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #175CD3"></span>Sedang makan</span>
-      <span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #F59E0B"></span>Minta bill</span>
-      <span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #047857"></span>Pesanan QR baru</span>
+    <div style="display: flex; gap: 6px 14px; font-size: 14px; line-height: 18px; font-weight: 500; color: #404944; flex-wrap: wrap">
+      <span style="display: flex; align-items: center; gap: 4px"><span class="ms" aria-hidden="true" style="font-size: 18px; color: #707973">radio_button_unchecked</span>Kosong</span>
+      <span style="display: flex; align-items: center; gap: 4px"><span class="ms f" aria-hidden="true" style="font-size: 18px; color: #3E6374">restaurant</span>Sedang makan</span>
+      <span style="display: flex; align-items: center; gap: 4px"><span class="ms f" aria-hidden="true" style="font-size: 18px; color: #795900">receipt_long</span>Minta bill</span>
+      <span style="display: flex; align-items: center; gap: 4px"><span class="ms f" aria-hidden="true" style="font-size: 18px; color: #006C4E">qr_code_2</span>Pesanan QR baru</span>
     </div>
   </header>
 
-  <main style="flex-grow: 1; overflow-y: auto; padding: 12px; min-height: 0">
-    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+  <main style="flex-grow: 1; overflow-y: auto; padding: 4px 16px 16px; min-height: 0">
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
       <sc-for list="{{tables}}" as="m" hint-placeholder-count="10">
-        <a href="{{m.href}}" style="min-height: 104px; border-radius: 16px; background: {{m.bg}}; border: {{m.border}}; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; color: #101828; text-decoration: none; box-shadow: 0 1px 2px rgba(16,24,40,0.05)">
-          <div style="display: flex; justify-content: space-between; align-items: center"><b style="font-size: 18px">{{m.nama}}</b><span style="font-size: 12px; color: #667085">{{m.kursi}}</span></div>
-          <span style="font-size: 12px; font-weight: 800; color: {{m.statusColor}}">{{m.status}}</span>
+        <a href="{{m.href}}" style="min-height: 112px; border-radius: 12px; background: {{m.bg}}; border: {{m.border}}; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; color: #191C1A; text-decoration: none">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px"><span style="font-size: 18px; line-height: 24px; font-weight: 500">{{m.nama}}</span><span style="font-size: 14px; color: #404944; white-space: nowrap">{{m.kursi}}</span></div>
+          <span style="display: flex; align-items: center; gap: 4px; font-size: 14px; line-height: 18px; font-weight: 500; color: {{m.statusColor}}"><span class="ms f" aria-hidden="true" style="font-size: 18px">{{m.icon}}</span>{{m.status}}</span>
           <div style="flex-grow: 1"></div>
-          <div style="display: flex; justify-content: space-between; align-items: baseline"><b style="font-size: 16px">{{m.total}}</b><span style="font-size: 12px; color: #667085">{{m.waktu}}</span></div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px"><span class="num" style="font-size: 17px; font-weight: 500">{{m.total}}</span><span style="font-size: 14px; color: #404944">{{m.waktu}}</span></div>
         </a>
       </sc-for>
     </div>
   </main>
+
+  <nav aria-label="Navigasi utama" style="flex-shrink: 0; height: 80px; background: #ECEEEB; display: flex; padding: 0 4px">
+    <a href="Main.dc.html" aria-label="Kasir" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">point_of_sale</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Kasir</span></a>
+    <a href="Meja.dc.html" aria-label="Meja, 1 baru" aria-current="page" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #191C1A"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: #CFE9DA; display: flex; align-items: center; justify-content: center"><span class="ms f" aria-hidden="true" style="color: #092017">table_restaurant</span><span aria-hidden="true" style="position: absolute; top: -4px; left: 36px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 10px; background: #BA1A1A; color: #FFFFFF; font-size: 14px; font-weight: 500; line-height: 20px; text-align: center">1</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Meja</span></a>
+    <a href="OrderWeb.dc.html" aria-label="Online, 2 baru" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">notifications_active</span><span aria-hidden="true" style="position: absolute; top: -4px; left: 36px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 10px; background: #BA1A1A; color: #FFFFFF; font-size: 14px; font-weight: 500; line-height: 20px; text-align: center">2</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Online</span></a>
+    <a href="#" aria-label="Riwayat" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">history</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Riwayat</span></a>
+    <a href="Lainnya.dc.html" aria-label="Lainnya" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 12px; text-decoration: none; color: #404944"><span style="position: relative; width: 64px; height: 32px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center"><span class="ms" aria-hidden="true" style="color: #404944">apps</span></span><span style="max-width: 100%; padding: 0 2px; box-sizing: border-box; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Lainnya</span></a>
+  </nav>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     const S = {
-      kosong: { status: 'Kosong', statusColor: '#667085', bg: '#FFFFFF', border: '1px solid #EAECF0' },
-      makan: { status: 'Sedang makan', statusColor: '#1849A9', bg: '#EFF8FF', border: '1.5px solid #84ADFF' },
-      bill: { status: 'Minta bill', statusColor: '#93370D', bg: '#FFFAEB', border: '2px solid #F59E0B' },
-      qr: { status: 'Pesanan QR baru · terima', statusColor: '#065F46', bg: '#ECFDF5', border: '2px solid #047857' }
+      kosong: { status: 'Kosong', icon: 'radio_button_unchecked', statusColor: '#404944', bg: '#FFFFFF', border: '1px solid #BFC9C2' },
+      makan: { status: 'Sedang makan', icon: 'restaurant', statusColor: '#001F2A', bg: '#C1E8FC', border: '1px solid #C1E8FC' },
+      bill: { status: 'Minta bill', icon: 'receipt_long', statusColor: '#261A00', bg: '#FFDF9F', border: '2px solid #795900' },
+      qr: { status: 'Pesanan QR baru · terima', icon: 'qr_code_2', statusColor: '#002115', bg: '#87F8C9', border: '2px solid #006C4E' }
     };
     const t = (nama, kursi, s, total, waktu) => ({ nama, kursi: kursi + ' kursi', ...S[s], total: total || '', waktu: waktu || '', href: s === 'kosong' ? 'Main.dc.html' : 'MejaDetail.dc.html' });
     return {

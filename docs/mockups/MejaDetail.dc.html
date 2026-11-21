@@ -2,57 +2,62 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>Kasir – tagihan meja</title>
+<title>Kasir – tagihan meja (open bill)</title>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Noto+Sans+Khmer:wght@400;500;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0..1,0&amp;icon_names=add,arrow_back,payments,print,restaurant&amp;display=block">
 <style>
-body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
-button{font-family:inherit;cursor:pointer}
-a{color:#047857}a:hover{color:#065F46}
+body{margin:0;font-family:Roboto,'Noto Sans Khmer','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;flex-shrink:0;overflow:hidden;user-select:none}
+.ms.f{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.num{font-variant-numeric:tabular-nums}
+a{color:#006C4E}a:hover{color:#00513A}
 </style>
 </helmet>
-<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F6F8; color: #101828; display: flex; flex-direction: column; font-size: 15px; overflow: hidden">
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F8FAF6; color: #191C1A; display: flex; flex-direction: column; font-size: 17px; line-height: 24px; overflow: hidden">
 
-  <header style="flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #EAECF0; padding: 10px 12px; display: flex; align-items: center; gap: 10px">
-    <a href="Meja.dc.html" style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #D0D5DD; color: #101828; font-size: 15px; font-weight: 700; display: flex; align-items: center; text-decoration: none">‹ Meja</a>
-    <div style="flex-grow: 1; display: flex; flex-direction: column"><b style="font-size: 19px">Meja 5</b><span style="font-size: 12px; color: #667085">Duduk 32 menit · 4 kursi</span></div>
-    <span style="padding: 5px 10px; border-radius: 8px; background: #EFF8FF; color: #1849A9; font-size: 12px; font-weight: 800">Sedang makan</span>
+  <header style="flex-shrink: 0; height: 72px; background: #F8FAF6; display: flex; align-items: center; gap: 4px; padding: 0 16px 0 4px">
+    <a href="Meja.dc.html" aria-label="Kembali ke Meja" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #191C1A; text-decoration: none; flex-shrink: 0"><span class="ms" aria-hidden="true">arrow_back</span></a>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><h1 style="margin: 0; font-size: 22px; line-height: 28px; font-weight: 500">Meja 5</h1><span style="font-size: 14px; line-height: 18px; color: #404944">Duduk 32 menit · 4 kursi</span></div>
+    <span style="display: flex; align-items: center; gap: 4px; height: 32px; padding: 0 12px 0 8px; border-radius: 8px; background: #C1E8FC; color: #001F2A; font-size: 14px; font-weight: 500; flex-shrink: 0"><span class="ms f" aria-hidden="true" style="font-size: 18px">restaurant</span>Sedang makan</span>
   </header>
 
-  <main style="flex-grow: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+  <main style="flex-grow: 1; overflow-y: auto; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 0">
     <sc-for list="{{rounds}}" as="r" hint-placeholder-count="2">
-      <section style="background: #FFFFFF; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.07)">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 1px solid #F2F4F7">
-          <span style="display: flex; align-items: center; gap: 6px"><b>{{r.no}}</b><span style="padding: 2px 7px; border-radius: 6px; background: {{r.srcBg}}; color: {{r.srcFg}}; font-size: 11px; font-weight: 800">{{r.src}}</span></span>
-          <span style="font-size: 12px; font-weight: 700; color: {{r.stColor}}">{{r.status}}</span>
+      <section style="background: #FFFFFF; border: 1px solid #BFC9C2; border-radius: 12px; padding: 4px 16px 8px; display: flex; flex-direction: column; flex-shrink: 0">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 48px; border-bottom: 1px solid #BFC9C2">
+          <span style="display: flex; align-items: center; gap: 8px"><span class="num" style="font-size: 16px; font-weight: 500">{{r.no}}</span><span style="padding: 2px 8px; border-radius: 8px; background: {{r.srcBg}}; color: {{r.srcFg}}; font-size: 14px; line-height: 18px; font-weight: 500">{{r.src}}</span></span>
+          <span style="font-size: 14px; font-weight: 500; color: {{r.stColor}}; text-align: right">{{r.status}}</span>
         </div>
         <sc-for list="{{r.items}}" as="it" hint-placeholder-count="2">
-          <div style="display: flex; justify-content: space-between; gap: 8px; padding: 7px 0">
-            <span style="display: flex; flex-direction: column"><span style="font-weight: 600">{{it.q}} × {{it.nama}}</span><span style="font-size: 12px; color: #667085">{{it.opsi}}</span></span>
-            <b style="flex-shrink: 0">{{it.harga}}</b>
+          <div style="display: flex; justify-content: space-between; gap: 8px; padding: 8px 0">
+            <span style="display: flex; flex-direction: column"><span style="font-weight: 500">{{it.q}} × {{it.nama}}</span><span style="font-size: 16px; line-height: 22px; color: #404944">{{it.opsi}}</span></span>
+            <span class="num" style="flex-shrink: 0; font-weight: 500">{{it.harga}}</span>
           </div>
         </sc-for>
       </section>
     </sc-for>
 
-    <a href="Main.dc.html" style="height: 48px; border-radius: 12px; border: 1.5px dashed #98A2B3; color: #101828; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">+ Tambah pesanan ke Meja 5</a>
+    <a href="Main.dc.html" style="height: 48px; border-radius: 24px; background: #CFE9DA; color: #092017; font-size: 16px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; flex-shrink: 0"><span class="ms" aria-hidden="true">add</span>Tambah pesanan ke Meja 5</a>
     <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; flex-shrink: 0">
-      <button style="height: 46px; border-radius: 12px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 13px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05)">Pindah meja</button>
-      <button style="height: 46px; border-radius: 12px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 13px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05)">Gabung meja</button>
-      <button style="height: 46px; border-radius: 12px; border: 1px solid #D0D5DD; background: #FFFFFF; color: #101828; font-size: 13px; font-weight: 700; box-shadow: 0 1px 2px rgba(16,24,40,0.05)">Split bill</button>
+      <button style="height: 48px; border-radius: 24px; border: 1px solid #707973; background: transparent; color: #006C4E; font-size: 15px; font-weight: 500; padding: 0 4px">Pindah meja</button>
+      <button style="height: 48px; border-radius: 24px; border: 1px solid #707973; background: transparent; color: #006C4E; font-size: 15px; font-weight: 500; padding: 0 4px">Gabung meja</button>
+      <button style="height: 48px; border-radius: 24px; border: 1px solid #707973; background: transparent; color: #006C4E; font-size: 15px; font-weight: 500; padding: 0 4px">Split bill</button>
     </div>
   </main>
 
-  <footer style="flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #EAECF0; padding: 12px 14px 16px; display: flex; flex-direction: column; gap: 8px">
-    <div style="display: flex; justify-content: space-between; font-size: 14px; color: #475467"><span>Subtotal 2 ronde · 7 item</span><span>62.000 ៛</span></div>
-    <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 17px; font-weight: 600">Total tagihan</span><b style="font-size: 28px">62.000 ៛</b></div>
-    <div style="display: flex; gap: 10px">
-      <a href="Nota.dc.html" style="width: 130px; height: 58px; border-radius: 14px; border: 1px solid #D0D5DD; color: #101828; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 1px 2px rgba(16,24,40,0.05)">Cetak nota</a>
-      <a href="Bayar.dc.html" style="flex-grow: 1; height: 58px; border-radius: 14px; background: #047857; color: #FFFFFF; font-size: 19px; font-weight: 800; display: flex; align-items: center; justify-content: center; text-decoration: none">Bayar</a>
+  <footer style="flex-shrink: 0; background: #ECEEEB; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 6px">
+    <div style="display: flex; justify-content: space-between; font-size: 16px; color: #404944"><span>Subtotal 2 ronde · 7 item</span><span class="num">62.000 ៛</span></div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 18px; font-weight: 500">Total tagihan</span><span class="num" style="font-size: 32px; line-height: 40px; font-weight: 400">62.000 ៛</span></div>
+    <div style="display: flex; gap: 12px; margin-top: 4px">
+      <a href="Nota.dc.html" style="width: 140px; height: 56px; border-radius: 28px; border: 1px solid #707973; color: #006C4E; font-size: 16px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; box-sizing: border-box"><span class="ms" aria-hidden="true" style="font-size: 20px">print</span>Cetak nota</a>
+      <a href="Bayar.dc.html" style="flex-grow: 1; height: 56px; border-radius: 28px; background: #006C4E; color: #FFFFFF; font-size: 18px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none"><span class="ms" aria-hidden="true">payments</span>Bayar</a>
     </div>
   </footer>
 </div>
@@ -62,12 +67,12 @@ class Component extends DCLogic {
   renderVals() {
     return {
       rounds: [
-        { no: 'Order #18 · 12:10', src: 'QR MEJA', srcBg: '#ECFDF5', srcFg: '#065F46', status: 'Sudah diantar', stColor: '#065F46', items: [
+        { no: 'Order #18 · 12:10', src: 'QR MEJA', srcBg: '#87F8C9', srcFg: '#002115', status: 'Sudah diantar', stColor: '#006C4E', items: [
           { q: 2, nama: 'Ayam Goreng', opsi: 'Paha atas · Tidak pedas', harga: '20.000 ៛' },
           { q: 1, nama: 'Pempek Kapal Selam', opsi: 'Level: Sedang', harga: '14.000 ៛' },
           { q: 2, nama: 'Es Teh Manis', opsi: 'Kurang manis', harga: '8.000 ៛' }
         ] },
-        { no: 'Order #21 · 12:30', src: 'KASIR', srcBg: '#F2F4F7', srcFg: '#475467', status: 'Dimasak', stColor: '#1849A9', items: [
+        { no: 'Order #21 · 12:30', src: 'KASIR', srcBg: '#E1E3DF', srcFg: '#191C1A', status: 'Dimasak', stColor: '#795900', items: [
           { q: 1, nama: 'Ayam Bakar', opsi: 'Dada · Pedas · + Nasi putih', harga: '14.000 ៛' },
           { q: 1, nama: 'Kopi Susu', opsi: 'Normal', harga: '6.000 ៛' }
         ] }
