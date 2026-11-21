@@ -1,9 +1,15 @@
 import type { FastifyInstance } from 'fastify';
+import { defineRoute } from '../../lib/route';
+import { payOrder, paySession, verifyPayment } from './service';
 
-/**
- * Modul payments — daftarkan endpoint dengan `defineRoute(app, '<endpointKey>', handler)`
- * (lihat packages/shared/src/api.ts untuk daftar key, schema & permission).
- */
-export default async function paymentsRoutes(_app: FastifyInstance) {
-  // contoh: defineRoute(app, 'menuStaff', async () => ({ ... }));
+export default async function paymentsRoutes(app: FastifyInstance) {
+  defineRoute(app, 'paymentCreate', async ({ body, staff }) => {
+    if (body.orderId)
+      return payOrder(app, body.orderId, body.lines, { partial: body.partial, staff, requireShift: true });
+    return paySession(app, body.tableSessionId!, body.lines, { partial: body.partial, staff });
+  });
+
+  defineRoute(app, 'paymentVerify', async ({ params, body, staff }) =>
+    verifyPayment(app, params.id, staff, body.approved, body.note),
+  );
 }

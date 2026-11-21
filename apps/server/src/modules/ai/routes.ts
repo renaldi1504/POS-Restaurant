@@ -1,9 +1,13 @@
 import type { FastifyInstance } from 'fastify';
+import { defineRoute } from '../../lib/route';
+import { translateEntries } from './service';
 
-/**
- * Modul ai — daftarkan endpoint dengan `defineRoute(app, '<endpointKey>', handler)`
- * (lihat packages/shared/src/api.ts untuk daftar key, schema & permission).
- */
-export default async function aiRoutes(_app: FastifyInstance) {
-  // contoh: defineRoute(app, 'menuStaff', async () => ({ ... }));
+export default async function aiRoutes(app: FastifyInstance) {
+  defineRoute(app, 'adminTranslate', async ({ body }) =>
+    translateEntries(
+      app,
+      body.entries.map((e) => ({ key: e.key, text: e.text, overwrite: e.overwrite })),
+      body.targets,
+    ),
+  );
 }

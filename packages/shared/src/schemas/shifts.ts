@@ -152,6 +152,8 @@ export const ClosingPreview = z.object({
   openingCash: MoneyByCurrency,
   openingCashMain: MoneyAmount,
   orderCount: z.number().int().nonnegative(),
+  /** Order batal/ditolak di shift ini (tambahan, opsional). */
+  cancelledCount: z.number().int().nonnegative().optional(),
   salesTotalMain: MoneyAmount,
   byChannel: z.array(ChannelSummary),
   byMethod: z.array(MethodSummary),
