@@ -6,6 +6,7 @@ export * from './localized';
 export * from './options';
 export * from './geo';
 export * from './realtime';
+export * from './errorReasons';
 export * from './api';
 export * from './schemas/common';
 export * from './schemas/system';

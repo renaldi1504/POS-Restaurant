@@ -1,7 +1,8 @@
+import { ERROR_REASONS } from '../errorReasons';
+
 /**
  * Kamus UI Bahasa Indonesia (sumber kunci). Interpolasi gaya i18next: `{{name}}`.
- * Bagian `common, lang, status, channel, orderType, paymentStatus, paymentMethod, errors, kitchen, driver, order`
- * WAJIB lengkap di 4 bahasa; bagian lain (POS staf) wajib lengkap di id & en.
+ * SEMUA bagian wajib lengkap di 4 bahasa (id, en, kh, zh) — dicek test shared & pos-web.
  */
 export const id = {
   common: {
@@ -140,6 +141,8 @@ export const id = {
     NETWORK_ERROR: 'Tidak bisa terhubung ke server',
     INVALID_RESPONSE: 'Respons server tidak dikenali',
   },
+  /** Alasan error spesifik dari server (pesan server persis, lihat errorReasons.ts). */
+  errorReason: { ...ERROR_REASONS },
   kitchen: {
     title: 'Dapur',
     new: 'Baru',

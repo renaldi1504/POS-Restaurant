@@ -20,7 +20,8 @@
     "db:reset": "pnpm --filter @pos/server db:reset",
     "format:check": "prettier --check .",
     "icons": "node scripts/gen-icons.mjs apps/pos-web/public",
-    "icons:font": "python3 scripts/subset-icons.py"
+    "icons:font": "python3 scripts/subset-icons.py",
+    "i18n:missing": "pnpm --filter @pos/server exec tsx ../../scripts/i18n-missing.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

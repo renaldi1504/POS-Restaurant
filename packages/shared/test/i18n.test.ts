@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CUSTOMER_FACING_SECTIONS, dictionaries } from '../src/i18n';
 import { ERROR_CODES, ORDER_CHANNELS, ORDER_STATUSES, ORDER_TYPES } from '../src/enums';
 import { t } from '../src/localized';
+import { ERROR_REASONS, errorReasonOf } from '../src/errorReasons';
 
 function keys(obj: unknown, prefix = ''): string[] {
   if (typeof obj === 'string') return [prefix];
@@ -21,7 +22,23 @@ describe('i18n dictionaries', () => {
         expect(keys(dictionaries[lang][s], s).sort()).toEqual(keys(dictionaries.id[s], s).sort());
       }
     });
+    // Sejak admin & semua layar staf 4 bahasa: kh/zh lengkap untuk SEMUA bagian (tanpa fallback en/id).
+    it(`${lang} is complete (every section)`, () => {
+      expect(keys(dictionaries[lang]).sort()).toEqual(idKeys);
+    });
   }
+  it('plural forms and {{placeholders}} match id in every language', () => {
+    const get = (d: unknown, k: string) =>
+      k.split('.').reduce<unknown>((o, p) => (o as Record<string, unknown>)[p], d) as string;
+    const vars = (v: string) => (v.match(/{{\w+}}/g) ?? []).sort().join(',');
+    for (const lang of ['en', 'kh', 'zh'] as const) {
+      for (const k of idKeys)
+        expect([k, vars(get(dictionaries[lang], k))]).toEqual([k, vars(get(dictionaries.id, k))]);
+    }
+  });
+  it('every server error reason has a translation key', () => {
+    for (const r of Object.keys(ERROR_REASONS)) expect(idKeys).toContain(`errorReason.${r}`);
+  });
   it('no empty strings', () => {
     for (const d of Object.values(dictionaries)) {
       for (const k of keys(d)) {
@@ -35,6 +52,18 @@ describe('i18n dictionaries', () => {
     for (const c of ORDER_CHANNELS) expect(dictionaries.id.channel[c]).toBeTruthy();
     for (const tp of ORDER_TYPES) expect(dictionaries.id.orderType[tp]).toBeTruthy();
     for (const e of ERROR_CODES) expect(dictionaries.id.errors[e]).toBeTruthy();
+  });
+});
+
+describe('errorReasonOf', () => {
+  it('maps exact server messages and extracts params', () => {
+    expect(errorReasonOf('Kategori masih berisi menu')).toEqual({ reason: 'categoryHasItems', params: {} });
+    expect(errorReasonOf('Butuh izin: menu.manage / settings.manage')).toEqual({
+      reason: 'needPermission',
+      params: { perms: 'menu.manage / settings.manage' },
+    });
+    expect(errorReasonOf('Sesuatu yang lain')).toBeNull();
+    expect(errorReasonOf(undefined)).toBeNull();
   });
 });
 

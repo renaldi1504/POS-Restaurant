@@ -47,23 +47,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<SystemRoleKey, PermissionKey[]> = 
   bot: [],
 };
 
-/** Label permission untuk editor role (id). */
-export const PERMISSION_LABELS: Record<PermissionKey, { id: string; en: string }> = {
-  'order.create': { id: 'Buat order', en: 'Create orders' },
-  'payment.create': { id: 'Terima pembayaran', en: 'Take payments' },
-  'order.accept': { id: 'Terima/tolak order online', en: 'Accept/reject online orders' },
-  'order.cancel_paid': { id: 'Batalkan order yang sudah dibayar', en: 'Cancel paid orders' },
-  'kitchen.view': { id: 'Lihat layar dapur', en: 'View kitchen screen' },
-  'kitchen.update': { id: 'Ubah status masak', en: 'Update cooking status' },
-  'menu.toggle_available': { id: 'Tandai menu habis/tersedia', en: 'Toggle menu availability' },
-  'shift.manage': { id: 'Shift, pengeluaran, closing', en: 'Shifts, expenses, closing' },
-  'menu.manage': { id: 'Kelola menu, opsi, harga, promo', en: 'Manage menu, options, prices, promos' },
-  'reports.view': { id: 'Lihat laporan', en: 'View reports' },
-  'settings.manage': { id: 'Ubah pengaturan', en: 'Manage settings' },
-  'users.manage': { id: 'Kelola pengguna & role', en: 'Manage users & roles' },
-  'tables.manage': { id: 'Kelola meja & QR', en: 'Manage tables & QR' },
-  'driver.deliver': { id: 'Antar pesanan (driver)', en: 'Deliver orders (driver)' },
-};
+/** Label permission untuk UI: kamus pos-web `perm.<key dengan . → _>` (4 bahasa). */
+export const permissionI18nKey = (k: PermissionKey): string => `perm.${k.replace(/\./g, '_')}`;
 
 export function hasPermission(perms: readonly string[] | undefined | null, key: PermissionKey): boolean {
   return !!perms && perms.includes(key);
