@@ -1,7 +1,9 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router';
 import type { PermissionKey } from '@pos/shared';
 import { RequireAuth, UnauthorizedListener } from './lib/auth';
+import { RealtimeBridge } from './lib/data';
+import { reconnectPrinter } from './lib/printer';
 import LoginPage from './pages/LoginPage';
 
 const CashierPage = lazy(() => import('./pages/cashier/CashierPage'));
@@ -24,12 +26,20 @@ const TablesAdminPage = lazy(() => import('./pages/admin/TablesAdminPage'));
 const UsersPage = lazy(() => import('./pages/admin/UsersPage'));
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
 const TelegramPage = lazy(() => import('./pages/admin/TelegramPage'));
+const PromoPage = lazy(() => import('./pages/admin/PromoPage'));
+const HistoryPage = lazy(() => import('./pages/cashier/HistoryPage'));
+const PrinterPage = lazy(() => import('./pages/common/PrinterPage'));
 
 function Root() {
+  useEffect(() => {
+    // Sambung ulang otomatis ke printer yang pernah diizinkan (tanpa dialog).
+    void reconnectPrinter();
+  }, []);
   return (
     <>
       <UnauthorizedListener />
-      <Suspense fallback={<div className="p-6 text-muted">…</div>}>
+      <RealtimeBridge />
+      <Suspense fallback={<div className="p-6 text-muted" role="status">…</div>}>
         <Outlet />
       </Suspense>
     </>
@@ -63,6 +73,9 @@ const SHIFT: PermissionKey[] = ['shift.manage'];
  *   /admin/pengguna        Users.dc.html
  *   /admin/settings        Settings.dc.html
  *   /admin/telegram        Telegram.dc.html
+ *   /admin/promo           Promo & komisi (Settings → link)
+ *   /kasir/riwayat         Riwayat order hari ini
+ *   /printer               Printer & suara (per perangkat, semua role)
  */
 export const router = createBrowserRouter([
   {
@@ -80,6 +93,8 @@ export const router = createBrowserRouter([
       { path: '/kasir/meja/:tableId/nota', element: guard(CASHIER, <TempBillPage />) },
       { path: '/kasir/pengeluaran', element: guard(SHIFT, <ExpensesPage />) },
       { path: '/kasir/closing', element: guard(SHIFT, <ClosingPage />) },
+      { path: '/kasir/riwayat', element: guard(CASHIER, <HistoryPage />) },
+      { path: '/printer', element: guard([], <PrinterPage />) },
       { path: '/dapur', element: guard(['kitchen.view'], <KitchenPage />) },
       { path: '/driver', element: guard(['driver.deliver'], <DriverPage />) },
       { path: '/admin', element: guard(['reports.view'], <DashboardPage />) },
@@ -90,6 +105,7 @@ export const router = createBrowserRouter([
       { path: '/admin/pengguna', element: guard(['users.manage'], <UsersPage />) },
       { path: '/admin/settings', element: guard(['settings.manage'], <SettingsPage />) },
       { path: '/admin/telegram', element: guard(['settings.manage'], <TelegramPage />) },
+      { path: '/admin/promo', element: guard(['menu.manage'], <PromoPage />) },
       { path: '*', element: <Navigate to="/login" replace /> },
     ],
   },

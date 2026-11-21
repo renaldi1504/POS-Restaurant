@@ -1,6 +1,9 @@
-import { Placeholder } from '../Placeholder';
+/** Pesanan (keranjang) & detail order — acuan: docs/mockups/Pesanan.dc.html. */
+import { useParams } from 'react-router';
+import { CartView } from './CartView';
+import { ExistingOrderView } from './ExistingOrderView';
 
-/** Detail pesanan — acuan: docs/mockups/Pesanan.dc.html. */
-export default function Page() {
-  return <Placeholder title="Detail pesanan" mockup="Pesanan.dc.html" back="/kasir" />;
+export default function OrderDetailPage() {
+  const { orderId } = useParams();
+  return orderId ? <ExistingOrderView orderId={orderId} /> : <CartView />;
 }

@@ -2,6 +2,7 @@ import i18n, { type Resource } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { LANGS, type Lang } from '@pos/shared';
 import { HTML_LANG, I18N_FALLBACK, i18nResources } from '@pos/shared/i18n';
+import { extraEn, extraId, extraKh, extraZh } from '../i18n/extra';
 
 const STORAGE_KEY = 'pos.lang';
 
@@ -28,5 +29,11 @@ void i18n.use(initReactI18next).init({
   returnNull: false,
   showSupportNotice: false,
 });
+
+// Kamus tambahan pos-web (deep merge, tidak menimpa kunci shared).
+i18n.addResourceBundle('id', 'translation', extraId, true, false);
+i18n.addResourceBundle('en', 'translation', extraEn, true, false);
+i18n.addResourceBundle('kh', 'translation', extraKh, true, false);
+i18n.addResourceBundle('zh', 'translation', extraZh, true, false);
 
 export default i18n;
