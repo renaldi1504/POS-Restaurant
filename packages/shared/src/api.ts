@@ -744,6 +744,15 @@ export const endpoints = {
     response: OkResponse,
     description: 'Hapus promo',
   }),
+  adminAiTest: def({
+    method: 'POST',
+    path: '/api/admin/ai/test',
+    ...staff('settings.manage'),
+    body: A.AiTestRequest,
+    response: A.AiTestResponse,
+    rateLimitPerMin: 10,
+    description: 'Tes jawaban AI bot (Gemini) + pesan error asli untuk diagnosa',
+  }),
   adminTranslate: def({
     method: 'POST',
     path: '/api/admin/translate',

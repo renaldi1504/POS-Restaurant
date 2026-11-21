@@ -86,6 +86,7 @@ export const ICON_NAMES = [
   'arrow_upward',
   'arrow_downward',
   'swap_vert',
+  'smart_toy',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

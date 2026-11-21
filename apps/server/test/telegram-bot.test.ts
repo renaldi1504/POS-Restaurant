@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { OrderDto } from '@pos/shared';
 import { answerQuestion, detectLang, menuLookupReply } from '../src/modules/ai/service';
 import { orderDetailMessage } from '../src/modules/telegram/service';
-import { createTestApp } from './helpers';
+import { call, createTestApp, loginAs } from './helpers';
 
 describe('deteksi bahasa pesan', () => {
   it('Khmer, Mandarin, Indonesia, Inggris; tidak yakin → null', () => {
@@ -84,5 +84,18 @@ describe('tanya menu tanpa Gemini (cadangan)', () => {
     expect(a.forward).toBe(true);
     expect(a.lang).toBe('kh');
     expect(a.text).toContain('សូមអភ័យទោស');
+  });
+
+  it('Tes AI (admin): menunjukkan key belum diisi + alasan', async () => {
+    const owner = await loginAs(app, 'Owner');
+    const res = await call(app, 'adminAiTest', { cookie: owner, body: { question: 'Ayam Goreng berapa?' } });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.keySet).toBe(false);
+    expect(body.reason).toBe('lookup');
+    expect(body.error).toMatch(/GEMINI_API_KEY/);
+    expect(body.answer).toContain('Ayam Goreng');
+    const kasir = await loginAs(app, 'Kasir Pagi');
+    expect((await call(app, 'adminAiTest', { cookie: kasir, body: { question: 'x' } })).statusCode).toBe(403);
   });
 });

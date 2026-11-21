@@ -35,8 +35,15 @@ async function generateJson<T>(app: FastifyInstance, system: string, prompt: str
     contents: prompt,
     config: { systemInstruction: system, responseMimeType: 'application/json', temperature: 0.2 },
   });
-  const text = res.text ?? '';
-  return JSON.parse(text) as T;
+  const text = (res.text ?? '').trim();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    // Kadang dibungkus ```json … ``` atau ada teks di luar JSON
+    const m = /\{[\s\S]*\}/.exec(text);
+    if (m) return JSON.parse(m[0]) as T;
+    throw new Error(`Balasan Gemini bukan JSON: ${text.slice(0, 120)}`);
+  }
 }
 
 export function isQuotaError(err: unknown): boolean {
@@ -231,6 +238,8 @@ export interface AiAnswer {
   reason: 'ok' | 'unsure' | 'quota' | 'disabled' | 'error' | 'lookup';
   /** Bahasa pesan pelanggan (deteksi Gemini / aksara), dipakai untuk membalas & notifikasi. */
   lang: Lang;
+  /** Pesan error asli (diagnosa admin). */
+  error?: string;
 }
 
 export const FALLBACK_REPLY: Record<Lang, string> = {
@@ -317,12 +326,13 @@ export async function menuLookupReply(
 export async function answerQuestion(app: FastifyInstance, question: string, lang: Lang): Promise<AiAnswer> {
   const settings = await getSettings(app.db);
   const detected = detectLang(question) ?? lang;
-  const fallback = async (reason: AiAnswer['reason']): Promise<AiAnswer> => {
+  const fallback = async (reason: AiAnswer['reason'], error?: string): Promise<AiAnswer> => {
     const lookup = await menuLookupReply(app, question, detected).catch(() => null);
-    if (lookup) return { text: lookup, forward: false, reason: 'lookup', lang: detected };
-    return { text: FALLBACK_REPLY[detected], forward: true, reason, lang: detected };
+    if (lookup) return { text: lookup, forward: false, reason: 'lookup', lang: detected, error };
+    return { text: FALLBACK_REPLY[detected], forward: true, reason, lang: detected, error };
   };
-  if (!settings.ai.enabled || !genai(app)) return fallback('disabled');
+  if (!genai(app)) return fallback('disabled', 'GEMINI_API_KEY kosong di .env server');
+  if (!settings.ai.enabled) return fallback('disabled', 'AI dimatikan di Pengaturan');
   try {
     const context = await buildMenuContext(app, settings);
     const system =
@@ -336,7 +346,9 @@ export async function answerQuestion(app: FastifyInstance, question: string, lan
       'and the subtotal; mention the delivery fee/minimum order if relevant. Never invent dishes or prices; say if something is sold out.\n' +
       'You cannot take or create orders yourself: end with a short hint to tap the "Order now" button. ' +
       'Never ask for or reveal personal data. Keep it short, friendly, plain text (no markdown tables).\n' +
-      'If the question is off-topic, a complaint, about an existing order, or you are not sure, set "confident" to false.\n' +
+      'Greetings, small talk, recommendations ("what is good/spicy/for kids?") and general food questions ARE in scope: answer them warmly using the menu. ' +
+      'Set "confident" to false ONLY for complaints, problems with an existing order/payment/delivery, or requests staff must handle — ' +
+      'still write a short polite "answer" in that case.\n' +
       'Reply ONLY with JSON {"answer": string, "confident": boolean, "lang": "id"|"en"|"kh"|"zh"|"other"} ' +
       '(lang = language of the CUSTOMER message).\n\nCONTEXT:\n' +
       context;
@@ -346,12 +358,16 @@ export async function answerQuestion(app: FastifyInstance, question: string, lan
       question.slice(0, 1000),
     );
     const aiLang = (LANGS as readonly string[]).includes(r.lang ?? '') ? (r.lang as Lang) : detected;
-    if (!r.answer || r.confident === false)
-      return { text: FALLBACK_REPLY[aiLang], forward: true, reason: 'unsure', lang: aiLang };
-    return { text: r.answer.slice(0, 3500), forward: false, reason: 'ok', lang: aiLang };
+    const answer = r.answer?.trim();
+    if (!answer) return { text: FALLBACK_REPLY[aiLang], forward: true, reason: 'unsure', lang: aiLang };
+    // Tidak yakin (komplain / urusan order) → tetap kirim jawaban AI, sekaligus teruskan ke admin.
+    if (r.confident === false)
+      return { text: answer.slice(0, 3500), forward: true, reason: 'unsure', lang: aiLang };
+    return { text: answer.slice(0, 3500), forward: false, reason: 'ok', lang: aiLang };
   } catch (err) {
     const quota = isQuotaError(err);
-    app.log.warn({ err: (err as Error).message, quota }, 'Gemini answer gagal');
-    return fallback(quota ? 'quota' : 'error');
+    const msg = (err as Error).message ?? String(err);
+    app.log.warn({ err: msg, quota }, 'Gemini answer gagal');
+    return fallback(quota ? 'quota' : 'error', msg.slice(0, 500));
   }
 }

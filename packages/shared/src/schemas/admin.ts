@@ -289,3 +289,20 @@ export const AuditLogsResponse = z.object({
   nextCursor: z.number().int().nullable(),
 });
 export type AuditLogsResponse = z.infer<typeof AuditLogsResponse>;
+
+// ---------- Tes AI (diagnosa bot) ----------
+export const AiTestRequest = z.object({ question: z.string().trim().min(1).max(500) });
+export type AiTestRequest = z.infer<typeof AiTestRequest>;
+export const AiTestResponse = z.object({
+  keySet: z.boolean(),
+  aiEnabled: z.boolean(),
+  model: z.string(),
+  /** ok | unsure | quota | disabled | error | lookup */
+  reason: z.string(),
+  lang: z.string(),
+  answer: z.string(),
+  forwarded: z.boolean(),
+  /** Pesan error asli dari Gemini (untuk diagnosa), null bila sukses. */
+  error: z.string().nullable(),
+});
+export type AiTestResponse = z.infer<typeof AiTestResponse>;
