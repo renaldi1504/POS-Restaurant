@@ -126,3 +126,14 @@ Workflow `.github/workflows/ci.yml` menjalankan typecheck, lint, test, build, e2
 
 - `curl https://pos.rmberkat.linkedbite.com/api/health` → `{"ok":true,...}`
 - `pm2 logs pos-server`, `pm2 monit` (RAM target < 300 MB)
+
+## Reset database
+
+Selalu membuat backup dulu ke `/srv/pos/backups/` dan meminta konfirmasi `RESET`.
+
+```bash
+bash /srv/pos/app/deploy/reset-db.sh transaksi   # hapus order/shift/pengeluaran/closing/pelanggan; menu, user, meja, pengaturan tetap
+bash /srv/pos/app/deploy/reset-db.sh semua       # kosongkan semuanya, isi ulang data awal (PIN default)
+```
+
+`update.sh` tidak pernah menghapus data — hanya menambah perubahan struktur (migrasi).
