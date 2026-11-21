@@ -885,6 +885,21 @@ export const endpoints = {
     response: Cfg.AdminSettingsResponse,
     description: 'Upload logo → profile.logoUrl',
   }),
+  adminSettingsAbaQr: def({
+    method: 'POST',
+    path: '/api/admin/settings/aba-qr',
+    ...staff('settings.manage'),
+    multipart: true,
+    response: Cfg.AdminSettingsResponse,
+    description: 'Upload gambar QR ABA → payment.aba.qrImageUrl',
+  }),
+  adminSettingsAbaQrDelete: def({
+    method: 'DELETE',
+    path: '/api/admin/settings/aba-qr',
+    ...staff('settings.manage'),
+    response: Cfg.AdminSettingsResponse,
+    description: 'Hapus gambar QR ABA',
+  }),
 
   // ================= Laporan & audit =================
   reportsDaily: def({

@@ -323,6 +323,54 @@ describe('admin users, roles, settings', () => {
     });
     expect(logo.statusCode, logo.body).toBe(200);
     expect(logo.json().settings.profile.logoUrl).toMatch(/^\/uploads\/public\/logo\//);
+
+    // Gambar QR ABA: upload (pipeline sama dengan logo) → payment.aba.qrImageUrl, rekening tidak tertimpa.
+    await call(app, 'adminSettingsUpdate', {
+      cookie: owner,
+      body: { payment: { aba: { accountName: 'RM BERKAT', accountNumber: '000 111' } } },
+    });
+    const qrUp = multipart('qr.png', 'image/png', TINY_PNG);
+    const qr = await app.inject({
+      method: 'POST',
+      url: '/api/admin/settings/aba-qr',
+      payload: qrUp.payload,
+      headers: { ...qrUp.headers, cookie: owner },
+    });
+    expect(qr.statusCode, qr.body).toBe(200);
+    const qrUrl = qr.json().settings.payment.aba.qrImageUrl as string;
+    expect(qrUrl).toMatch(/^\/uploads\/public\/aba-qr\/.+\.png$/);
+    expect(qr.json().settings.payment.aba).toMatchObject({
+      accountName: 'RM BERKAT',
+      accountNumber: '000 111',
+    });
+    const pub = await call(app, 'publicSettings');
+    expect(pub.json().aba.qrImageUrl).toBe(qrUrl);
+    const served = await app.inject({ method: 'GET', url: qrUrl });
+    expect(served.statusCode).toBe(200);
+    const txt = multipart('qr.txt', 'text/plain', Buffer.from('bukan gambar'));
+    const badQr = await app.inject({
+      method: 'POST',
+      url: '/api/admin/settings/aba-qr',
+      payload: txt.payload,
+      headers: { ...txt.headers, cookie: owner },
+    });
+    expect(badQr.statusCode).toBe(415);
+    const qrUp2 = multipart('qr.png', 'image/png', TINY_PNG);
+    const kasirQr = await app.inject({
+      method: 'POST',
+      url: '/api/admin/settings/aba-qr',
+      payload: qrUp2.payload,
+      headers: { ...qrUp2.headers, cookie: kasir },
+    });
+    expect(kasirQr.statusCode).toBe(403);
+    const del = await call(app, 'adminSettingsAbaQrDelete', { cookie: owner });
+    expect(del.statusCode, del.body).toBe(200);
+    expect(del.json().settings.payment.aba).toMatchObject({ accountName: 'RM BERKAT', qrImageUrl: null });
+    expect((await call(app, 'publicSettings')).json().aba.qrImageUrl).toBeNull();
+    await call(app, 'adminSettingsUpdate', {
+      cookie: owner,
+      body: { payment: { aba: { accountName: '', accountNumber: '' } } },
+    });
     const pdf = await call(app, 'adminTablesQrPdf', { cookie: owner });
     expect(pdf.statusCode).toBe(200);
 

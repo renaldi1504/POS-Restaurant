@@ -285,4 +285,30 @@ export default async function adminRoutes(app: FastifyInstance) {
     });
     return adminSettings(app);
   });
+
+  defineRoute(app, 'adminSettingsAbaQr', async ({ req, staff }) => {
+    const file = await readImageUpload(req);
+    const saved = await app.storage.save({ ...file, visibility: 'public', folder: 'aba-qr' });
+    await patchSettings(app.db, { payment: { aba: { qrImageUrl: saved.url } } });
+    await writeAudit(app.db, {
+      userId: staff.id,
+      action: 'settings.aba_qr',
+      entity: 'settings',
+      after: { qrImageUrl: saved.url },
+    });
+    return adminSettings(app);
+  });
+
+  defineRoute(app, 'adminSettingsAbaQrDelete', async ({ staff }) => {
+    const before = (await getSettings(app.db)).payment.aba.qrImageUrl ?? null;
+    await patchSettings(app.db, { payment: { aba: { qrImageUrl: null } } });
+    await writeAudit(app.db, {
+      userId: staff.id,
+      action: 'settings.aba_qr_delete',
+      entity: 'settings',
+      before: { qrImageUrl: before },
+      after: { qrImageUrl: null },
+    });
+    return adminSettings(app);
+  });
 }

@@ -3,7 +3,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { CURRENCIES, type Currency, type Settings, type SettingsPatch, type TextSize } from '@pos/shared';
+import {
+  CURRENCIES,
+  type AdminSettingsResponse,
+  type Currency,
+  type Settings,
+  type SettingsPatch,
+  type TextSize,
+} from '@pos/shared';
 import { AdminBar } from '../../components/admin/AdminBar';
 import {
   usePhotoPicker,
@@ -57,13 +64,15 @@ export default function SettingsPage() {
   const [d, setD] = useState<Settings | null>(null);
   const [catsOpen, setCatsOpen] = useState(false);
   useEffect(() => {
-    if (q.data) setD(structuredClone(q.data.settings));
+    // Isi draft sekali; upload logo/QR hanya mengganti field-nya supaya ubahan lain yang belum disimpan tidak hilang.
+    if (q.data) setD((x) => x ?? structuredClone(q.data.settings));
   }, [q.data]);
 
   const save = useMutation({
     mutationFn: (patch: SettingsPatch) => api.call('adminSettingsUpdate', { body: patch }),
     onSuccess: (r) => {
       qc.setQueryData(qk.adminSettings, r);
+      setD(structuredClone(r.settings));
       void qc.invalidateQueries({ queryKey: qk.publicSettings });
       void qc.invalidateQueries({ queryKey: qk.staffSettings });
       toast.success(t('setx.saved'));
@@ -320,15 +329,12 @@ export default function SettingsPage() {
             inputMode="numeric"
             onChange={(e) => set('payment', { aba: { ...d.payment.aba, accountNumber: e.target.value } })}
           />
-          <TextField
-            label={t('setx.abaQr')}
-            hint={`(${t('common.optional').toLowerCase()})`}
-            value={d.payment.aba.qrImageUrl ?? ''}
-            maxLength={500}
-            type="url"
-            onChange={(e) =>
-              set('payment', { aba: { ...d.payment.aba, qrImageUrl: e.target.value.trim() || null } })
-            }
+          <AbaQrField
+            url={d.payment.aba.qrImageUrl ?? null}
+            onChange={(url) => {
+              // Upload/hapus langsung tersimpan di server → samakan draft & data asli (tidak jadi "belum disimpan").
+              setD((x) => (x ? { ...x, payment: { aba: { ...x.payment.aba, qrImageUrl: url } } } : x));
+            }}
           />
           <span className="text-xs text-muted">{t('setx.abaHint')}</span>
         </Section>
@@ -491,5 +497,87 @@ function ExpenseCategoriesSheet({ open, onClose }: { open: boolean; onClose: () 
         onConfirm={() => delId && remove.mutate(delId)}
       />
     </Sheet>
+  );
+}
+
+/** Gambar QR ABA: upload (potong 1:1) dengan pratinjau, ganti, hapus — langsung tersimpan di server. */
+export function AbaQrField({
+  url,
+  onChange,
+}: {
+  url: string | null;
+  onChange: (url: string | null) => void;
+}) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const done = (r: AdminSettingsResponse) => {
+    qc.setQueryData(qk.adminSettings, r);
+    void qc.invalidateQueries({ queryKey: qk.publicSettings });
+    onChange(r.settings.payment.aba.qrImageUrl ?? null);
+  };
+  const upload = useMutation({
+    mutationFn: (f: File) => {
+      const fd = new FormData();
+      fd.append('file', f);
+      return api.call('adminSettingsAbaQr', { body: fd });
+    },
+    onSuccess: (r) => {
+      done(r);
+      toast.success(t('setx.saved'));
+    },
+    onError: (e) => toast.error(errorMessage(e, t)),
+  });
+  const remove = useMutation({
+    mutationFn: () => api.call('adminSettingsAbaQrDelete'),
+    onSuccess: (r) => {
+      setConfirmRemove(false);
+      done(r);
+    },
+    onError: (e) => toast.error(errorMessage(e, t)),
+  });
+  const picker = usePhotoPicker(1, (f) => upload.mutate(f));
+  return (
+    <div className="flex flex-col gap-1" data-testid="aba-qr-field">
+      <span className="text-sm font-bold text-ink">
+        {t('setx.abaQr')}{' '}
+        <span className="font-medium text-muted">({t('common.optional').toLowerCase()})</span>
+      </span>
+      <div className="flex items-center gap-3">
+        {url ? (
+          <img
+            src={url}
+            alt={t('setx.abaQr')}
+            className="size-28 shrink-0 rounded-xl border border-line object-contain bg-white"
+          />
+        ) : (
+          <div className="flex size-28 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-line-strong bg-bg px-2 text-center text-xs text-muted">
+            {t('setx.abaQrNone')}
+          </div>
+        )}
+        {picker.element}
+        <div className="flex grow flex-col gap-2">
+          <Button variant="secondary" size="md" loading={upload.isPending} onClick={picker.open}>
+            {url ? t('setx.abaQrReplace') : t('setx.abaQrUpload')}
+          </Button>
+          {url ? (
+            <Button variant="ghost" size="md" className="text-danger" onClick={() => setConfirmRemove(true)}>
+              {t('setx.abaQrRemove')}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      <ConfirmSheet
+        open={confirmRemove}
+        title={t('setx.abaQrRemove')}
+        message={t('setx.abaQrRemoveConfirm')}
+        confirmLabel={t('common.delete')}
+        danger
+        loading={remove.isPending}
+        onClose={() => setConfirmRemove(false)}
+        onConfirm={() => remove.mutate()}
+      />
+    </div>
   );
 }

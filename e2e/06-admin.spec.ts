@@ -106,3 +106,43 @@ test('admin: buat pengguna baru lalu login dengan PIN barunya', async ({ page })
   await expect(page.getByTestId('cashier-screen')).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('admin: Settings → upload gambar QR ABA (potong 1:1) → tampil di web pelanggan, lalu hapus', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await loginUI(page, 'Owner');
+  await page.goto('/admin/settings');
+  const field = page.getByTestId('aba-qr-field');
+  await field.scrollIntoViewIfNeeded();
+  // Bukan kolom URL lagi: tombol upload + pratinjau.
+  await expect(page.getByRole('textbox', { name: /QR ABA/ })).toHaveCount(0);
+  await field.getByTestId('photo-input').setInputFiles('e2e/fixtures/bukti-aba.png');
+  const crop = page.getByRole('dialog', { name: 'Atur foto' });
+  await expect(crop).toBeVisible();
+  await crop.getByRole('button', { name: 'Pakai foto' }).click();
+  const img = field.getByRole('img', { name: 'Gambar QR ABA' });
+  await expect(img).toHaveAttribute('src', /^\/uploads\/public\/aba-qr\//);
+  await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+  const src = (await img.getAttribute('src'))!;
+  // Rasio 1:1 hasil potong.
+  const ratio = await img.evaluate((el: HTMLImageElement) => el.naturalWidth / el.naturalHeight);
+  expect(ratio).toBeCloseTo(1, 1);
+
+  // Web pelanggan memakai field yang sama (settings.payment.aba.qrImageUrl) dan file bisa diambil lewat origin web.
+  const pub = await page.request.get(`${ORDER}/api/public/settings`);
+  expect(((await pub.json()) as { aba: { qrImageUrl: string } }).aba.qrImageUrl).toBe(src);
+  const file = await page.request.get(`${ORDER}${src}`);
+  expect(file.status()).toBe(200);
+  expect(file.headers()['content-type']).toMatch(/^image\//);
+
+  // Ganti tersedia; hapus dengan konfirmasi.
+  await expect(field.getByRole('button', { name: 'Ganti QR' })).toBeVisible();
+  await field.getByRole('button', { name: 'Hapus QR' }).click();
+  await page.getByRole('dialog', { name: 'Hapus QR' }).getByRole('button', { name: 'Hapus' }).click();
+  await expect(img).toHaveCount(0);
+  await expect(field.getByRole('button', { name: 'Upload QR' })).toBeVisible();
+  const pub2 = await page.request.get(`${ORDER}/api/public/settings`);
+  expect(((await pub2.json()) as { aba: { qrImageUrl: string | null } }).aba.qrImageUrl).toBeNull();
+  expect(errors).toEqual([]);
+});
