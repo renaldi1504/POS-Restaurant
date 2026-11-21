@@ -62,6 +62,9 @@ async function record(request: Request) {
 export const handlers = [
   http.get('*/api/public/settings', () => HttpResponse.json(db.settings)),
   http.get('*/api/public/menu', () => HttpResponse.json(db.menu)),
+  http.get('*/api/public/geocode', () =>
+    HttpResponse.json({ text: 'Jl. Ekareach, Sihanoukville', provider: 'osm' }),
+  ),
   http.get('*/api/public/session', () => HttpResponse.json(db.session)),
   http.patch('*/api/public/session', async ({ request }) => {
     await record(request);

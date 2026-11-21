@@ -4,6 +4,7 @@ import path from 'node:path';
 process.env.NODE_ENV = 'test';
 process.env.JOBS_ENABLED = 'false';
 process.env.RATE_LIMIT_ENABLED = 'false';
+process.env.GEOCODE_OSM_ENABLED = 'false';
 process.env.TEST_DATABASE_URL ??= 'postgres://pos:pos@localhost:5432/pos_test';
 process.env.UPLOAD_DIR = path.join(os.tmpdir(), 'pos-test-uploads');
 // Integrasi luar selalu mode mock saat test.

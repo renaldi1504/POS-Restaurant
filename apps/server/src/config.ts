@@ -40,6 +40,8 @@ const EnvSchema = z.object({
   TRANSLATE_FREE_ENABLED: bool(true),
 
   GOOGLE_MAPS_API_KEY: optionalString,
+  /** Alamat dari GPS via OpenStreetMap (gratis) bila Google tidak ada/gagal; matikan di e2e/test. */
+  GEOCODE_OSM_ENABLED: bool(true),
 
   R2_ACCOUNT_ID: optionalString,
   R2_ACCESS_KEY_ID: optionalString,

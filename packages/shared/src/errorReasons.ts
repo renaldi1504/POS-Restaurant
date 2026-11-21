@@ -98,6 +98,7 @@ export const ERROR_REASONS = {
   categoryHasItems: 'Kategori masih berisi menu',
   reorderDuplicate: 'Urutan berisi id ganda',
   reorderMissing: 'Sebagian data tidak ditemukan',
+  storageError: 'Gagal menyimpan file di server',
   // ---- pengguna & role ----
   roleNameTaken: 'Nama role sudah dipakai',
   roleInUse: 'Role masih dipakai pengguna',

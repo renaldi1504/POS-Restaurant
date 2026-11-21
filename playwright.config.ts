@@ -66,6 +66,7 @@ export default defineConfig({
         JOBS_ENABLED: 'false',
         RATE_LIMIT_ENABLED: 'false',
         TRANSLATE_FREE_ENABLED: 'false',
+        GEOCODE_OSM_ENABLED: 'false',
         LOG_LEVEL: 'warn',
         POS_ORIGIN: `http://localhost:${POS_PORT}`,
         ORDER_ORIGIN: `http://localhost:${ORDER_PORT}`,

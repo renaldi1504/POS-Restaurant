@@ -1,6 +1,6 @@
 /** Pilih alamat pengantaran — acuan: docs/mockups/Alamat.dc.html. */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { lazy, Suspense, useEffect, useId, useState } from 'react';
+import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import type { AddressDto, Lang } from '@pos/shared';
@@ -71,12 +71,38 @@ export default function AddressPage() {
     updateAddress(patch);
     setDirty(true);
   };
+  // Alamat yang diisi otomatis dari titik (GPS / geser pin). Teks yang diketik sendiri tidak ditimpa.
+  const autoText = useRef<string | null>(null);
+  const textRef = useRef(a.text);
+  textRef.current = a.text;
+  const [geocoding, setGeocoding] = useState(false);
+  const canAutofill = () => !textRef.current.trim() || textRef.current === autoText.current;
+  const autofill = (text: string) => {
+    if (!canAutofill()) return;
+    autoText.current = text;
+    edit({ text });
+  };
+  /** Isi alamat lengkap dari titik lewat server (Google Geocoding / OpenStreetMap). */
+  const fillFromPoint = async (p: { lat: number; lng: number }) => {
+    if (!canAutofill()) return;
+    setGeocoding(true);
+    const r = await api
+      .call('publicReverseGeocode', {
+        query: { lat: p.lat, lng: p.lng, lang: i18n.language as Lang },
+      })
+      .catch(() => null);
+    setGeocoding(false);
+    autofill(r?.text ?? t('web.gpsPoint', { coords: `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}` }));
+  };
   const setPoint = (p: { lat: number; lng: number }, text?: string) => {
-    edit({ lat: p.lat, lng: p.lng, ...(text ? { text } : {}) });
+    edit({ lat: p.lat, lng: p.lng });
     setLatStr(p.lat.toFixed(6));
     setLngStr(p.lng.toFixed(6));
+    if (text) autofill(text);
+    else void fillFromPoint(p);
   };
   const pickSaved = (s: AddressDto) => {
+    autoText.current = null;
     updateAddress({
       addressId: s.id,
       label: s.label,
@@ -273,8 +299,14 @@ export default function AddressPage() {
             placeholder={t('web.addressTextPlaceholder')}
             className="rounded-sm border border-outline-variant p-2.5"
           />
-          <span className="text-label-medium text-on-surface-variant">
-            {point ? t('web.pointHint') : t('web.noPoint')}
+          <span className="text-label-medium text-on-surface-variant" aria-live="polite">
+            {geocoding
+              ? t('web.fillingAddress')
+              : point && a.text && a.text === autoText.current
+                ? t('web.addressAuto')
+                : point
+                  ? t('web.pointHint')
+                  : t('web.noPoint')}
           </span>
         </div>
 
@@ -319,7 +351,8 @@ export default function AddressPage() {
         ) : null}
 
         <label htmlFor={ids.landmark} className="text-label-medium font-medium">
-          {t('web.landmark')}
+          {t('web.landmark')}{' '}
+          <span className="font-normal text-on-surface-variant">({t('common.optional').toLowerCase()})</span>
         </label>
         <input
           id={ids.landmark}

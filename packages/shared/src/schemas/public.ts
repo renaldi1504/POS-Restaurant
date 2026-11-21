@@ -102,3 +102,17 @@ export const UpdateCustomerRequest = z.object({
   lang: Lang.optional(),
 });
 export type UpdateCustomerRequest = z.infer<typeof UpdateCustomerRequest>;
+
+// ---------- Alamat dari titik GPS (reverse geocode) ----------
+export const ReverseGeocodeQuery = z.object({
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
+  lang: Lang.optional(),
+});
+export type ReverseGeocodeQuery = z.input<typeof ReverseGeocodeQuery>;
+export const ReverseGeocodeResponse = z.object({
+  /** Alamat lengkap, atau null bila tidak ditemukan / layanan gagal. */
+  text: z.string().nullable(),
+  provider: z.enum(['google', 'osm', 'none']),
+});
+export type ReverseGeocodeResponse = z.infer<typeof ReverseGeocodeResponse>;

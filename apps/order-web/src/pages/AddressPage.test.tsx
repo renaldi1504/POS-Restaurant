@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cartStore } from '../lib/cart';
@@ -58,7 +58,13 @@ describe('Halaman alamat', () => {
     await user.click(within(page).getByRole('button', { name: 'Pakai lokasi saya sekarang' }));
     expect(await within(page).findByText('Lokasi ditemukan')).toBeInTheDocument();
     expect(within(page).getByLabelText('Lintang (lat)')).toHaveValue('10.611100');
-    await user.type(within(page).getByLabelText('Alamat lengkap'), 'Hotel Sokha, kamar 210');
+    // Alamat lengkap terisi otomatis dari titik GPS; tetap bisa diubah.
+    const text = within(page).getByLabelText('Alamat lengkap');
+    await waitFor(() => expect(text).toHaveValue('Jl. Ekareach, Sihanoukville'));
+    expect(within(page).getByText(/terisi otomatis dari lokasi/)).toBeInTheDocument();
+    expect(within(page).getByLabelText(/Patokan/)).toBeInTheDocument();
+    await user.clear(text);
+    await user.type(text, 'Hotel Sokha, kamar 210');
     await user.click(within(page).getByRole('radio', { name: 'Hotel' }));
     await user.click(within(page).getByRole('button', { name: /Lanjut ke pembayaran/ }));
 

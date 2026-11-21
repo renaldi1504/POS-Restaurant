@@ -6,6 +6,7 @@ import closingRoutes from './closing/routes';
 import customersRoutes from './customers/routes';
 import driversRoutes from './drivers/routes';
 import expensesRoutes from './expenses/routes';
+import geoRoutes from './geo/routes';
 import menuRoutes from './menu/routes';
 import ordersRoutes from './orders/routes';
 import paymentsRoutes from './payments/routes';
@@ -30,6 +31,7 @@ export async function registerModules(app: FastifyInstance): Promise<void> {
   await app.register(customersRoutes);
   await app.register(telegramRoutes);
   await app.register(aiRoutes);
+  await app.register(geoRoutes);
   await app.register(reportsRoutes);
   await app.register(adminRoutes);
 }

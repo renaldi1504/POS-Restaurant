@@ -46,7 +46,7 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   app.decorate('config', config);
   app.decorate('db', db);
   app.decorate('pool', pool);
-  app.decorate('storage', createStorage(config));
+  app.decorate('storage', createStorage(config, app.log));
   app.decorate('jobs', await createJobs(config, app.log, databaseUrl));
   app.addHook('onClose', async () => {
     await app.jobs.stop();

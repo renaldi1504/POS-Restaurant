@@ -168,6 +168,14 @@ export const endpoints = {
     response: Cfg.PublicSettingsResponse,
     description: 'Nama, logo, jam buka, status buka, mata uang',
   }),
+  publicReverseGeocode: def({
+    method: 'GET',
+    path: '/api/public/geocode',
+    auth: 'none',
+    query: P.ReverseGeocodeQuery,
+    response: P.ReverseGeocodeResponse,
+    description: 'Alamat lengkap dari titik GPS (Google Geocoding bila ada key, lainnya OpenStreetMap)',
+  }),
   publicMenu: def({
     method: 'GET',
     path: '/api/public/menu',
