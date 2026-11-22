@@ -25,7 +25,7 @@ export function Page({
   return (
     <div
       className={cn(
-        'mx-auto flex min-h-dvh w-full flex-col overflow-x-hidden bg-surface',
+        'mx-auto flex min-h-dvh w-full flex-col overflow-x-clip bg-surface',
         wide ? 'max-w-[1280px]' : 'max-w-[640px]',
       )}
       data-testid={testId}

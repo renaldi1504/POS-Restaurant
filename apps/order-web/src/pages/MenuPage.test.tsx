@@ -28,9 +28,12 @@ describe('MenuPage (mode biasa)', () => {
         .map((r) => r.textContent),
     ).toEqual(['Delivery', 'Ambil sendiri', 'Makan di sini']);
     const nav = screen.getByRole('navigation', { name: 'Kategori' });
-    expect(within(nav).getByRole('button', { name: 'Semua 9' })).toHaveAttribute('aria-pressed', 'true');
-    expect(within(nav).getByRole('button', { name: 'Pempek 2' })).toBeInTheDocument();
-    expect(within(nav).getByRole('button', { name: 'Terlaris 3' })).toBeInTheDocument();
+    expect(
+      within(nav)
+        .getAllByRole('button')
+        .map((b) => b.textContent),
+    ).toEqual(['🔥 Terlaris3', 'Ayam2', 'Pempek2', 'Minuman3', 'Tambahan2']);
+    expect(within(nav).getByRole('button', { name: /Terlaris/ })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('pencarian live cocok di semua bahasa + nama kategori', async () => {
@@ -65,20 +68,34 @@ describe('MenuPage (mode biasa)', () => {
     expect(screen.getByRole('heading', { name: 'Paling laris' })).toBeInTheDocument();
   });
 
-  it('filter kategori; menu habis di bawah & tidak bisa ditambah', async () => {
+  it('kategori: lompat ke bagian & tersorot; menu habis di bawah & tidak bisa ditambah', async () => {
     const user = userEvent.setup();
+    const scrolled: string[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this.id);
+    };
     await openMenu();
-    await user.click(screen.getByRole('button', { name: 'Pempek 2' }));
-    const names = within(results())
+    const nav = screen.getByRole('navigation', { name: 'Kategori' });
+    await user.click(within(nav).getByRole('button', { name: /^Pempek/ }));
+    expect(scrolled).toContain('sec-2');
+    expect(within(nav).getByRole('button', { name: /^Pempek/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(nav).getByRole('button', { name: /Terlaris/ })).toHaveAttribute('aria-pressed', 'false');
+    const section = screen.getByRole('region', { name: 'Pempek' });
+    expect(within(section).getByText('2 menu')).toBeInTheDocument();
+    const names = within(section)
       .getAllByRole('article')
       .map((a) => a.getAttribute('aria-label'));
     expect(names).toEqual(['Pempek Kapal Selam', 'Pempek Lenjer']);
-    const lenjer = within(results()).getByRole('article', { name: 'Pempek Lenjer' });
+    const lenjer = within(section).getByRole('article', { name: 'Pempek Lenjer' });
     expect(within(lenjer).getByText('Habis')).toBeInTheDocument();
     expect(within(lenjer).queryByRole('button')).toBeNull();
+  });
 
-    await user.click(screen.getByRole('button', { name: 'Terlaris 3' }));
-    expect(within(results()).getAllByRole('article')).toHaveLength(3);
+  it('saat mencari, bar kategori disembunyikan', async () => {
+    const user = userEvent.setup();
+    await openMenu();
+    await user.type(screen.getByRole('searchbox', { name: 'Cari menu' }), 'kopi');
+    expect(screen.queryByRole('navigation', { name: 'Kategori' })).toBeNull();
   });
 
   it('+ Tambah berubah jadi stepper − n +, bar keranjang muncul', async () => {
