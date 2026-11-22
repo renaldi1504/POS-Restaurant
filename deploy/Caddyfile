@@ -27,7 +27,7 @@ pos.rmberkat.linkedbite.com {
 	handle {
 		root * /srv/pos/www/pos
 		# Service worker & index tidak boleh di-cache lama
-		@nocache path /sw.js /index.html /manifest.webmanifest /registerSW.js
+		@nocache path /sw.js /index.html /manifest.webmanifest /registerSW.js /version.json
 		header @nocache Cache-Control "no-cache"
 		@assets path /assets/*
 		header @assets Cache-Control "public, max-age=31536000, immutable"
@@ -47,7 +47,8 @@ order.rmberkat.linkedbite.com {
 		header Content-Security-Policy "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org"
 		@assets path /assets/*
 		header @assets Cache-Control "public, max-age=31536000, immutable"
-		header /index.html Cache-Control "no-cache"
+		@nocache path /index.html /version.json
+		header @nocache Cache-Control "no-cache"
 		try_files {path} /index.html
 		file_server
 	}

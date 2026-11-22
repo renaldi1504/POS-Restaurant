@@ -1,3 +1,4 @@
+import { checkForUpdate } from './appUpdate';
 import { QueryClient } from '@tanstack/react-query';
 import { errorReasonOf } from '@pos/shared';
 import { ApiError, createApiClient, isApiError } from '@pos/shared/client';
@@ -14,6 +15,8 @@ export const api = createApiClient({
   onUnauthorized: (key) => {
     if (key !== 'authMe' && key !== 'authPin') window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
   },
+  // Aplikasi versi lama vs server baru → muat versi terbaru.
+  onInvalidResponse: () => void checkForUpdate({ force: true }),
 });
 
 export const queryClient = new QueryClient({

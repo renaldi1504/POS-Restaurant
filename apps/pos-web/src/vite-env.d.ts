@@ -7,3 +7,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** ID build aplikasi (lihat packages/shared/vite/appVersion.ts). */
+declare const __APP_BUILD__: string;

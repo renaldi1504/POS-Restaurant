@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Lang } from '../enums';
-import { PermissionKey } from '../permissions';
+import { PermissionList } from '../permissions';
 import { Id, IsoDateTime, Pin } from './common';
 
 /** Kartu di layar login: `GET /auth/users`. */
@@ -26,7 +26,7 @@ export const StaffUser = z.object({
   name: z.string(),
   lang: Lang,
   role: z.object({ id: Id, name: z.string() }),
-  permissions: z.array(PermissionKey),
+  permissions: PermissionList,
 });
 export type StaffUser = z.infer<typeof StaffUser>;
 

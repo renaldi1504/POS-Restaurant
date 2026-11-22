@@ -32,6 +32,8 @@ export const kh: Dict = {
     language: 'ភាសា',
     offline: 'គ្មានការតភ្ជាប់',
     reconnecting: 'កំពុងភ្ជាប់ឡើងវិញ…',
+    updateAvailable: 'មានកំណែថ្មីនៃកម្មវិធី',
+    reloadNow: 'ផ្ទុកឡើងវិញ',
     online: 'បានភ្ជាប់',
     empty: 'មិនទាន់មានទិន្នន័យ',
     error: 'មានបញ្ហា',

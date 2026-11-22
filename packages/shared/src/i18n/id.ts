@@ -35,6 +35,8 @@ export const id = {
     language: 'Bahasa',
     offline: 'Tidak ada koneksi',
     reconnecting: 'Menghubungkan ulang…',
+    updateAvailable: 'Versi baru aplikasi tersedia',
+    reloadNow: 'Muat ulang',
     online: 'Terhubung',
     empty: 'Belum ada data',
     error: 'Terjadi kesalahan',

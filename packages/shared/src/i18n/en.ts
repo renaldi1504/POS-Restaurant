@@ -31,6 +31,8 @@ export const en: Dict = {
     language: 'Language',
     offline: 'No connection',
     reconnecting: 'Reconnecting…',
+    updateAvailable: 'A new version of the app is available',
+    reloadNow: 'Reload',
     online: 'Connected',
     empty: 'No data yet',
     error: 'Something went wrong',

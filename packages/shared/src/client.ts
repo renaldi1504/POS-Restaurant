@@ -58,6 +58,8 @@ export interface ApiClientOptions {
   parseResponses?: boolean;
   /** Dipanggil untuk setiap 401 (mis. redirect ke login). */
   onUnauthorized?: (key: EndpointKey) => void;
+  /** Respons tidak sesuai kontrak (mis. aplikasi versi lama setelah server di-update). */
+  onInvalidResponse?: (key: EndpointKey) => void;
 }
 
 function toQueryString(query: unknown): string {
@@ -138,6 +140,7 @@ export function createApiClient(opts: ApiClientOptions = {}) {
     if (!parse) return json as EndpointResponse<K>;
     const result = def.response.safeParse(json);
     if (!result.success) {
+      opts.onInvalidResponse?.(key);
       throw new ApiError(
         res.status,
         'INVALID_RESPONSE',

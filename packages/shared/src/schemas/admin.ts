@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Lang, OrderChannel, PromoKind } from '../enums';
 import { LocalizedLongText, LocalizedText } from '../localized';
-import { PermissionKey } from '../permissions';
+import { PermissionKey, PermissionList } from '../permissions';
 import { Id, IsoDateTime, IsoDateTimeInput, MoneyAmount, NonNegMoney, Pin } from './common';
 import { CategoryDto, MenuItemDto, OptionDto, OptionGroupDto } from './menu';
 import { ExpenseCategoryDto } from './shifts';
@@ -243,7 +243,7 @@ export type UpdateUserRequest = z.infer<typeof UpdateUserRequest>;
 export const RoleDto = z.object({
   id: Id,
   name: z.string(),
-  permissions: z.array(PermissionKey),
+  permissions: PermissionList,
   system: z.boolean(),
   userCount: z.number().int().nonnegative(),
 });

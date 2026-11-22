@@ -5,13 +5,18 @@ import {
   type PublicOrderResponse as PublicOrderResponseT,
 } from '@pos/shared';
 import { ApiError, createApiClient, isApiError } from '@pos/shared/client';
+import { checkForUpdate } from './appUpdate';
 import type { TFunction } from 'i18next';
 
 /**
  * Klien API bertipe (kontrak @pos/shared). Cookie sesi pelanggan `pos_cust` ikut otomatis.
  *   const menu = await api.call('publicMenu', { query: { lang: 'kh' } });
  */
-export const api = createApiClient({ baseUrl: '' });
+export const api = createApiClient({
+  baseUrl: '',
+  // Halaman versi lama vs server baru → muat versi terbaru.
+  onInvalidResponse: () => void checkForUpdate({ force: true }),
+});
 
 export const queryClient = new QueryClient({
   defaultOptions: {

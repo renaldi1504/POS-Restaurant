@@ -22,6 +22,16 @@ export const PERMISSION_KEYS = [
 export const PermissionKey = z.enum(PERMISSION_KEYS);
 export type PermissionKey = z.infer<typeof PermissionKey>;
 
+/**
+ * Daftar izin di RESPONS server: izin yang belum dikenal aplikasi (versi lama yang masih terbuka
+ * saat server sudah diperbarui) diabaikan, bukan membuat respons ditolak.
+ */
+export const PermissionList = z
+  .array(z.string())
+  .transform((xs) =>
+    xs.filter((x): x is PermissionKey => (PERMISSION_KEYS as readonly string[]).includes(x)),
+  );
+
 /** Nama role bawaan (kolom `roles.name`, `system = true`). */
 export const ROLE_NAMES = {
   owner: 'Owner',

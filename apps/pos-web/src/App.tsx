@@ -6,7 +6,7 @@ import { Icon } from './components/ui';
 import { useWindowSizeClass } from './lib/windowSize';
 import type { PermissionKey } from '@pos/shared';
 import { RequireAuth, UnauthorizedListener } from './lib/auth';
-import { ConnectionBanner } from './components/common/ConnectionBanner';
+import { ConnectionBanner, UpdateBanner } from './components/common/ConnectionBanner';
 import { NavUsageTracker } from './components/common/NavigationBar';
 import { RealtimeBridge, TextSizeSync, useCurrentShift } from './lib/data';
 import { reconnectPrinter } from './lib/printer';
@@ -49,6 +49,7 @@ function Root() {
       <TextSizeSync />
       <NavUsageTracker />
       <ConnectionBanner />
+      <UpdateBanner />
       <Suspense
         fallback={
           <div className="p-6 text-on-surface-variant" role="status">

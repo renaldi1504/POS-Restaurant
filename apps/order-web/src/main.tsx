@@ -6,6 +6,9 @@ import { ToastProvider } from './components/ui';
 import { queryClient } from './lib/api';
 import './lib/i18n';
 import './index.css';
+import { startUpdateWatcher } from './lib/appUpdate';
+
+startUpdateWatcher();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

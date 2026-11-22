@@ -32,6 +32,8 @@ export const zh: Dict = {
     language: '语言',
     offline: '无网络连接',
     reconnecting: '正在重新连接…',
+    updateAvailable: '应用有新版本',
+    reloadNow: '重新加载',
     online: '已连接',
     empty: '暂无数据',
     error: '出错了',
