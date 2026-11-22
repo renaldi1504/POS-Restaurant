@@ -2,7 +2,15 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { formatMoney, hasPermission, matchesLocalized, tl, type MenuItemDto } from '@pos/shared';
+import {
+  formatMoney,
+  groupsForPriceChannel,
+  hasPermission,
+  matchesLocalized,
+  priceChannelFor,
+  tl,
+  type MenuItemDto,
+} from '@pos/shared';
 import { Card, Chip, EmptyState, Icon, cn } from '../../components/ui';
 import { ErrorBlock, LoadingBlock, Screen, usePane } from '../../components/common';
 import { CashierActions, CashierShortcuts } from '../../components/cashier/CashierHeader';
@@ -232,7 +240,7 @@ function MenuGrid({ shiftName, lang }: { shiftName: string; lang: string }) {
 
       <OptionSheet
         item={sheetItem}
-        groups={sheetItem ? groupsFor(sheetItem) : []}
+        groups={sheetItem ? groupsForPriceChannel(groupsFor(sheetItem), priceChannelFor(channel)) : []}
         basePrice={sheetItem ? (priceFor(sheetItem, channel) ?? 0) : 0}
         currency={money.main}
         onClose={() => setSheetItem(null)}

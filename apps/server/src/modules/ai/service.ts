@@ -222,7 +222,7 @@ export async function translateEntries(
     const text: LocalizedText = { ...e.text };
     for (const l of job.need) {
       const v = translated[e.key]?.[l];
-      if (ok(v)) text[l] = v.trim().slice(0, 200);
+      if (ok(v)) text[l] = v.trim().slice(0, 1000);
       else if (allowMock) {
         text[l] = mockTranslate(e.text.id, l);
         mocked = true;

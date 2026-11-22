@@ -96,6 +96,7 @@ const opt = (id: number, groupId: number, name: string, priceDelta = 0, availabl
   groupId,
   name: { id: name, en: `${name} EN` },
   priceDelta,
+  channelPrices: { grab: null, foodpanda: null },
   available,
   sort: id,
 });

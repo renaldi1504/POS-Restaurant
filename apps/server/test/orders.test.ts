@@ -107,6 +107,35 @@ describe('order creation', () => {
     expect(res.json().order).toMatchObject({ displayNo: 'GF-482', total: 7500, channel: 'grab' });
   });
 
+  it('harga pilihan per channel: Grab/foodpanda pakai harganya sendiri, kosong = harga toko', async () => {
+    const owner = await loginAs(app, 'Owner');
+    const egg = ids.option('Telur ceplok');
+    const upd = await call(app, 'adminOptionUpdate', {
+      cookie: owner,
+      params: { id: egg },
+      body: { priceGrab: 4000, priceFoodpanda: null },
+    });
+    expect(upd.statusCode, upd.body).toBe(200);
+    expect(upd.json().option.channelPrices).toEqual({ grab: 4000, foodpanda: null });
+    const base = [ids.option('Paha'), ids.option('Tidak pedas')];
+    const total = async (channel: string, withEgg: boolean) => {
+      const res = await call(app, 'orderCreate', {
+        cookie: kasir,
+        body: {
+          channel,
+          type: 'takeaway',
+          items: [{ itemId: ids.item('Ayam Goreng'), qty: 1, optionIds: withEgg ? [...base, egg] : base }],
+        },
+      });
+      expect(res.statusCode, res.body).toBe(200);
+      return res.json().order.total as number;
+    };
+    expect((await total('grab', true)) - (await total('grab', false))).toBe(4000);
+    expect((await total('foodpanda', true)) - (await total('foodpanda', false))).toBe(3000);
+    expect((await total('kasir', true)) - (await total('kasir', false))).toBe(3000);
+    await call(app, 'adminOptionUpdate', { cookie: owner, params: { id: egg }, body: { priceGrab: null } });
+  });
+
   it('applies a manual discount', async () => {
     const res = await call(app, 'orderCreate', {
       cookie: kasir,

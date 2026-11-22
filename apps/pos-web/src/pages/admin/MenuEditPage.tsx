@@ -84,6 +84,7 @@ export default function MenuEditPage() {
   const groups = useQuery({ queryKey: adminQk.groups, queryFn: () => api.call('adminOptionGroupsList') });
   const [d, setD] = useState<Draft>(draftFrom(undefined));
   const [auto, setAuto] = useState<Lang[]>([]);
+  const [descAuto, setDescAuto] = useState<Lang[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [pickOpen, setPickOpen] = useState(false);
@@ -245,6 +246,7 @@ export default function MenuEditPage() {
                       const ds = mergeTranslation(d.desc, r.map.get('desc'));
                       setD((x) => ({ ...x, name: n.text, desc: ds.text }));
                       setAuto((a) => [...new Set([...a, ...n.auto])]);
+                      setDescAuto((a) => [...new Set([...a, ...ds.auto])]);
                     },
                   },
                 )
@@ -268,12 +270,21 @@ export default function MenuEditPage() {
           {showErr && !d.name.id.trim() ? (
             <span className="text-label-medium font-medium text-error">{t('menux.nameRequired')}</span>
           ) : null}
-          <TextArea
-            label={t('menux.description')}
-            hint={`(${t('common.optional').toLowerCase()})`}
-            rows={2}
-            value={d.desc.id}
-            onChange={(e) => setD({ ...d, desc: { ...d.desc, id: e.target.value } })}
+          <b className="mt-2 text-label-large">
+            {t('menux.description')}{' '}
+            <span className="font-normal text-on-surface-variant">
+              ({t('common.optional').toLowerCase()})
+            </span>
+          </b>
+          <LangInputs
+            multiline
+            idPrefix="d"
+            value={d.desc}
+            auto={descAuto}
+            onChange={(v, l) => {
+              setD({ ...d, desc: v });
+              setDescAuto((a) => a.filter((x) => x !== l));
+            }}
           />
         </Section>
         <Section title={t('menux.prices', { symbol: money.main === 'KHR' ? '៛' : money.main })}>

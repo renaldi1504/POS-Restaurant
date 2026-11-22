@@ -59,12 +59,15 @@ export function LangInputs({
   auto,
   idPrefix,
   big,
+  multiline,
 }: {
   value: Loc;
   onChange: (v: Loc, changedLang: Lang) => void;
   auto: Lang[];
   idPrefix: string;
   big?: boolean;
+  /** Teks panjang (deskripsi): kotak multi-baris, maks 1000 karakter. */
+  multiline?: boolean;
 }) {
   const { t } = useTranslation();
   return (
@@ -77,14 +80,26 @@ export function LangInputs({
               <span className="font-medium text-tertiary"> · {t('menux.auto')}</span>
             ) : null}
           </label>
-          <input
-            id={`${idPrefix}-${l}`}
-            lang={l === 'kh' ? 'km' : l}
-            value={value[l] ?? ''}
-            maxLength={200}
-            onChange={(e) => onChange({ ...value, [l]: e.target.value }, l)}
-            className={`h-14 rounded-xs border border-outline bg-surface-container-lowest px-4 text-body-large outline-primary focus:border-primary focus:outline-1 ${big ? 'text-title-medium' : ''} ${l === 'kh' ? 'font-khmer' : l === 'zh' ? 'font-sc' : ''}`}
-          />
+          {multiline ? (
+            <textarea
+              id={`${idPrefix}-${l}`}
+              lang={l === 'kh' ? 'km' : l}
+              value={value[l] ?? ''}
+              maxLength={1000}
+              rows={2}
+              onChange={(e) => onChange({ ...value, [l]: e.target.value }, l)}
+              className={`resize-y rounded-xs border border-outline bg-surface-container-lowest px-4 py-3 text-body-large outline-primary focus:border-primary focus:outline-1 ${l === 'kh' ? 'font-khmer' : l === 'zh' ? 'font-sc' : ''}`}
+            />
+          ) : (
+            <input
+              id={`${idPrefix}-${l}`}
+              lang={l === 'kh' ? 'km' : l}
+              value={value[l] ?? ''}
+              maxLength={200}
+              onChange={(e) => onChange({ ...value, [l]: e.target.value }, l)}
+              className={`h-14 rounded-xs border border-outline bg-surface-container-lowest px-4 text-body-large outline-primary focus:border-primary focus:outline-1 ${big ? 'text-title-medium' : ''} ${l === 'kh' ? 'font-khmer' : l === 'zh' ? 'font-sc' : ''}`}
+            />
+          )}
         </div>
       ))}
     </>

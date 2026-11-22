@@ -36,6 +36,9 @@ interface OptDraft {
   id?: number;
   name: Loc;
   priceDelta: number;
+  /** Tambahan harga Grab / foodpanda; null = sama dengan harga toko. */
+  priceGrab: number | null;
+  priceFoodpanda: number | null;
   available: boolean;
 }
 
@@ -78,6 +81,8 @@ export default function OptionGroupEditPage() {
         id: o.id,
         name: { ...o.name },
         priceDelta: o.priceDelta,
+        priceGrab: o.channelPrices.grab,
+        priceFoodpanda: o.channelPrices.foodpanda,
         available: o.available,
       })),
     );
@@ -96,6 +101,8 @@ export default function OptionGroupEditPage() {
           ...(o.id ? { id: o.id } : {}),
           name: cleanLoc(tr[o.key] ?? o.name),
           priceDelta: o.priceDelta,
+          priceGrab: o.priceGrab,
+          priceFoodpanda: o.priceFoodpanda,
           available: o.available,
           sort: i + 1,
         }));
@@ -241,6 +248,7 @@ export default function OptionGroupEditPage() {
           <b className="pb-1 pt-1.5">
             {t('opsi.optionsTitle', { symbol: money.main === 'KHR' ? '៛' : money.main })}
           </b>
+          <span className="text-label-medium text-on-surface-variant">{t('opsi.channelHint')}</span>
           {opts.map((o, i) => (
             <div key={o.key} className="flex flex-col gap-1 border-b border-surface-container-highest py-2">
               <div className="flex items-center gap-2">
@@ -304,6 +312,35 @@ export default function OptionGroupEditPage() {
                   <Icon name="translate" />
                 </button>
               </div>
+              <div className="flex items-center gap-2 pl-1" data-testid={`opt-channel-${i}`}>
+                {(['priceGrab', 'priceFoodpanda'] as const).map((k) => (
+                  <label key={k} className="flex min-w-0 flex-1 items-center gap-1.5">
+                    <span
+                      className={cn(
+                        'shrink-0 rounded-xs px-1.5 py-0.5 text-label-medium font-medium',
+                        k === 'priceGrab'
+                          ? 'bg-primary-container text-on-primary-container'
+                          : 'bg-tertiary-container text-on-tertiary-container',
+                      )}
+                    >
+                      {k === 'priceGrab' ? 'Grab' : 'foodpanda'}
+                    </span>
+                    <MoneyInput
+                      ariaLabel={t('opsi.channelPriceOf', {
+                        channel: k === 'priceGrab' ? 'Grab' : 'foodpanda',
+                        name: o.name.id || i + 1,
+                      })}
+                      className="min-w-0 grow"
+                      currency={money.main}
+                      value={o[k]}
+                      placeholder={t('opsi.sameAsStore')}
+                      onChange={(v) =>
+                        setOpts((xs) => xs.map((x) => (x.key === o.key ? { ...x, [k]: v } : x)))
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
               {o.name.id.trim() ? (
                 <button
                   type="button"
@@ -323,7 +360,14 @@ export default function OptionGroupEditPage() {
             onClick={() =>
               setOpts((xs) => [
                 ...xs,
-                { key: `n${Date.now()}`, name: { id: '' }, priceDelta: 0, available: true },
+                {
+                  key: `n${Date.now()}`,
+                  name: { id: '' },
+                  priceDelta: 0,
+                  priceGrab: null,
+                  priceFoodpanda: null,
+                  available: true,
+                },
               ])
             }
             className="state-layer -mx-2 flex min-h-12 items-center gap-2 rounded-full px-3 text-left text-label-large text-primary"

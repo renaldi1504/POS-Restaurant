@@ -10,8 +10,10 @@ export const OptionDto = z.object({
   id: Id,
   groupId: Id,
   name: LocalizedText,
-  /** Tambahan harga (boleh 0 atau negatif), mata uang utama. */
+  /** Tambahan harga (boleh 0 atau negatif), mata uang utama — harga toko (dine-in/takeaway/delivery sendiri). */
   priceDelta: MoneyAmount,
+  /** Tambahan harga khusus Grab / foodpanda; null = sama dengan harga toko. */
+  channelPrices: z.object({ grab: MoneyAmount.nullable(), foodpanda: MoneyAmount.nullable() }),
   available: z.boolean(),
   sort: z.number().int(),
 });
@@ -103,3 +105,24 @@ export const OptionSnapshot = z.object({
   priceDelta: MoneyAmount,
 });
 export type OptionSnapshot = z.infer<typeof OptionSnapshot>;
+
+/** Tambahan harga pilihan untuk channel harga (Grab/foodpanda punya harga sendiri, fallback harga toko). */
+export function optionPriceFor(
+  o: Pick<OptionDto, 'priceDelta' | 'channelPrices'>,
+  channel: 'store' | 'grab' | 'foodpanda',
+): number {
+  if (channel === 'grab') return o.channelPrices?.grab ?? o.priceDelta;
+  if (channel === 'foodpanda') return o.channelPrices?.foodpanda ?? o.priceDelta;
+  return o.priceDelta;
+}
+
+/** Salin grup dengan priceDelta tiap pilihan sudah memakai harga channel (untuk lembar opsi & hitung total). */
+export function groupsForPriceChannel<
+  G extends { options: Pick<OptionDto, 'priceDelta' | 'channelPrices'>[] },
+>(groups: G[], channel: 'store' | 'grab' | 'foodpanda'): G[] {
+  if (channel === 'store') return groups;
+  return groups.map((g) => ({
+    ...g,
+    options: g.options.map((o) => ({ ...o, priceDelta: optionPriceFor(o, channel) })),
+  }));
+}

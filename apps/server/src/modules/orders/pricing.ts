@@ -89,7 +89,21 @@ export async function priceItems(
       .filter((l) => l.itemId === item.id)
       .map((l) => groups.find((g) => g.id === l.groupId)!)
       .filter(Boolean)
-      .map((g) => ({ ...g, options: opts.filter((o) => o.groupId === g.id) }));
+      .map((g) => ({
+        ...g,
+        // Harga pilihan mengikuti channel (Grab/foodpanda punya harga sendiri; kosong = harga toko).
+        options: opts
+          .filter((o) => o.groupId === g.id)
+          .map((o) => ({
+            ...o,
+            priceDelta:
+              priceChannel === 'grab'
+                ? (o.priceGrab ?? o.priceDelta)
+                : priceChannel === 'foodpanda'
+                  ? (o.priceFoodpanda ?? o.priceDelta)
+                  : o.priceDelta,
+          })),
+      }));
     const result = validateOptionSelection(itemGroups, line.optionIds);
     if (!result.ok) {
       throw unprocessable('OPTION_INVALID', `Pilihan untuk ${item.name.id} belum benar`, {

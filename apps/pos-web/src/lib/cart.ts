@@ -14,6 +14,7 @@ import {
   type OrderType,
   type StaffMenuResponse,
   type StaffOrderChannel,
+  optionPriceFor,
 } from '@pos/shared';
 
 /** Tipe order di layar Pesanan (gabungan tipe + channel). */
@@ -183,7 +184,7 @@ export function computeCart(
               optionId: id,
               groupName: hit.group.name,
               name: hit.option.name,
-              priceDelta: hit.option.priceDelta,
+              priceDelta: optionPriceFor(hit.option, priceChannelFor(channel)),
             },
           ]
         : [];

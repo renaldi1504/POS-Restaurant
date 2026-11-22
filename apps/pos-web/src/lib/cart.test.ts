@@ -48,6 +48,25 @@ describe('keranjang', () => {
     );
   });
 
+  it('harga pilihan Grab/foodpanda dipakai bila diisi, kosong = harga toko', () => {
+    const menu = {
+      ...fx.menu,
+      optionGroups: fx.menu.optionGroups.map((g) => ({
+        ...g,
+        options: g.options.map((o) =>
+          o.id === 31 ? { ...o, channelPrices: { grab: 3000, foodpanda: null } } : o,
+        ),
+      })),
+    };
+    const lines = addLine([], { itemId: 1, qty: 1, optionIds: [12, 22, 31] });
+    const grab = computeCart({ lines, kind: 'grab', discount: null, deliveryFee: 0 }, menu);
+    expect(grab.lines[0]!.options.find((o) => o.optionId === 31)?.priceDelta).toBe(3000);
+    const fp = computeCart({ lines, kind: 'foodpanda', discount: null, deliveryFee: 0 }, menu);
+    expect(fp.lines[0]!.options.find((o) => o.optionId === 31)?.priceDelta).toBe(2000);
+    const store = computeCart({ lines, kind: 'takeaway', discount: null, deliveryFee: 0 }, menu);
+    expect(store.lines[0]!.options.find((o) => o.optionId === 31)?.priceDelta).toBe(2000);
+  });
+
   it('memakai harga channel Grab (+25%) dan menandai menu habis', () => {
     const lines = addLine([], { itemId: 4, qty: 2, optionIds: [] });
     expect(computeCart({ lines, kind: 'grab', discount: null, deliveryFee: 0 }, fx.menu).subtotal).toBe(

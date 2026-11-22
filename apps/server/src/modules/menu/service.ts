@@ -39,6 +39,7 @@ export const toOptionDto = (o: OptionRow): OptionDto => ({
   groupId: o.groupId,
   name: o.name,
   priceDelta: o.priceDelta,
+  channelPrices: { grab: o.priceGrab ?? null, foodpanda: o.priceFoodpanda ?? null },
   available: o.available,
   sort: o.sort,
 });
@@ -290,6 +291,8 @@ export async function replaceGroupOptions(db: DbOrTx, groupId: number, input: Op
     const values = {
       name: o.name,
       priceDelta: o.priceDelta ?? 0,
+      priceGrab: o.priceGrab ?? null,
+      priceFoodpanda: o.priceFoodpanda ?? null,
       available: o.available ?? true,
       sort: o.sort ?? i,
     };

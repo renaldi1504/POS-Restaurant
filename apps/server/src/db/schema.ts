@@ -167,6 +167,9 @@ export const options = pgTable(
       .references(() => optionGroups.id, { onDelete: 'cascade' }),
     name: jsonb('name').$type<LocalizedText>().notNull(),
     priceDelta: money('price_delta').notNull().default(0),
+    /** Tambahan harga khusus Grab / foodpanda; null = sama dengan harga toko. */
+    priceGrab: money('price_grab'),
+    priceFoodpanda: money('price_foodpanda'),
     available: boolean('available').notNull().default(true),
     sort: integer('sort').notNull().default(0),
   },

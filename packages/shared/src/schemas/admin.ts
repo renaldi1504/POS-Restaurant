@@ -67,6 +67,9 @@ export const OptionInput = z.object({
   id: Id.optional(),
   name: LocalizedText,
   priceDelta: MoneyAmount.default(0),
+  /** Tambahan harga Grab / foodpanda; null/kosong = sama dengan harga toko. */
+  priceGrab: MoneyAmount.nullable().optional(),
+  priceFoodpanda: MoneyAmount.nullable().optional(),
   available: z.boolean().default(true),
   sort: z.number().int().optional(),
 });
@@ -111,6 +114,8 @@ export type CreateOptionRequest = z.input<typeof CreateOptionRequest>;
 export const UpdateOptionRequest = z.object({
   name: LocalizedText.optional(),
   priceDelta: MoneyAmount.optional(),
+  priceGrab: MoneyAmount.nullable().optional(),
+  priceFoodpanda: MoneyAmount.nullable().optional(),
   available: z.boolean().optional(),
   sort: z.number().int().optional(),
 });
@@ -170,12 +175,19 @@ export type PromoResponse = z.infer<typeof PromoResponse>;
 
 // ---------- Terjemahan otomatis ----------
 /** `POST /admin/translate` — isi bahasa yang kosong dari teks `id` (Gemini; mode mock bila key kosong). */
+const TranslateText = z.object({
+  id: z.string().trim().min(1).max(1000),
+  en: z.string().max(1000).optional(),
+  kh: z.string().max(1000).optional(),
+  zh: z.string().max(1000).optional(),
+});
 export const TranslateRequest = z.object({
   entries: z
     .array(
       z.object({
         key: z.string().min(1).max(100),
-        text: LocalizedText,
+        /** Nama (≤200) atau deskripsi (≤1000 karakter). */
+        text: TranslateText,
         /** Juga timpa bahasa yang sudah terisi. */
         overwrite: z.boolean().default(false),
       }),
@@ -186,7 +198,7 @@ export const TranslateRequest = z.object({
 });
 export type TranslateRequest = z.input<typeof TranslateRequest>;
 export const TranslateResponse = z.object({
-  entries: z.array(z.object({ key: z.string(), text: LocalizedText })),
+  entries: z.array(z.object({ key: z.string(), text: TranslateText })),
   /** gemini = AI; free = MyMemory gratis; none = gagal (kolom dibiarkan kosong); mock = test/dev offline. */
   provider: z.enum(['gemini', 'free', 'mock', 'none']),
 });

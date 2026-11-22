@@ -358,6 +358,8 @@ export default async function menuRoutes(app: FastifyInstance) {
         groupId: params.id,
         name: body.name,
         priceDelta: body.priceDelta ?? 0,
+        priceGrab: body.priceGrab ?? null,
+        priceFoodpanda: body.priceFoodpanda ?? null,
         available: body.available ?? true,
         sort: body.sort ?? n,
       })
@@ -378,6 +380,8 @@ export default async function menuRoutes(app: FastifyInstance) {
     const set: Partial<typeof options.$inferInsert> = {};
     if (body.name !== undefined) set.name = body.name;
     if (body.priceDelta !== undefined) set.priceDelta = body.priceDelta;
+    if (body.priceGrab !== undefined) set.priceGrab = body.priceGrab;
+    if (body.priceFoodpanda !== undefined) set.priceFoodpanda = body.priceFoodpanda;
     if (body.available !== undefined) set.available = body.available;
     if (body.sort !== undefined) set.sort = body.sort;
     const [row] = Object.keys(set).length

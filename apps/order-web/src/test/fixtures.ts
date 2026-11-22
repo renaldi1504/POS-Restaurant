@@ -37,6 +37,7 @@ const opt = (groupId: number, name: LocalizedText, priceDelta = 0, available = t
   groupId,
   name,
   priceDelta,
+  channelPrices: { grab: null, foodpanda: null },
   available,
   sort: optSeq,
 });
