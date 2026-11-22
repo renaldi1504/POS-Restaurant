@@ -63,3 +63,53 @@ describe('helpers', () => {
     expect(localHour(new Date('2026-11-21T01:00:00Z'))).toBe(8);
   });
 });
+
+describe('beberapa sesi buka (08:00–14:00 & 17:00–20:00)', () => {
+  const split = {
+    open: '08:00',
+    close: '20:00',
+    periods: [
+      { open: '08:00', close: '14:00' },
+      { open: '17:00', close: '20:00' },
+    ],
+  };
+  it('buka di dalam sesi, tutup saat istirahat & setelah tutup', async () => {
+    const { isOpenAt: open } = await import('../src/businessDate');
+    expect(open(at('2026-11-21T09:00:00'), split)).toBe(true);
+    expect(open(at('2026-11-21T14:00:00'), split)).toBe(false);
+    expect(open(at('2026-11-21T15:30:00'), split)).toBe(false);
+    expect(open(at('2026-11-21T17:00:00'), split)).toBe(true);
+    expect(open(at('2026-11-21T20:30:00'), split)).toBe(false);
+  });
+  it('jam buka berikutnya, rentang hari & teks', async () => {
+    const { nextOpenTime, hoursEnvelope, formatPeriods, openPeriods } = await import('../src/businessDate');
+    expect(nextOpenTime(at('2026-11-21T15:00:00'), split)).toBe('17:00');
+    expect(nextOpenTime(at('2026-11-21T21:00:00'), split)).toBe('08:00');
+    expect(nextOpenTime(at('2026-11-21T10:00:00'), split)).toBeNull();
+    expect(
+      hoursEnvelope([
+        { open: '17:00', close: '02:00' },
+        { open: '08:00', close: '14:00' },
+      ]),
+    ).toEqual({
+      open: '08:00',
+      close: '02:00',
+    });
+    expect(formatPeriods(split)).toBe('08:00–14:00, 17:00–20:00');
+    expect(openPeriods(hours)).toEqual([{ open: '08:00', close: '03:00' }]);
+  });
+  it('sesi malam lewat tengah malam (08–14 & 17–02) tetap satu hari operasional', async () => {
+    const { isOpenAt: open } = await import('../src/businessDate');
+    const late = {
+      open: '08:00',
+      close: '02:00',
+      periods: [
+        { open: '08:00', close: '14:00' },
+        { open: '17:00', close: '02:00' },
+      ],
+    };
+    expect(open(at('2026-11-22T01:00:00'), late)).toBe(true);
+    expect(businessDate(at('2026-11-22T01:00:00'), late)).toBe('2026-11-21');
+    expect(open(at('2026-11-22T03:00:00'), late)).toBe(false);
+  });
+});

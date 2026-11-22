@@ -28,7 +28,7 @@ import {
   TextArea,
   TextField,
 } from '../../components/common';
-import { Badge, Button, Icon, Segmented, Sheet, useToast } from '../../components/ui';
+import { Badge, Button, Icon, IconButton, Segmented, Sheet, useToast } from '../../components/ui';
 import { api, errorMessage, qk } from '../../lib/api';
 import { setPrefs } from '../../lib/prefs';
 
@@ -97,7 +97,21 @@ export default function SettingsPage() {
   const integ = q.data.integrations;
   const patch = settingsDiff(q.data.settings, d);
   const dirty = Object.keys(patch).length > 0;
-  const hoursOk = HHMM.test(d.hours.open) && HHMM.test(d.hours.close);
+  // Sesi jam buka (mis. 08:00–14:00 & 17:00–20:00); minimal 1.
+  const periods = d.hours.periods.length ? d.hours.periods : [{ open: d.hours.open, close: d.hours.close }];
+  const setPeriods = (next: { open: string; close: string }[]) =>
+    setD({
+      ...d,
+      hours: {
+        ...d.hours,
+        periods: next.length > 1 ? next : [],
+        open: next[0]?.open ?? d.hours.open,
+        close: next[next.length - 1]?.close ?? d.hours.close,
+      },
+    });
+  const editPeriod = (i: number, v: Partial<{ open: string; close: string }>) =>
+    setPeriods(periods.map((p, j) => (j === i ? { ...p, ...v } : p)));
+  const hoursOk = periods.every((p) => HHMM.test(p.open) && HHMM.test(p.close));
   const set = <K extends keyof Settings>(k: K, v: Partial<Settings[K]>) =>
     setD({ ...d, [k]: { ...d[k], ...v } });
   const drivers =
@@ -188,29 +202,62 @@ export default function SettingsPage() {
         </Section>
 
         <Section title={t('admin.hours')}>
-          <div className="grid grid-cols-2 gap-2">
-            <TextField
-              label={t('setx.open')}
-              value={d.hours.open}
-              inputMode="numeric"
-              placeholder="08:00"
-              maxLength={5}
-              inputClassName="h-[50px] text-title-large font-medium"
-              onChange={(e) => set('hours', { open: e.target.value.replace('.', ':') })}
-              error={HHMM.test(d.hours.open) ? null : 'HH:MM'}
-            />
-            <TextField
-              label={t('setx.close')}
-              value={d.hours.close}
-              inputMode="numeric"
-              placeholder="03:00"
-              maxLength={5}
-              inputClassName="h-[50px] text-title-large font-medium"
-              onChange={(e) => set('hours', { close: e.target.value.replace('.', ':') })}
-              error={HHMM.test(d.hours.close) ? null : 'HH:MM'}
-            />
-          </div>
-          <span className="text-label-medium text-on-surface-variant">{t('setx.hoursHint')}</span>
+          {periods.map((p, i) => (
+            <div key={i} className="flex items-end gap-2" data-testid={`hours-period-${i}`}>
+              <TextField
+                className="grow"
+                label={
+                  periods.length > 1
+                    ? `${t('setx.open')} · ${t('setx.session', { n: i + 1 })}`
+                    : t('setx.open')
+                }
+                value={p.open}
+                inputMode="numeric"
+                placeholder="08:00"
+                maxLength={5}
+                inputClassName="h-[50px] text-title-large font-medium"
+                onChange={(e) => editPeriod(i, { open: e.target.value.replace('.', ':') })}
+                error={HHMM.test(p.open) ? null : 'HH:MM'}
+              />
+              <TextField
+                className="grow"
+                label={
+                  periods.length > 1
+                    ? `${t('setx.close')} · ${t('setx.session', { n: i + 1 })}`
+                    : t('setx.close')
+                }
+                value={p.close}
+                inputMode="numeric"
+                placeholder={i === 0 ? '14:00' : '20:00'}
+                maxLength={5}
+                inputClassName="h-[50px] text-title-large font-medium"
+                onChange={(e) => editPeriod(i, { close: e.target.value.replace('.', ':') })}
+                error={HHMM.test(p.close) ? null : 'HH:MM'}
+              />
+              {periods.length > 1 ? (
+                <IconButton
+                  icon="delete"
+                  className="text-error! mb-1"
+                  label={t('setx.removeSession', { n: i + 1 })}
+                  onClick={() => setPeriods(periods.filter((_, j) => j !== i))}
+                />
+              ) : null}
+            </div>
+          ))}
+          {periods.length < 4 ? (
+            <Button
+              variant="text"
+              size="md"
+              icon="add"
+              className="self-start"
+              onClick={() => setPeriods([...periods, { open: '17:00', close: '20:00' }])}
+            >
+              {t('setx.addSession')}
+            </Button>
+          ) : null}
+          <span className="text-label-medium text-on-surface-variant">
+            {periods.length > 1 ? t('setx.sessionsHint') : t('setx.hoursHint')}
+          </span>
         </Section>
 
         <Section title={t('admin.currency')}>

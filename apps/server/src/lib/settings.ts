@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS, Settings, type SettingsKey, type SettingsPatch } from '@pos/shared';
+import { DEFAULT_SETTINGS, Settings, hoursEnvelope, type SettingsKey, type SettingsPatch } from '@pos/shared';
 import { sql } from 'drizzle-orm';
 import type { DbOrTx } from '../db/client';
 import { settings as settingsTable } from '../db/schema';
@@ -36,6 +36,9 @@ export async function patchSettings(db: DbOrTx, patch: SettingsPatch): Promise<S
     if (value === undefined) continue;
     next[key] = deepMerge(current[key as SettingsKey], value);
   }
+  // Beberapa sesi buka → open/close = jam buka pertama & tutup terakhir (dasar hari operasional).
+  const h = next.hours as Settings['hours'];
+  if (h?.periods?.length) next.hours = { ...h, ...hoursEnvelope(h.periods) };
   const parsed = Settings.parse(next);
   for (const key of Object.keys(patch) as SettingsKey[]) {
     await db

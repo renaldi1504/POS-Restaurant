@@ -1,6 +1,6 @@
 import { and, desc, eq } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
-import { isOpenAt, type PaymentProofPayload } from '@pos/shared';
+import { isOpenAt, nextOpenTime, openPeriods, type PaymentProofPayload } from '@pos/shared';
 import { addresses, customers, dineTables, orders, tableSessions, users } from '../../db/schema';
 import { writeAudit } from '../../lib/audit';
 import { currentBusinessDate } from '../../lib/business';
@@ -93,7 +93,12 @@ export default async function customersRoutes(app: FastifyInstance) {
       phone: s.profile.phone,
       lat: s.profile.lat,
       lng: s.profile.lng,
-      hours: { open: s.hours.open, close: s.hours.close },
+      hours: {
+        open: s.hours.open,
+        close: s.hours.close,
+        periods: openPeriods(s.hours),
+        nextOpen: nextOpenTime(at, s.hours),
+      },
       isOpen: isOpenAt(at, s.hours),
       businessDate: currentBusinessDate(s, at),
       currency: s.currency,

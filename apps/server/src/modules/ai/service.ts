@@ -4,7 +4,15 @@
  */
 import { GoogleGenAI } from '@google/genai';
 import type { FastifyInstance } from 'fastify';
-import { formatMoney, LANGS, tl, type Lang, type LocalizedText, type Settings } from '@pos/shared';
+import {
+  formatMoney,
+  formatPeriods,
+  LANGS,
+  tl,
+  type Lang,
+  type LocalizedText,
+  type Settings,
+} from '@pos/shared';
 import { getSettings } from '../../lib/settings';
 import { loadItems, loadOptionGroups, listCategories } from '../menu/service';
 
@@ -246,7 +254,7 @@ export async function buildMenuContext(app: FastifyInstance, settings?: Settings
   const cur = s.currency.main;
   const maps = restaurantMapsUrl(s);
   const lines: string[] = [
-    `Restaurant: ${s.profile.name}. Opening hours: ${s.hours.open}-${s.hours.close} (Asia/Phnom_Penh).`,
+    `Restaurant: ${s.profile.name}. Opening hours (Asia/Phnom_Penh): ${formatPeriods(s.hours, '-')}${s.hours.periods.length > 1 ? ' (closed between these sessions)' : ''}.`,
     `LOCATION / ADDRESS (for dine-in, take-away pickup, "where are you?"): ${s.profile.address || '-'}` +
       (s.profile.landmark ? `; landmark/directions: ${s.profile.landmark}` : '') +
       (maps ? `; Google Maps: ${maps}` : '') +
@@ -335,7 +343,7 @@ export function locationReply(s: Settings, lang: Lang): string {
     s.profile.landmark ? `🧭 ${s.profile.landmark}` : null,
     maps ? `🗺 ${T.maps}: ${maps}` : null,
     s.profile.phone ? `📞 ${s.profile.phone}` : null,
-    `🕘 ${T.hours}: ${s.hours.open}–${s.hours.close}`,
+    `🕘 ${T.hours}: ${formatPeriods(s.hours)}`,
     `🍽 ${T.dine}`,
   ]
     .filter(Boolean)

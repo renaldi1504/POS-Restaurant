@@ -19,7 +19,7 @@ export function makeSettings(over: Partial<PublicSettingsResponse> = {}): Public
     phone: '012 888 999',
     lat: 10.6278,
     lng: 103.5221,
-    hours: { open: '08:00', close: '03:00' },
+    hours: { open: '08:00', close: '03:00', periods: [{ open: '08:00', close: '03:00' }], nextOpen: null },
     isOpen: true,
     businessDate: '2026-11-21',
     currency: { main: 'KHR', enabled: ['KHR', 'USD', 'IDR'], rates: { USD: 4100, IDR: 0.25 } },

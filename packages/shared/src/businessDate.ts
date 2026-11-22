@@ -127,21 +127,66 @@ export function businessDayRange(
   return { start: zonedTimeToUtc(ymd, boundary, tz), end: zonedTimeToUtc(addDays(ymd, 1), boundary, tz) };
 }
 
-/** Apakah restoran buka pada `date` (mengikuti jam & daftar libur YYYY-MM-DD). */
+export interface OpenPeriod {
+  open: string;
+  close: string;
+}
+
+/** Sesi buka efektif: `periods` (mis. 08–14 & 17–20) atau satu sesi open–close. */
+export function openPeriods(hours: BusinessHours & { periods?: OpenPeriod[] }): OpenPeriod[] {
+  return hours.periods?.length ? hours.periods : [{ open: hours.open, close: hours.close }];
+}
+
+function inPeriod(minutes: number, p: OpenPeriod): boolean {
+  const open = parseHHMM(p.open);
+  const close = parseHHMM(p.close);
+  if (open === close) return true; // 24 jam
+  if (close > open) return minutes >= open && minutes < close;
+  return minutes >= open || minutes < close;
+}
+
+/**
+ * Untuk beberapa sesi: jam buka pertama & jam tutup terakhir (rentang hari operasional).
+ * Sesi diurutkan dari jam buka; sesi yang lewat tengah malam selalu dianggap terakhir.
+ */
+export function hoursEnvelope(periods: OpenPeriod[]): OpenPeriod {
+  const sorted = [...periods].sort((a, b) => parseHHMM(a.open) - parseHHMM(b.open));
+  return { open: sorted[0]!.open, close: sorted[sorted.length - 1]!.close };
+}
+
+/** Apakah restoran buka pada `date` (mengikuti sesi jam buka & daftar libur YYYY-MM-DD). */
 export function isOpenAt(
   date: Date,
-  hours: BusinessHours & { holidays?: string[] },
+  hours: BusinessHours & { holidays?: string[]; periods?: OpenPeriod[] },
   tz: string = BUSINESS_TIMEZONE,
 ): boolean {
   const bd = businessDate(date, hours, tz);
   if (hours.holidays?.includes(bd)) return false;
   const p = zonedParts(date, tz);
   const minutes = p.hour * 60 + p.minute;
-  const open = parseHHMM(hours.open);
-  const close = parseHHMM(hours.close);
-  if (open === close) return true; // 24 jam
-  if (close > open) return minutes >= open && minutes < close;
-  return minutes >= open || minutes < close;
+  return openPeriods(hours).some((x) => inPeriod(minutes, x));
+}
+
+/** Jam buka berikutnya (HH:MM) saat sedang tutup, mis. istirahat 14:00 → "17:00". null bila sedang buka. */
+export function nextOpenTime(
+  date: Date,
+  hours: BusinessHours & { holidays?: string[]; periods?: OpenPeriod[] },
+  tz: string = BUSINESS_TIMEZONE,
+): string | null {
+  if (isOpenAt(date, hours, tz)) return null;
+  const p = zonedParts(date, tz);
+  const minutes = p.hour * 60 + p.minute;
+  const opens = openPeriods(hours)
+    .map((x) => x.open)
+    .sort((a, b) => parseHHMM(a) - parseHHMM(b));
+  return opens.find((o) => parseHHMM(o) > minutes) ?? opens[0] ?? null;
+}
+
+/** Teks jam buka ringkas: "08:00–14:00, 17:00–20:00". */
+export function formatPeriods(hours: BusinessHours & { periods?: OpenPeriod[] }, sep = '–'): string {
+  return openPeriods(hours)
+    .map((x) => `${x.open}${sep}${x.close}`)
+    .join(', ');
 }
 
 /** Jam lokal (0–23) pada zona bisnis — untuk grafik penjualan per jam. */

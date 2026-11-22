@@ -19,9 +19,14 @@ export const ProfileSettings = z.object({
 export const DayHours = z.object({ open: HHMM, close: HHMM, closed: z.boolean() });
 export type DayHours = z.infer<typeof DayHours>;
 
+export const OpenPeriodSchema = z.object({ open: HHMM, close: HHMM });
+
 export const HoursSettings = z.object({
+  /** Jam buka pertama & tutup terakhir (rentang hari operasional; diisi otomatis dari `periods`). */
   open: HHMM,
   close: HHMM,
+  /** Sesi buka (mis. 08:00–14:00 & 17:00–20:00). Kosong = satu sesi open–close. */
+  periods: z.array(OpenPeriodSchema).max(4),
   sameEveryDay: z.boolean(),
   /** Jika sameEveryDay=false: 7 entri, index 0 = Minggu. */
   perDay: z.array(DayHours).length(7).optional(),
@@ -105,7 +110,7 @@ export const DEFAULT_SETTINGS: Settings = {
     lat: 10.6278,
     lng: 103.5221,
   },
-  hours: { open: '08:00', close: '03:00', sameEveryDay: true, holidays: [] },
+  hours: { open: '08:00', close: '03:00', periods: [], sameEveryDay: true, holidays: [] },
   currency: { main: 'KHR', enabled: ['KHR', 'USD', 'IDR'], rates: { USD: 4100, IDR: 0.25 } },
   delivery: { minOrder: 0, defaultFee: 0 },
   kitchen: { lateMinutes: 15 },
@@ -154,7 +159,14 @@ export const PublicSettingsResponse = z.object({
   phone: z.string(),
   lat: z.number().nullable(),
   lng: z.number().nullable(),
-  hours: z.object({ open: HHMM, close: HHMM }),
+  hours: z.object({
+    open: HHMM,
+    close: HHMM,
+    /** Semua sesi buka (minimal 1). */
+    periods: z.array(OpenPeriodSchema).min(1),
+    /** Jam buka berikutnya bila sedang tutup (mis. istirahat siang), null bila buka. */
+    nextOpen: HHMM.nullable(),
+  }),
   isOpen: z.boolean(),
   businessDate: Ymd,
   currency: CurrencySettings,

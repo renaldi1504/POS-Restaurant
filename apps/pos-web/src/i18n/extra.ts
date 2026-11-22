@@ -313,6 +313,11 @@ export const extraId = {
     open: 'Buka',
     close: 'Tutup',
     hoursHint: 'Sama setiap hari · lewat tengah malam tetap 1 hari operasional',
+    session: 'sesi {{n}}',
+    addSession: 'Tambah sesi buka (mis. buka lagi sore)',
+    removeSession: 'Hapus sesi {{n}}',
+    sessionsHint:
+      'Di luar sesi (mis. istirahat 14:00–17:00) restoran tutup: website & bot tidak menerima order dan menampilkan jam buka berikutnya.',
     main: 'Utama',
     makeMain: 'Jadikan utama',
     rateUsd: 'Kurs dollar',
@@ -826,6 +831,11 @@ export const extraEn: ExtraDict = {
     open: 'Open',
     close: 'Close',
     hoursHint: 'Same every day · after midnight still counts as one business day',
+    session: 'session {{n}}',
+    addSession: 'Add opening session (e.g. reopen in the evening)',
+    removeSession: 'Remove session {{n}}',
+    sessionsHint:
+      'Outside the sessions (e.g. break 14:00–17:00) the restaurant is closed: the website & bot do not accept orders and show the next opening time.',
     main: 'Main',
     makeMain: 'Make main',
     rateUsd: 'Dollar rate',

@@ -279,3 +279,30 @@ describe('telegram disabled', () => {
     await plain.close();
   });
 });
+
+describe('jam buka beberapa sesi', () => {
+  it('istirahat siang: website tutup, jam buka berikutnya, order ditolak; open/close otomatis', async () => {
+    const app = await createTestApp();
+    await app.ready();
+    const s = await patchSettings(app.db, {
+      hours: {
+        periods: [
+          { open: '08:00', close: '14:00' },
+          { open: '17:00', close: '20:00' },
+        ],
+      },
+    });
+    expect(s.hours.open).toBe('08:00');
+    expect(s.hours.close).toBe('20:00');
+    clock.set(new Date('2033-03-01T15:00:00+07:00'));
+    const pub = (await call(app, 'publicSettings', {})).json();
+    expect(pub.isOpen).toBe(false);
+    expect(pub.hours.nextOpen).toBe('17:00');
+    expect(pub.hours.periods).toHaveLength(2);
+    clock.set(new Date('2033-03-01T18:00:00+07:00'));
+    expect((await call(app, 'publicSettings', {})).json().isOpen).toBe(true);
+    clock.reset();
+    await patchSettings(app.db, { hours: { periods: [], open: '00:00', close: '00:00' } });
+    await app.close();
+  });
+});
