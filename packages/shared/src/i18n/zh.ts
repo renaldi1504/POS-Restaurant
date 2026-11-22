@@ -222,6 +222,7 @@ export const zh: Dict = {
     categoryExists: '分类已存在',
     categoryHasItems: '分类下还有菜品',
     reorderDuplicate: '排序中有重复项',
+    rangeTooLong: '日期范围最多 400 天',
     storageError: '服务器无法保存文件',
     reorderMissing: '部分项目已不存在，请刷新后重试',
     roleNameTaken: '角色名称已被使用',

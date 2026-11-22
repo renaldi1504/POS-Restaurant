@@ -25,6 +25,7 @@ const OpenShiftPage = lazy(() => import('./pages/shift/OpenShiftPage'));
 const KitchenPage = lazy(() => import('./pages/kitchen/KitchenPage'));
 const DriverPage = lazy(() => import('./pages/driver/DriverPage'));
 const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'));
+const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'));
 const MenuListPage = lazy(() => import('./pages/admin/MenuListPage'));
 const MenuEditPage = lazy(() => import('./pages/admin/MenuEditPage'));
 const OptionGroupEditPage = lazy(() => import('./pages/admin/OptionGroupEditPage'));
@@ -187,6 +188,7 @@ export const router = createBrowserRouter([
       { path: '/dapur', element: guard(['kitchen.view'], <KitchenPage />) },
       { path: '/driver', element: guard(['driver.deliver'], <DriverPage />) },
       { path: '/admin', element: guard(['reports.view'], <DashboardPage />) },
+      { path: '/admin/laporan', element: guard(['reports.owner'], <ReportsPage />) },
       { path: '/admin/menu/:itemId?', element: guard(['menu.manage'], <MenuAdminRoute />) },
       { path: '/admin/opsi/:groupId', element: guard(['menu.manage'], <MenuAdminRoute option />) },
       { path: '/admin/meja', element: guard(['tables.manage'], <TablesAdminPage />) },

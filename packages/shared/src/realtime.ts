@@ -41,6 +41,8 @@ export const SOCKET_EVENTS = {
   orderReadyForPickup: 'order.ready_for_pickup',
   tableUpdated: 'table.updated',
   menuAvailability: 'menu.availability',
+  /** Menu/kategori/opsi/promo diubah admin → klien muat ulang menu. */
+  menuChanged: 'menu.changed',
   paymentProofReceived: 'payment.proof_received',
 } as const;
 export type SocketEventName = (typeof SOCKET_EVENTS)[keyof typeof SOCKET_EVENTS];
@@ -65,6 +67,8 @@ export const MenuAvailabilityPayload = z.object({
   ...withAt,
 });
 export type MenuAvailabilityPayload = z.infer<typeof MenuAvailabilityPayload>;
+export const MenuChangedPayload = z.object({ ...withAt });
+export type MenuChangedPayload = z.infer<typeof MenuChangedPayload>;
 export const PaymentProofPayload = z.object({
   orderId: Uuid,
   paymentId: Id,
@@ -80,6 +84,7 @@ export interface StaffServerToClientEvents {
   'order.ready_for_pickup': (p: OrderEventPayload) => void;
   'table.updated': (p: TableUpdatedPayload) => void;
   'menu.availability': (p: MenuAvailabilityPayload) => void;
+  'menu.changed': (p: MenuChangedPayload) => void;
   'payment.proof_received': (p: PaymentProofPayload) => void;
 }
 
@@ -89,6 +94,7 @@ export interface CustomerServerToClientEvents {
   'order.updated': (p: PublicOrderEventPayload) => void;
   'table.updated': (p: TableUpdatedPayload) => void;
   'menu.availability': (p: MenuAvailabilityPayload) => void;
+  'menu.changed': (p: MenuChangedPayload) => void;
 }
 
 /** Event klien → server. */

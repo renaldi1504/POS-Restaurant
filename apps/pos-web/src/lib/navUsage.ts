@@ -81,6 +81,13 @@ export const MENU_ENTRIES: NavEntry[] = [
     any: ['reports.view'],
   },
   {
+    to: '/admin/laporan',
+    key: 'nav.reports',
+    short: 'bnav.short.reports',
+    icon: 'monitoring',
+    any: ['reports.owner'],
+  },
+  {
     to: '/admin/menu',
     key: 'nav.menu',
     short: 'bnav.short.menu',

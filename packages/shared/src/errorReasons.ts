@@ -99,6 +99,7 @@ export const ERROR_REASONS = {
   reorderDuplicate: 'Urutan berisi id ganda',
   reorderMissing: 'Sebagian data tidak ditemukan',
   storageError: 'Gagal menyimpan file di server',
+  rangeTooLong: 'Rentang tanggal maksimal 400 hari',
   // ---- pengguna & role ----
   roleNameTaken: 'Nama role sudah dipakai',
   roleInUse: 'Role masih dipakai pengguna',

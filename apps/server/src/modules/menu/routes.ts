@@ -33,6 +33,21 @@ export function broadcastAvailability(app: FastifyInstance, p: Omit<MenuAvailabi
   );
 }
 
+const MENU_ADMIN_PATH = /^\/api\/admin\/(categories|items|option-groups|options|promos)(\/|$|\?)/;
+let menuChangedTimer: NodeJS.Timeout | null = null;
+
+/** Beri tahu semua klien (kasir & website) bahwa menu berubah — digabung per 300 ms. */
+export function broadcastMenuChanged(app: FastifyInstance) {
+  if (menuChangedTimer) return;
+  menuChangedTimer = setTimeout(() => {
+    menuChangedTimer = null;
+    (app.realtime.io as unknown as { emit: (e: string, x: unknown) => void }).emit('menu.changed', {
+      at: now().toISOString(),
+    });
+  }, 300);
+  menuChangedTimer.unref?.();
+}
+
 /** Set `sort` = posisi (1, 2, 3…) untuk id yang diberikan, dalam satu transaksi. */
 async function applyOrder(
   app: FastifyInstance,
@@ -53,6 +68,12 @@ async function applyOrder(
 }
 
 export default async function menuRoutes(app: FastifyInstance) {
+  // Setiap perubahan menu oleh admin (berhasil) → klien muat ulang menu tanpa refresh.
+  app.addHook('onResponse', async (req, reply) => {
+    if (req.method === 'GET' || reply.statusCode >= 400) return;
+    if (MENU_ADMIN_PATH.test(req.url)) broadcastMenuChanged(app);
+  });
+
   // ---------- Staf ----------
   defineRoute(app, 'menuStaff', async () => staffMenu(app.db));
   defineRoute(app, 'publicMenu', async () => publicMenu(app.db));

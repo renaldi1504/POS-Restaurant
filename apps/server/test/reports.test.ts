@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { DailyReport } from '@pos/shared';
+import { DailyReport, RangeReport } from '@pos/shared';
 import { clock } from '../src/lib/clock';
 import { call, createTestApp, loginAs } from './helpers';
 import {
@@ -107,5 +107,60 @@ describe('daily report', () => {
     const p2 = await call(app, 'auditLogs', { cookie: owner, query: { limit: '2', before: String(next) } });
     expect(p2.json().logs[0].id).toBeLessThan(next);
     expect((await call(app, 'auditLogs', { cookie: kasir })).statusCode).toBe(403);
+  });
+});
+
+describe('laporan owner (rentang tanggal)', () => {
+  it('total periode, per hari, menu terlaris, pengeluaran per kategori, periode sebelumnya, izin', async () => {
+    // Hari 1 (2032-07-01) sudah berisi data dari tes harian; tambah hari berikutnya.
+    clock.set(new Date('2032-07-02T12:00:00+07:00'));
+    await closeAllShifts(app);
+    await openShift(app, kasir);
+    const o = await createSimpleOrder(app, kasir, ids, {
+      items: [{ itemId: ids.item('Kopi Susu'), qty: 2 }],
+    });
+    await call(app, 'paymentCreate', {
+      cookie: kasir,
+      body: { orderId: o.id, lines: [{ method: 'cash', currency: 'KHR', amount: o.total }] },
+    });
+    const cats = (await call(app, 'expenseCategories', { cookie: kasir })).json().categories;
+    await call(app, 'expenseCreate', {
+      cookie: kasir,
+      body: { categoryId: cats[1].id, amount: 5000, currency: 'KHR', source: 'cash' },
+    });
+
+    const daily1 = DailyReport.parse(
+      (await call(app, 'reportsDaily', { cookie: owner, query: { date: '2032-07-01' } })).json(),
+    );
+    const res = await call(app, 'reportsRange', {
+      cookie: owner,
+      query: { from: '2032-07-01', to: '2032-07-02' },
+    });
+    expect(res.statusCode, res.body).toBe(200);
+    const r = RangeReport.parse(res.json());
+    expect(r.days).toBe(2);
+    expect(r.totalSales).toBe(daily1.totalSales + o.total);
+    expect(r.orderCount).toBe(daily1.orderCount + 1);
+    expect(r.expensesTotal).toBe(daily1.expensesTotal + 5000);
+    expect(r.grossProfit).toBe(r.netSales - r.expensesTotal);
+    expect(r.byDay.map((d) => d.date)).toEqual(['2032-07-01', '2032-07-02']);
+    expect(r.byDay[1]).toMatchObject({ sales: o.total, expenses: 5000, orders: 1 });
+    expect(r.topItems[0]!.name.id).toBe('Kopi Susu');
+    expect(r.expensesByCategory.reduce((a, c) => a + c.total, 0)).toBe(r.expensesTotal);
+    expect(r.previous).toMatchObject({ from: '2032-06-29', to: '2032-06-30', totalSales: 0 });
+
+    // Kasir (hanya izin harian) & rentang tidak valid
+    expect(
+      (await call(app, 'reportsRange', { cookie: kasir, query: { from: '2032-07-01', to: '2032-07-02' } }))
+        .statusCode,
+    ).toBe(403);
+    expect(
+      (await call(app, 'reportsRange', { cookie: owner, query: { from: '2032-07-02', to: '2032-07-01' } }))
+        .statusCode,
+    ).toBe(400);
+    expect(
+      (await call(app, 'reportsRange', { cookie: owner, query: { from: '2030-01-01', to: '2032-07-01' } }))
+        .statusCode,
+    ).toBe(422);
   });
 });

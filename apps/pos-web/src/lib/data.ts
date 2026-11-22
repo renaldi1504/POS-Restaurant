@@ -148,6 +148,7 @@ export function RealtimeBridge() {
     () => void qc.invalidateQueries({ queryKey: ['orders'] }),
     enabled,
   );
+  useSocketEvent('menu.changed', () => void qc.invalidateQueries({ queryKey: qk.menu }), enabled);
   useSocketEvent(
     'menu.availability',
     (p) => {

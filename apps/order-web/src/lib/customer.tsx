@@ -209,6 +209,10 @@ export function CustomerProvider({ children }: { children: ReactNode }) {
       };
     });
   });
+  // Admin mengubah menu / grup pilihan / harga → muat ulang menu tanpa refresh.
+  useSocketEvent('menu.changed', () => {
+    void qc.invalidateQueries({ queryKey: qk.menu('all') });
+  });
   const onOrder = (p: PublicOrderEventPayload) => {
     qc.setQueryData(qk.order(p.order.id), { order: p.order });
     if (p.order.table) void qc.invalidateQueries({ queryKey: qk.tableBill });

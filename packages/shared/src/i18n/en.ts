@@ -204,6 +204,7 @@ export const en: Dict = {
     categoryExists: 'Category already exists',
     categoryHasItems: 'Category still has menu items',
     reorderDuplicate: 'The order list contains duplicates',
+    rangeTooLong: 'The date range can be at most 400 days',
     storageError: 'Could not save the file on the server',
     reorderMissing: 'Some items no longer exist — refresh and try again',
     roleNameTaken: 'Role name already used',

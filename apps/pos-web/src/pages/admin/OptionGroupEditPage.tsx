@@ -269,9 +269,25 @@ export default function OptionGroupEditPage() {
                 <button
                   type="button"
                   aria-pressed={o.available}
-                  onClick={() =>
-                    setOpts((xs) => xs.map((x) => (x.key === o.key ? { ...x, available: !x.available } : x)))
-                  }
+                  aria-label={`${o.name.id}: ${o.available ? t('common.available') : t('common.soldOut')}`}
+                  onClick={() => {
+                    const next = !o.available;
+                    const flip = (v: boolean) =>
+                      setOpts((xs) => xs.map((x) => (x.key === o.key ? { ...x, available: v } : x)));
+                    flip(next);
+                    // Pilihan yang sudah tersimpan: langsung berlaku di kasir & website (tanpa tekan Simpan).
+                    if (o.id)
+                      api
+                        .call('menuOptionAvailability', { params: { id: o.id }, body: { available: next } })
+                        .then(() => {
+                          void qc.invalidateQueries({ queryKey: qk.menu });
+                          toast.success(next ? t('common.available') : t('common.soldOut'));
+                        })
+                        .catch((e: unknown) => {
+                          flip(!next);
+                          toast.error(errorMessage(e, t));
+                        });
+                  }}
                   className={cn(
                     'h-9 w-[72px] shrink-0 rounded-full text-label-medium font-medium text-on-primary',
                     o.available ? 'bg-primary' : 'bg-error',

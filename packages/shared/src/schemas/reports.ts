@@ -42,6 +42,55 @@ export const DailyReport = z.object({
 });
 export type DailyReport = z.infer<typeof DailyReport>;
 
+// ---------- Laporan owner (rentang tanggal) ----------
+/** `GET /reports/range?from=&to=` — hari operasional inklusif, maks 400 hari. */
+export const RangeReportQuery = z
+  .object({ from: Ymd, to: Ymd })
+  .refine((q) => q.from <= q.to, { message: 'Tanggal awal harus sebelum tanggal akhir', path: ['to'] });
+export type RangeReportQuery = z.infer<typeof RangeReportQuery>;
+
+export const DayPoint = z.object({
+  date: Ymd,
+  sales: MoneyAmount,
+  expenses: MoneyAmount,
+  orders: z.number().int().nonnegative(),
+});
+export type DayPoint = z.infer<typeof DayPoint>;
+
+export const ExpenseCategoryTotal = z.object({
+  category: z.string(),
+  total: MoneyAmount,
+  count: z.number().int().nonnegative(),
+});
+export type ExpenseCategoryTotal = z.infer<typeof ExpenseCategoryTotal>;
+
+export const RangeTotals = z.object({
+  totalSales: MoneyAmount,
+  netSales: MoneyAmount,
+  expensesTotal: MoneyAmount,
+  /** Penjualan bersih − pengeluaran. */
+  grossProfit: MoneyAmount,
+  orderCount: z.number().int().nonnegative(),
+});
+export type RangeTotals = z.infer<typeof RangeTotals>;
+
+export const RangeReport = RangeTotals.extend({
+  from: Ymd,
+  to: Ymd,
+  days: z.number().int().positive(),
+  currency: Currency,
+  averageOrder: MoneyAmount,
+  cancelledCount: z.number().int().nonnegative(),
+  byDay: z.array(DayPoint),
+  byChannel: z.array(ChannelSummary),
+  byMethod: z.array(MethodSummary),
+  topItems: z.array(TopItem),
+  expensesByCategory: z.array(ExpenseCategoryTotal),
+  /** Periode sebelumnya dengan panjang sama (untuk perbandingan naik/turun). */
+  previous: RangeTotals.extend({ from: Ymd, to: Ymd }),
+});
+export type RangeReport = z.infer<typeof RangeReport>;
+
 /** `GET /reports/closing/:shiftId` — laporan closing untuk dicetak. */
 export const ClosingReportResponse = z.object({
   shift: ShiftDto,

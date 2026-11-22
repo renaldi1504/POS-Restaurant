@@ -12,6 +12,8 @@ export const PERMISSION_KEYS = [
   'shift.manage',
   'menu.manage',
   'reports.view',
+  /** Laporan owner: penjualan, pengeluaran, laba kotor & menu terlaris per periode. */
+  'reports.owner',
   'settings.manage',
   'users.manage',
   'tables.manage',

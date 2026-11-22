@@ -91,6 +91,11 @@ export const ICON_NAMES = [
   // Web pelanggan (tampilan modern)
   'account_balance',
   'hourglass_top',
+  'calendar_month',
+  'trending_up',
+  'trending_down',
+  'trending_flat',
+  'monitoring',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

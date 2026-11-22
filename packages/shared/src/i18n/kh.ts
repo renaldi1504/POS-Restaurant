@@ -222,6 +222,7 @@ export const kh: Dict = {
     categoryExists: 'ប្រភេទនេះមានរួចហើយ',
     categoryHasItems: 'ប្រភេទនេះនៅមានម្ហូប',
     reorderDuplicate: 'លំដាប់មានធាតុស្ទួន',
+    rangeTooLong: 'ចន្លោះកាលបរិច្ឆេទអតិបរមា 400 ថ្ងៃ',
     storageError: 'មិនអាចរក្សាទុកឯកសារនៅលើម៉ាស៊ីនមេបានទេ',
     reorderMissing: 'ធាតុខ្លះមិនមានទៀតទេ — សូមផ្ទុកឡើងវិញ',
     roleNameTaken: 'ឈ្មោះតួនាទីនេះមានរួចហើយ',

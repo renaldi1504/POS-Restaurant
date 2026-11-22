@@ -6,12 +6,24 @@ import { defineRoute } from '../../lib/route';
 import { getSettings } from '../../lib/settings';
 import { computePreview, getClosingDto } from '../closing/service';
 import { getShift, toShiftDto } from '../shifts/service';
-import { dailyReport } from './service';
+import { unprocessable } from '../../lib/errors';
+import { dailyReport, rangeReport } from './service';
 
 export default async function reportsRoutes(app: FastifyInstance) {
   defineRoute(app, 'reportsDaily', async ({ query }) => {
     const settings = await getSettings(app.db);
     return dailyReport(app.db, query.date ?? currentBusinessDate(settings), settings);
+  });
+
+  defineRoute(app, 'reportsRange', async ({ query }) => {
+    const settings = await getSettings(app.db);
+    try {
+      return await rangeReport(app.db, query.from, query.to, settings);
+    } catch (err) {
+      if ((err as Error).message === 'RANGE_TOO_LONG')
+        throw unprocessable('VALIDATION_ERROR', 'Rentang tanggal maksimal 400 hari');
+      throw err;
+    }
   });
 
   defineRoute(app, 'reportsClosing', async ({ params }) => {

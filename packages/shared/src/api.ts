@@ -951,6 +951,14 @@ export const endpoints = {
     response: R.DailyReport,
     description: 'Dashboard harian',
   }),
+  reportsRange: def({
+    method: 'GET',
+    path: '/api/reports/range',
+    ...staff('reports.owner'),
+    query: R.RangeReportQuery,
+    response: R.RangeReport,
+    description: 'Laporan owner: penjualan, pengeluaran, laba kotor, menu terlaris untuk rentang tanggal',
+  }),
   reportsClosing: def({
     method: 'GET',
     path: '/api/reports/closing/:shiftId',
