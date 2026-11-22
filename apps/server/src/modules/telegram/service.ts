@@ -14,7 +14,7 @@ import { customers, orders, payments } from '../../db/schema';
 import { JOB_NAMES } from '../../lib/jobs';
 import { getSettings } from '../../lib/settings';
 import { privateKeyFromUrl } from '../../lib/upload';
-import { answerQuestion, detectLang } from '../ai/service';
+import { answerQuestion, detectLang, isLocationQuestion } from '../ai/service';
 import { getOrderDto } from '../orders/dto';
 import { langFromTelegram } from './initData';
 
@@ -333,6 +333,14 @@ function createTelegram(app: FastifyInstance): TelegramService {
     await ctx.reply(answer.text, {
       reply_markup: new InlineKeyboard().webApp(BOT_TEXT[answer.lang].order, miniAppUrl(app)),
     });
+    // Pertanyaan lokasi → kirim juga pin lokasi restoran (bisa dibuka di Google Maps).
+    if (isLocationQuestion(ctx.message.text)) {
+      const s = await getSettings(app.db);
+      if (s.profile.lat != null && s.profile.lng != null)
+        await ctx
+          .replyWithVenue(s.profile.lat, s.profile.lng, s.profile.name, s.profile.address || s.profile.name)
+          .catch(() => undefined);
+    }
     if (answer.forward) {
       const who = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(' ');
       await app.jobs

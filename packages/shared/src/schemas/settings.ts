@@ -5,6 +5,10 @@ import { HHMM, Lat, Lng, NonNegMoney, Ymd } from './common';
 export const ProfileSettings = z.object({
   name: z.string().min(1).max(100),
   address: z.string().max(300),
+  /** Patokan / petunjuk arah (mis. "seberang Golden Lion, lantai 1"). */
+  landmark: z.string().max(300),
+  /** Link Google Maps lokasi restoran (opsional; bila kosong dibuat dari lat/lng). */
+  mapsUrl: z.string().max(500),
   phone: z.string().max(50),
   logoUrl: z.string().nullable(),
   /** Koordinat restoran — untuk jarak driver (haversine). */
@@ -41,7 +45,11 @@ export const DeliverySettings = z.object({
 });
 
 export const KitchenSettings = z.object({ lateMinutes: z.number().int().min(1).max(240) });
-export const AiSettings = z.object({ enabled: z.boolean() });
+export const AiSettings = z.object({
+  enabled: z.boolean(),
+  /** Info tambahan untuk bot (parkir, tempat duduk, wifi, cara ke lokasi, dll). */
+  notes: z.string().max(2000),
+});
 export const QrSettings = z.object({ requireAccept: z.boolean() });
 export const CommissionSettings = z.object({
   grab: z.number().min(0).max(100),
@@ -90,6 +98,8 @@ export const DEFAULT_SETTINGS: Settings = {
   profile: {
     name: 'Rumah Makan Berkat',
     address: 'Sihanoukville, Kamboja',
+    landmark: '',
+    mapsUrl: '',
     phone: '',
     logoUrl: null,
     lat: 10.6278,
@@ -99,7 +109,7 @@ export const DEFAULT_SETTINGS: Settings = {
   currency: { main: 'KHR', enabled: ['KHR', 'USD', 'IDR'], rates: { USD: 4100, IDR: 0.25 } },
   delivery: { minOrder: 0, defaultFee: 0 },
   kitchen: { lateMinutes: 15 },
-  ai: { enabled: true },
+  ai: { enabled: true, notes: '' },
   qr: { requireAccept: true },
   commissions: { grab: 30, foodpanda: 30 },
   ui: { textSize: 'normal' },

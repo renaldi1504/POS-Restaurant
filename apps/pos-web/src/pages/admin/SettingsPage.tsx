@@ -25,6 +25,7 @@ import {
   ScreenFooter,
   Section,
   Switch,
+  TextArea,
   TextField,
 } from '../../components/common';
 import { Badge, Button, Icon, Segmented, Sheet, useToast } from '../../components/ui';
@@ -148,6 +149,21 @@ export default function SettingsPage() {
             value={d.profile.address}
             onChange={(e) => set('profile', { address: e.target.value })}
           />
+          <TextField
+            label={t('setx.landmark')}
+            placeholder={t('setx.landmarkPh')}
+            value={d.profile.landmark}
+            onChange={(e) => set('profile', { landmark: e.target.value })}
+          />
+          <TextField
+            label={t('setx.mapsUrl')}
+            type="url"
+            inputMode="url"
+            placeholder="https://maps.app.goo.gl/…"
+            value={d.profile.mapsUrl}
+            onChange={(e) => set('profile', { mapsUrl: e.target.value })}
+          />
+          <span className="text-label-medium text-on-surface-variant">{t('setx.mapsUrlHint')}</span>
           <TextField
             label={t('common.phone')}
             type="tel"
@@ -347,6 +363,13 @@ export default function SettingsPage() {
             checked={d.ai.enabled}
             onChange={(v) => set('ai', { enabled: v })}
             label={t('setx.aiAnswers')}
+          />
+          <TextArea
+            label={t('setx.aiNotes')}
+            hint={t('setx.aiNotesHint')}
+            maxLength={2000}
+            value={d.ai.notes}
+            onChange={(e) => set('ai', { notes: e.target.value })}
           />
           <div className="flex items-center justify-between">
             <span>{t('admin.gemini')}</span>

@@ -1,7 +1,13 @@
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { OrderDto } from '@pos/shared';
-import { answerQuestion, detectLang, menuLookupReply } from '../src/modules/ai/service';
+import {
+  answerQuestion,
+  buildMenuContext,
+  detectLang,
+  isLocationQuestion,
+  menuLookupReply,
+} from '../src/modules/ai/service';
 import { orderDetailMessage } from '../src/modules/telegram/service';
 import { call, createTestApp, loginAs } from './helpers';
 
@@ -97,5 +103,29 @@ describe('tanya menu tanpa Gemini (cadangan)', () => {
     expect(body.answer).toContain('Ayam Goreng');
     const kasir = await loginAs(app, 'Kasir Pagi');
     expect((await call(app, 'adminAiTest', { cookie: kasir, body: { question: 'x' } })).statusCode).toBe(403);
+  });
+
+  it('tanya lokasi / makan di tempat → alamat, patokan, link maps (tanpa Gemini) & masuk konteks AI', async () => {
+    const owner = await loginAs(app, 'Owner');
+    const upd = await call(app, 'adminSettingsUpdate', {
+      cookie: owner,
+      body: {
+        profile: { address: 'Street 108, Sihanoukville', landmark: 'seberang Golden Lion', mapsUrl: '' },
+        ai: { notes: 'Parkir motor di depan' },
+      },
+    });
+    expect(upd.statusCode).toBe(200);
+    const a = await answerQuestion(app, 'Lokasinya dimana kak? bisa makan di tempat?', 'id');
+    expect(a.forward).toBe(false);
+    expect(a.text).toContain('Street 108, Sihanoukville');
+    expect(a.text).toContain('seberang Golden Lion');
+    expect(a.text).toMatch(/maps\.google\.com\/\?q=/);
+    const kh = await answerQuestion(app, 'ហាងនៅឯណា?', 'id');
+    expect(kh.text).toContain('ទីតាំងរបស់យើង');
+    const ctx = await buildMenuContext(app);
+    expect(ctx).toContain('seberang Golden Lion');
+    expect(ctx).toContain('Parkir motor di depan');
+    expect(isLocationQuestion('Where are you located?')).toBe(true);
+    expect(isLocationQuestion('炸鸡多少钱')).toBe(false);
   });
 });

@@ -302,6 +302,14 @@ export const extraId = {
     lat: 'Lintang (lat)',
     lng: 'Bujur (lng)',
     latLngHint: 'Koordinat restoran dipakai untuk jarak antaran driver.',
+    landmark: 'Patokan / petunjuk arah',
+    landmarkPh: 'Mis. seberang Golden Lion, sebelah toko HP',
+    mapsUrl: 'Link Google Maps (opsional)',
+    mapsUrlHint:
+      'Bot mengirim alamat, patokan, link ini & pin lokasi saat pelanggan tanya lokasi / makan di tempat. Kosong = dibuat dari koordinat.',
+    aiNotes: 'Info tambahan untuk bot',
+    aiNotesHint:
+      'Mis. parkir motor di depan, ada AC & wifi, bisa reservasi via telepon. Bot memakai info ini untuk menjawab.',
     open: 'Buka',
     close: 'Tutup',
     hoursHint: 'Sama setiap hari · lewat tengah malam tetap 1 hari operasional',
@@ -807,6 +815,14 @@ export const extraEn: ExtraDict = {
     lat: 'Latitude',
     lng: 'Longitude',
     latLngHint: 'Restaurant coordinates are used for driver distance.',
+    landmark: 'Landmark / directions',
+    landmarkPh: 'E.g. opposite Golden Lion, next to the phone shop',
+    mapsUrl: 'Google Maps link (optional)',
+    mapsUrlHint:
+      'The bot sends the address, landmark, this link & a location pin when customers ask where you are / about dine-in. Empty = built from coordinates.',
+    aiNotes: 'Extra info for the bot',
+    aiNotesHint:
+      'E.g. motorbike parking in front, air-con & wifi, reservations by phone. The bot uses this to answer.',
     open: 'Open',
     close: 'Close',
     hoursHint: 'Same every day · after midnight still counts as one business day',

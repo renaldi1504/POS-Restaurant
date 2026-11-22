@@ -244,8 +244,16 @@ export async function buildMenuContext(app: FastifyInstance, settings?: Settings
     loadOptionGroups(app.db),
   ]);
   const cur = s.currency.main;
+  const maps = restaurantMapsUrl(s);
   const lines: string[] = [
-    `Restaurant: ${s.profile.name} (${s.profile.address}). Opening hours: ${s.hours.open}-${s.hours.close} (Asia/Phnom_Penh).`,
+    `Restaurant: ${s.profile.name}. Opening hours: ${s.hours.open}-${s.hours.close} (Asia/Phnom_Penh).`,
+    `LOCATION / ADDRESS (for dine-in, take-away pickup, "where are you?"): ${s.profile.address || '-'}` +
+      (s.profile.landmark ? `; landmark/directions: ${s.profile.landmark}` : '') +
+      (maps ? `; Google Maps: ${maps}` : '') +
+      (s.profile.phone ? `; phone: ${s.profile.phone}` : '') +
+      '.',
+    'Service types: dine-in (customers can eat at the restaurant; at the table they scan the table QR code to order), take-away, and delivery.',
+    ...(s.ai.notes.trim() ? [`EXTRA INFO FROM THE OWNER: ${s.ai.notes.trim()}`] : []),
     `Currency: ${cur}. Delivery minimum order: ${formatMoney(s.delivery.minOrder, cur)}; delivery fee: ${formatMoney(s.delivery.defaultFee, cur)}.`,
     'Orders are placed ONLY through the Mini App (menu button). Payment: cash on delivery or ABA transfer.',
     'MENU:',
@@ -278,6 +286,60 @@ export async function buildMenuContext(app: FastifyInstance, settings?: Settings
     }
   }
   return lines.join('\n');
+}
+
+/** Link Google Maps restoran: link dari admin, atau dibuat dari koordinat. */
+export function restaurantMapsUrl(s: Settings): string | null {
+  if (s.profile.mapsUrl.trim()) return s.profile.mapsUrl.trim();
+  if (s.profile.lat != null && s.profile.lng != null)
+    return `https://maps.google.com/?q=${s.profile.lat},${s.profile.lng}`;
+  return null;
+}
+
+/** Pertanyaan lokasi / makan di tempat (semua bahasa). */
+export function isLocationQuestion(text: string): boolean {
+  return /\b(lokasi|alamat|di ?mana|dimana|lokasinya|alamatnya|maps?|peta|arah|makan di tempat|dine.?in|where|location|address|directions?|find you|eat in)\b|ទីតាំង|អាសយដ្ឋាន|នៅឯណា|នៅណា|ហាងនៅ|ញ៉ាំនៅហាង|地址|在哪|位置|怎么走|堂食/i.test(
+    text,
+  );
+}
+
+const LOCATION_TEXT: Record<Lang, { here: string; hours: string; dine: string; maps: string }> = {
+  id: {
+    here: 'Lokasi kami',
+    hours: 'Jam buka',
+    dine: 'Bisa makan di tempat — di meja tinggal scan QR untuk pesan.',
+    maps: 'Peta',
+  },
+  en: {
+    here: 'Our location',
+    hours: 'Opening hours',
+    dine: 'Dine-in welcome — scan the QR code on your table to order.',
+    maps: 'Map',
+  },
+  kh: {
+    here: 'ទីតាំងរបស់យើង',
+    hours: 'ម៉ោងបើក',
+    dine: 'អាចញ៉ាំនៅហាងបាន — ស្កេន QR នៅលើតុដើម្បីកុម្ម៉ង់។',
+    maps: 'ផែនទី',
+  },
+  zh: { here: '我们的位置', hours: '营业时间', dine: '欢迎堂食 — 扫描桌上的二维码点餐。', maps: '地图' },
+};
+
+/** Balasan lokasi tanpa AI (cadangan). */
+export function locationReply(s: Settings, lang: Lang): string {
+  const T = LOCATION_TEXT[lang];
+  const maps = restaurantMapsUrl(s);
+  return [
+    `📍 ${T.here}: ${s.profile.name}`,
+    s.profile.address,
+    s.profile.landmark ? `🧭 ${s.profile.landmark}` : null,
+    maps ? `🗺 ${T.maps}: ${maps}` : null,
+    s.profile.phone ? `📞 ${s.profile.phone}` : null,
+    `🕘 ${T.hours}: ${s.hours.open}–${s.hours.close}`,
+    `🍽 ${T.dine}`,
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 export interface AiAnswer {
@@ -376,6 +438,14 @@ export async function answerQuestion(app: FastifyInstance, question: string, lan
   const settings = await getSettings(app.db);
   const detected = detectLang(question) ?? lang;
   const fallback = async (reason: AiAnswer['reason'], error?: string): Promise<AiAnswer> => {
+    if (isLocationQuestion(question))
+      return {
+        text: locationReply(settings, detected),
+        forward: false,
+        reason: 'lookup',
+        lang: detected,
+        error,
+      };
     const lookup = await menuLookupReply(app, question, detected).catch(() => null);
     if (lookup) return { text: lookup, forward: false, reason: 'lookup', lang: detected, error };
     return { text: FALLBACK_REPLY[detected], forward: true, reason, lang: detected, error };
@@ -393,6 +463,9 @@ export async function answerQuestion(app: FastifyInstance, question: string, lan
       'PRICES: always state prices with the currency exactly as in the context. If the customer lists dishes/quantities ' +
       '(e.g. "2 fried chicken + 1 iced tea"), give a short breakdown per line (qty × price incl. chosen option surcharges) ' +
       'and the subtotal; mention the delivery fee/minimum order if relevant. Never invent dishes or prices; say if something is sold out.\n' +
+      'LOCATION / DINE-IN: when asked where the restaurant is, how to get there, or about eating at the restaurant, give the address, ' +
+      'landmark/directions and the Google Maps link from the context (copy the link exactly), plus opening hours. ' +
+      'Never invent an address or link.\n' +
       'You cannot take or create orders yourself: end with a short hint to tap the "Order now" button. ' +
       'Never ask for or reveal personal data. Keep it short, friendly, plain text (no markdown tables).\n' +
       'Greetings, small talk, recommendations ("what is good/spicy/for kids?") and general food questions ARE in scope: answer them warmly using the menu. ' +
