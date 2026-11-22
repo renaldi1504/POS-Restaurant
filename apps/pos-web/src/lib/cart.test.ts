@@ -99,7 +99,14 @@ describe('body order kasir', () => {
       ...emptyCart(),
       kind: 'telegram',
       lines: addLine([], { itemId: 4, qty: 1, optionIds: [] }),
-      delivery: { name: 'Pak Budi', phone: '012 345 678', addressText: 'Jl. Ekareach', landmark: '' },
+      delivery: {
+        name: 'Pak Budi',
+        phone: '012 345 678',
+        addressText: 'Jl. Ekareach',
+        landmark: '',
+        lat: null,
+        lng: null,
+      },
     });
     expect(body).toMatchObject({
       channel: 'telegram',
@@ -109,6 +116,37 @@ describe('body order kasir', () => {
     });
     expect(body.note).toBeUndefined();
     expect(body.customerPhone).toBeUndefined();
+  });
+
+  it('pelanggan dari pencarian: customerId + alamat tersimpan + titik lat/lng', () => {
+    const base = {
+      ...emptyCart(),
+      kind: 'telegram' as const,
+      lines: addLine([], { itemId: 4, qty: 1, optionIds: [] }),
+      customer: { id: 7, name: 'Sokha', username: 'sokha', phone: null, telegramId: '123' },
+      delivery: {
+        name: 'Sokha',
+        phone: '',
+        addressText: 'Street 108',
+        landmark: 'Dekat masjid',
+        lat: 10.61,
+        lng: 103.52,
+      },
+    };
+    expect(buildOrderBody({ ...base, addressId: 3 })).toMatchObject({
+      channel: 'telegram',
+      customerId: 7,
+      addressId: 3,
+      delivery: { addressText: 'Street 108', lat: 10.61, lng: 103.52, landmark: 'Dekat masjid' },
+    });
+    // alamat baru (belum disimpan) → tanpa addressId, server menyimpannya ke pelanggan
+    const fresh = buildOrderBody({ ...base, addressId: null });
+    expect(fresh.customerId).toBe(7);
+    expect(fresh.addressId).toBeUndefined();
+    // tanpa titik → lat/lng tidak dikirim
+    const noPoint = buildOrderBody({ ...base, customer: null, delivery: { ...base.delivery, lat: null } });
+    expect(noPoint.delivery).not.toHaveProperty('lat');
+    expect(noPoint.customerId).toBeUndefined();
   });
 
   it('bungkus mengirim nama & HP pelanggan', () => {

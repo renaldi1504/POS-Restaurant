@@ -62,6 +62,18 @@ export interface DeliveryDraft {
   phone: string;
   addressText: string;
   landmark: string;
+  /** Titik peta (dari link / Places / alamat tersimpan) → driver dapat navigasi. */
+  lat: number | null;
+  lng: number | null;
+}
+
+/** Pelanggan yang dipilih dari pencarian (pelanggan Telegram ikut dapat notifikasi status). */
+export interface PickedCustomer {
+  id: number;
+  name: string | null;
+  username: string | null;
+  phone: string | null;
+  telegramId: string | null;
 }
 
 export interface CartState {
@@ -77,6 +89,9 @@ export interface CartState {
   /** No. HP pelanggan bungkus (opsional). */
   customerPhone: string;
   delivery: DeliveryDraft;
+  customer: PickedCustomer | null;
+  /** Alamat tersimpan pelanggan yang dipakai (null = alamat baru / ketik). */
+  addressId: number | null;
   /** Delivery: driver menagih cash saat antar (order dikirim ke dapur tanpa dibayar dulu). */
   payOnDelivery: boolean;
   /** Mengubah order yang sudah ada (PATCH) — null = order baru. */
@@ -84,7 +99,14 @@ export interface CartState {
   editingDisplayNo: string | null;
 }
 
-export const EMPTY_DELIVERY: DeliveryDraft = { name: '', phone: '', addressText: '', landmark: '' };
+export const EMPTY_DELIVERY: DeliveryDraft = {
+  name: '',
+  phone: '',
+  addressText: '',
+  landmark: '',
+  lat: null,
+  lng: null,
+};
 
 export function emptyCart(): CartState {
   return {
@@ -99,6 +121,8 @@ export function emptyCart(): CartState {
     customerName: '',
     customerPhone: '',
     delivery: { ...EMPTY_DELIVERY },
+    customer: null,
+    addressId: null,
     payOnDelivery: false,
     editingOrderId: null,
     editingDisplayNo: null,
@@ -221,7 +245,10 @@ const KEY = 'pos.cart';
 function load(): CartState {
   try {
     const raw = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(KEY) : null;
-    return raw ? { ...emptyCart(), ...(JSON.parse(raw) as Partial<CartState>) } : emptyCart();
+    if (!raw) return emptyCart();
+    const saved = JSON.parse(raw) as Partial<CartState>;
+    // Keranjang tersimpan versi lama belum punya lat/lng.
+    return { ...emptyCart(), ...saved, delivery: { ...EMPTY_DELIVERY, ...saved.delivery } };
   } catch {
     return emptyCart();
   }
@@ -286,8 +313,21 @@ export function cartFromOrder(o: OrderDto): CartState {
           phone: o.customer?.phone ?? '',
           addressText: o.address.text,
           landmark: o.address.landmark ?? '',
+          lat: o.address.lat,
+          lng: o.address.lng,
         }
       : { ...EMPTY_DELIVERY },
+    customer: o.customer
+      ? {
+          id: o.customer.id,
+          name: o.customer.name,
+          username: o.customer.username,
+          phone: o.customer.phone,
+          telegramId: o.customer.telegramId,
+        }
+      : null,
+    // Diubah lewat teks alamat (server memakai ulang alamat yang sama).
+    addressId: null,
     promoId: o.promoId,
     discount: o.discount > 0 && !o.promoId ? { kind: 'amount', value: o.discount } : null,
     editingOrderId: o.id,

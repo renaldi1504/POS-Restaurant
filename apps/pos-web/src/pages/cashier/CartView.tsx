@@ -43,6 +43,7 @@ import {
   type CartState,
 } from '../../lib/cart';
 import { useMoney, useStaffMenu } from '../../lib/data';
+import { DeliveryCustomerSection } from './DeliveryCustomer';
 
 export function kindLabel(k: CartKind, t: (k: string) => string): string {
   if (k === 'grab' || k === 'foodpanda' || k === 'telegram') return t(`channel.${k}`);
@@ -60,12 +61,14 @@ export function cartProblem(c: CartState): string | null {
 
 export function buildOrderBody(c: CartState): CreateOrderRequest {
   const { channel, type } = kindToChannelType(c.kind);
+  const d = c.delivery;
   const delivery = isDeliveryKind(c.kind)
     ? {
-        name: c.delivery.name.trim(),
-        addressText: c.delivery.addressText.trim(),
-        ...(c.delivery.phone.trim() ? { phone: c.delivery.phone.trim() } : {}),
-        ...(c.delivery.landmark.trim() ? { landmark: c.delivery.landmark.trim() } : {}),
+        name: d.name.trim(),
+        addressText: d.addressText.trim(),
+        ...(d.phone.trim() ? { phone: d.phone.trim() } : {}),
+        ...(d.landmark.trim() ? { landmark: d.landmark.trim() } : {}),
+        ...(d.lat != null && d.lng != null ? { lat: d.lat, lng: d.lng } : {}),
       }
     : undefined;
   const note = c.note.trim();
@@ -89,6 +92,9 @@ export function buildOrderBody(c: CartState): CreateOrderRequest {
       ? { customerPhone: c.customerPhone.trim() }
       : {}),
     ...(delivery ? { delivery, deliveryFee: Math.max(0, c.deliveryFee) } : {}),
+    // Pelanggan dari pencarian (Telegram → dapat notifikasi) + alamat tersimpannya.
+    ...(delivery && c.customer ? { customerId: c.customer.id } : {}),
+    ...(delivery && c.customer && c.addressId ? { addressId: c.addressId } : {}),
     ...(c.promoId ? { promoId: c.promoId } : {}),
     ...(c.discount && c.discount.value > 0 && !c.promoId ? { discount: c.discount } : {}),
     ...(note ? { note } : {}),
@@ -140,6 +146,8 @@ export function CartView() {
           promoId: body.promoId ?? null,
           discount: body.discount ?? null,
           ...(body.delivery ? { delivery: body.delivery, deliveryFee: body.deliveryFee } : {}),
+          ...(body.customerId ? { customerId: body.customerId } : {}),
+          ...(body.addressId ? { addressId: body.addressId } : {}),
         };
         return (await api.call('orderUpdate', { params: { id: cart.editingOrderId }, body: patch })).order;
       }
@@ -266,32 +274,7 @@ export function CartView() {
 
         {isDeliveryKind(cart.kind) ? (
           <Section title={t('pesanan.deliveryData')}>
-            <TextField
-              label={t('common.name')}
-              value={cart.delivery.name}
-              error={showErrors && !cart.delivery.name.trim() ? t('common.required') : null}
-              onChange={(e) => setCart((c) => ({ delivery: { ...c.delivery, name: e.target.value } }))}
-            />
-            <TextField
-              label={t('common.phone')}
-              hint={`(${t('common.optional').toLowerCase()})`}
-              type="tel"
-              inputMode="tel"
-              value={cart.delivery.phone}
-              onChange={(e) => setCart((c) => ({ delivery: { ...c.delivery, phone: e.target.value } }))}
-            />
-            <TextField
-              label={t('common.address')}
-              value={cart.delivery.addressText}
-              error={showErrors && !cart.delivery.addressText.trim() ? t('common.required') : null}
-              onChange={(e) => setCart((c) => ({ delivery: { ...c.delivery, addressText: e.target.value } }))}
-            />
-            <TextField
-              label={t('order.landmark')}
-              placeholder={t('order.landmarkPlaceholder')}
-              value={cart.delivery.landmark}
-              onChange={(e) => setCart((c) => ({ delivery: { ...c.delivery, landmark: e.target.value } }))}
-            />
+            <DeliveryCustomerSection showErrors={showErrors} />
             <Switch
               checked={cart.payOnDelivery}
               onChange={(v) => setCart({ payOnDelivery: v })}

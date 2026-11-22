@@ -21,3 +21,4 @@ export * from './schemas/drivers';
 export * from './schemas/public';
 export * from './schemas/admin';
 export * from './schemas/reports';
+export * from './schemas/customers';

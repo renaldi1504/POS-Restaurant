@@ -97,6 +97,12 @@ export const ICON_NAMES = [
   'trending_flat',
   'monitoring',
   'install_mobile',
+  // Kasir: cari pelanggan & alamat dari link
+  'link',
+  'content_paste',
+  'add_location_alt',
+  'person_search',
+  'location_off',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

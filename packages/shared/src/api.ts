@@ -10,6 +10,7 @@ import type { PermissionKey } from './permissions';
 import * as A from './schemas/admin';
 import * as Au from './schemas/auth';
 import { IdParam, OkResponse, UuidParam } from './schemas/common';
+import * as C from './schemas/customers';
 import * as D from './schemas/drivers';
 import * as M from './schemas/menu';
 import * as O from './schemas/orders';
@@ -264,6 +265,52 @@ export const endpoints = {
     params: IdParam,
     response: OkResponse,
     description: 'Hapus alamat',
+  }),
+
+  // ================= Staf: pelanggan & lokasi =================
+  customersSearch: def({
+    method: 'GET',
+    path: '/api/customers/search',
+    ...staff('order.create'),
+    query: C.CustomerSearchQuery,
+    response: C.CustomerSearchResponse,
+    description: 'Cari pelanggan (nama, @username Telegram, no HP) untuk order delivery kasir — maks 20',
+  }),
+  customerAddresses: def({
+    method: 'GET',
+    path: '/api/customers/:id/addresses',
+    ...staff('order.create'),
+    params: IdParam,
+    response: C.CustomerAddressesResponse,
+    description: 'Alamat tersimpan pelanggan (terakhir dipakai dulu)',
+  }),
+  customerAddressCreate: def({
+    method: 'POST',
+    path: '/api/customers/:id/addresses',
+    ...staff('order.create'),
+    params: IdParam,
+    body: C.StaffCreateAddressRequest,
+    response: C.StaffAddressResponse,
+    description: 'Simpan alamat baru ke pelanggan (dipakai lagi di order berikutnya)',
+  }),
+  customerAddressUpdate: def({
+    method: 'PATCH',
+    path: '/api/customers/:id/addresses/:addressId',
+    ...staff('order.create'),
+    params: C.CustomerAddressParams,
+    body: C.StaffUpdateAddressRequest,
+    response: C.StaffAddressResponse,
+    description: 'Ubah alamat tersimpan pelanggan (teks, patokan, titik)',
+  }),
+  geoResolveLink: def({
+    method: 'POST',
+    path: '/api/geo/resolve-link',
+    ...staff('order.create'),
+    body: C.ResolveLinkRequest,
+    response: C.ResolveLinkResponse,
+    rateLimitPerMin: 30,
+    description:
+      'Buka link pendek Google Maps (maps.app.goo.gl) → URL akhir + lat/lng. Hanya host Google, maks 5 redirect, 5 detik',
   }),
 
   // ================= Staf: order =================

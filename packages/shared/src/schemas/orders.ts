@@ -64,6 +64,10 @@ export const CreateOrderRequest = z
     /** No. HP pelanggan (bungkus); untuk delivery pakai `delivery.phone`. Disimpan ke data pelanggan. */
     customerPhone: z.string().trim().max(50).optional(),
     delivery: DeliveryInfoInput.optional(),
+    /** Pelanggan yang dipilih dari pencarian (mis. pelanggan Telegram → ikut dapat notifikasi). */
+    customerId: Id.optional(),
+    /** Alamat tersimpan milik `customerId` (dipakai menggantikan `delivery.addressText`). */
+    addressId: Id.optional(),
     deliveryFee: NonNegMoney.optional(),
     promoId: Id.optional(),
     discount: ManualDiscount.optional(),
@@ -76,6 +80,10 @@ export const CreateOrderRequest = z
   .refine((v) => v.channel !== 'telegram' || v.type === 'delivery', {
     message: 'Order Telegram selalu delivery',
     path: ['type'],
+  })
+  .refine((v) => v.addressId === undefined || v.customerId !== undefined, {
+    message: 'Alamat tersimpan butuh pelanggan',
+    path: ['addressId'],
   });
 export type CreateOrderRequest = z.input<typeof CreateOrderRequest>;
 
@@ -88,6 +96,8 @@ export const UpdateOrderRequest = z.object({
   customerName: z.string().trim().max(100).nullable().optional(),
   customerPhone: z.string().trim().max(50).optional(),
   delivery: DeliveryInfoInput.optional(),
+  customerId: Id.optional(),
+  addressId: Id.optional(),
   deliveryFee: NonNegMoney.optional(),
   promoId: Id.nullable().optional(),
   discount: ManualDiscount.nullable().optional(),

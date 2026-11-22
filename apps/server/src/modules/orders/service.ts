@@ -1,7 +1,7 @@
 /**
  * Order: pembuatan (staf & publik), transisi status (SATU pintu: transitionOrder), batal, edit.
  */
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import {
   canTransition,
@@ -17,7 +17,7 @@ import {
   type Settings,
 } from '@pos/shared';
 import type { DbOrTx, Tx } from '../../db/client';
-import { addresses, customers, orderItems, orders, payments, roles, shifts, users } from '../../db/schema';
+import { customers, orderItems, orders, payments, roles, shifts, users } from '../../db/schema';
 import { writeAudit } from '../../lib/audit';
 import { currentBusinessDate, getOpenShift } from '../../lib/business';
 import { now } from '../../lib/clock';
@@ -25,6 +25,7 @@ import { AppError, notFound, unprocessable, validationError } from '../../lib/er
 import { verifyPin } from '../../lib/pin';
 import type { StaffContext } from '../../lib/session';
 import { getSettings } from '../../lib/settings';
+import { requireCustomer, requireCustomerAddress, saveCustomerAddress } from '../customers/staffService';
 import { emitTableUpdated, getOrOpenSession } from '../tables/service';
 import { getOrderDto, paymentCounts, type OrderRow } from './dto';
 import { emitOrderEvent, emitReadyForPickup, notifyTelegram } from './events';
@@ -73,18 +74,30 @@ function totals(lines: PricedLine[], discount: number, deliveryFee: number) {
 }
 
 async function insertDeliveryAddress(tx: Tx, customerId: number | null, d: DeliveryInfoInput) {
-  const [a] = await tx
-    .insert(addresses)
-    .values({
-      customerId,
-      label: 'Order',
-      text: d.addressText,
-      landmark: d.landmark ?? null,
-      lat: d.lat ?? null,
-      lng: d.lng ?? null,
-    })
-    .returning({ id: addresses.id });
-  return a!.id;
+  // Alamat ketik kasir disimpan ke alamat pelanggan (tanpa duplikat) → muncul lagi di order berikutnya.
+  const a = await saveCustomerAddress(tx, customerId, {
+    text: d.addressText,
+    landmark: d.landmark ?? null,
+    lat: d.lat ?? null,
+    lng: d.lng ?? null,
+  });
+  return a.id;
+}
+
+/** Pelanggan dari no HP yang diketik kasir: pakai pelanggan lama dengan no HP sama, atau buat baru. */
+async function customerByPhone(tx: Tx, name: string | null, phone: string): Promise<number> {
+  const [hit] = await tx
+    .select({ id: customers.id, name: customers.name })
+    .from(customers)
+    .where(eq(customers.phone, phone))
+    .orderBy(desc(customers.id))
+    .limit(1);
+  if (hit) {
+    if (!hit.name && name) await tx.update(customers).set({ name }).where(eq(customers.id, hit.id));
+    return hit.id;
+  }
+  const [c] = await tx.insert(customers).values({ name, phone }).returning({ id: customers.id });
+  return c!.id;
 }
 
 export async function createOrder(app: FastifyInstance, args: NewOrderArgs): Promise<OrderDto> {
@@ -131,12 +144,8 @@ export async function createOrder(app: FastifyInstance, args: NewOrderArgs): Pro
     const typedDelivery = args.type === 'delivery' && args.delivery && !addressId ? args.delivery : null;
     const typedPhone = (typedDelivery ? typedDelivery.phone : args.customerPhone)?.trim() || null;
     if (!customerId && typedPhone) {
-      // Nama/HP yang diketik kasir disimpan sebagai pelanggan → driver bisa menelepon.
-      const [c] = await tx
-        .insert(customers)
-        .values({ name: typedDelivery?.name ?? customerName, phone: typedPhone })
-        .returning({ id: customers.id });
-      customerId = c!.id;
+      // Nama/HP yang diketik kasir disimpan sebagai pelanggan → driver bisa menelepon, kasir bisa mencari.
+      customerId = await customerByPhone(tx, typedDelivery?.name ?? customerName, typedPhone);
     }
     if (typedDelivery) {
       addressId = await insertDeliveryAddress(tx, customerId, typedDelivery);
@@ -410,6 +419,8 @@ export interface UpdateOrderArgs {
   customerName?: string | null | undefined;
   customerPhone?: string | undefined;
   delivery?: DeliveryInfoInput | undefined;
+  customerId?: number | undefined;
+  addressId?: number | undefined;
   deliveryFee?: number | undefined;
   promoId?: number | null | undefined;
   discount?: ManualDiscount | null | undefined;
@@ -477,19 +488,21 @@ export async function updateOrder(
     let customerId = row.customerId;
     let customerName = body.customerName !== undefined ? body.customerName : row.customerName;
     if (body.delivery) customerName = body.customerName ?? body.delivery.name;
+    if (body.customerId !== undefined && body.customerId !== customerId) {
+      customerId = (await requireCustomer(tx, body.customerId)).id;
+    }
     const phone = (body.delivery ? body.delivery.phone : body.customerPhone)?.trim() || null;
     if (phone) {
       if (customerId) {
         await tx.update(customers).set({ phone }).where(eq(customers.id, customerId));
       } else {
-        const [c] = await tx
-          .insert(customers)
-          .values({ name: customerName ?? null, phone })
-          .returning({ id: customers.id });
-        customerId = c!.id;
+        customerId = await customerByPhone(tx, customerName ?? null, phone);
       }
     }
-    if (body.delivery) addressId = await insertDeliveryAddress(tx, customerId, body.delivery);
+    if (body.addressId && customerId) {
+      const a = await requireCustomerAddress(tx, customerId, body.addressId);
+      addressId = a.id;
+    } else if (body.delivery) addressId = await insertDeliveryAddress(tx, customerId, body.delivery);
     const set: Partial<typeof orders.$inferInsert> = {
       type,
       subtotal,

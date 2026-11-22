@@ -1,12 +1,13 @@
 import { and, eq, gt, inArray, type SQL } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { ACTIVE_ORDER_STATUSES, hasPermission, type OrderStatus } from '@pos/shared';
-import { orders } from '../../db/schema';
+import { customers, orders } from '../../db/schema';
 import { currentBusinessDate } from '../../lib/business';
 import { now } from '../../lib/clock';
 import { forbidden, unprocessable } from '../../lib/errors';
 import { defineRoute } from '../../lib/route';
 import { getSettings } from '../../lib/settings';
+import { requireCustomer, requireCustomerAddress } from '../customers/staffService';
 import { getOrderDto, loadOrderDtos } from './dto';
 import { acceptOrder, cancelOrder, createOrder, rejectOrder, transitionOrder, updateOrder } from './service';
 
@@ -47,15 +48,30 @@ export default async function ordersRoutes(app: FastifyInstance) {
     if (
       body.type === 'delivery' &&
       (body.channel === 'kasir' || body.channel === 'telegram') &&
-      !body.delivery
+      !body.delivery &&
+      !body.addressId
     )
       throw unprocessable('VALIDATION_ERROR', 'Alamat delivery wajib diisi', [{ path: ['delivery'] }]);
+    // Pelanggan dipilih dari pencarian (mis. pelanggan Telegram → notifikasi status ke chat-nya).
+    const picked = body.customerId ? await requireCustomer(app.db, body.customerId) : null;
+    const savedAddress =
+      picked && body.addressId ? await requireCustomerAddress(app.db, picked.id, body.addressId) : null;
+    if (picked) {
+      const phone = (body.type === 'delivery' ? body.delivery?.phone : body.customerPhone)?.trim();
+      const set: Partial<typeof customers.$inferInsert> = {};
+      if (phone && phone !== picked.phone) set.phone = phone;
+      const name = body.delivery?.name?.trim() || body.customerName?.trim();
+      if (name && !picked.name) set.name = name;
+      if (Object.keys(set).length) await app.db.update(customers).set(set).where(eq(customers.id, picked.id));
+    }
     const order = await createOrder(app, {
       channel: body.channel,
       type: body.type,
       items: body.items,
       tableId: body.tableId,
-      customerName: body.customerName ?? body.delivery?.name ?? null,
+      customerId: picked?.id ?? null,
+      addressId: body.type === 'delivery' ? (savedAddress?.id ?? null) : null,
+      customerName: body.customerName ?? body.delivery?.name ?? picked?.name ?? null,
       customerPhone: body.customerPhone,
       delivery: body.delivery,
       deliveryFee: body.deliveryFee,
