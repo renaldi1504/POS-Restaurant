@@ -10,6 +10,7 @@ import { homePathFor, useAuthActions, useMe } from '../lib/auth';
 import { formatTime } from '../lib/format';
 import { roleLabel } from '../lib/labels';
 import { useChangeLang, useLang } from '../lib/useLang';
+import { InstallAppButton } from '../components/common/InstallAppButton';
 
 /** Warna kartu per role (mockup Login.dc.html). */
 function roleStyle(roleName: string): { avatar: string; tone: BadgeTone } {
@@ -197,6 +198,7 @@ export default function LoginPage() {
           </button>
         </div>
         <span className="text-center text-body-medium text-on-surface-variant">{t('auth.shiftHint')}</span>
+        <InstallAppButton className="w-full" />
       </div>
     </div>
   );

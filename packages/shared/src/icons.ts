@@ -96,6 +96,7 @@ export const ICON_NAMES = [
   'trending_down',
   'trending_flat',
   'monitoring',
+  'install_mobile',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

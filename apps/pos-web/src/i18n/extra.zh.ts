@@ -490,6 +490,17 @@ export const extraZh: ExtraDict = {
     noBluetooth: '此浏览器不支持 Web Bluetooth',
     notConnected: '打印机未连接',
   },
+  install: {
+    button: '在本手机上安装应用',
+    title: '如何安装应用',
+    ios1: '用 Safari 打开此页面。',
+    ios2: '点击屏幕下方的分享按钮（带向上箭头的方框）。',
+    ios3: '选择“添加到主屏幕”，然后点击“添加”。',
+    and1: '用 Chrome 打开此页面。',
+    and2: '点击右上角的 ⋮ 菜单。',
+    and3: '选择“安装应用”或“添加到主屏幕”，然后点击“安装”。',
+    why: '安装后，应用可从主屏幕图标全屏打开，启动更快，并可打印到蓝牙打印机。',
+  },
   rpt: {
     title: '店主报表',
     period: '报表期间',

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { hasPermission, type PermissionKey, type StaffUser } from '@pos/shared';
 import { Button, CountBadge, Icon, IconButton, Sheet, Switch, cn, useToast } from '../ui';
+import { InstallAppButton } from './InstallAppButton';
 import { LangPicker } from './LangPicker';
 import { api, qk } from '../../lib/api';
 import { useAuthActions, useMe } from '../../lib/auth';
@@ -406,6 +407,7 @@ export function MoreSheet({
             description={prefs.muted ? t('kitchen.soundOff') : t('kitchen.soundOn')}
           />
         </div>
+        <InstallAppButton />
         <Button
           variant="outlined"
           icon="logout"
