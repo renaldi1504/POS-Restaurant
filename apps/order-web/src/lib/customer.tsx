@@ -28,7 +28,7 @@ import {
 import { api, isApiError, qk } from './api';
 import { cartStore } from './cart';
 import { useCheckout } from './checkout';
-import { applyTelegramLang } from './i18n';
+import { applyLangParam, applyTelegramLang } from './i18n';
 import { reconnectSocket, useResync, useSocketEvent } from './socket';
 import { readJson, writeJson } from './storage';
 import {
@@ -77,7 +77,8 @@ async function bootTelegram(): Promise<BootResult> {
   const wa = await loadTelegram();
   const initData = wa?.initData || fromHash;
   const tgUser = wa?.initDataUnsafe?.user ?? parseInitDataUser(initData);
-  applyTelegramLang(tgUser?.language_code);
+  if (!applyLangParam(typeof location !== 'undefined' ? location.search : ''))
+    applyTelegramLang(tgUser?.language_code);
   if (!initData) {
     // Bukan di dalam Telegram: pakai sesi Telegram lama bila cookie masih ada.
     try {

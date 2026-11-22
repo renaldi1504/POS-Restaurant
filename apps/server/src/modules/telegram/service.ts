@@ -207,8 +207,10 @@ export function getTelegram(app: FastifyInstance): TelegramService {
   return s;
 }
 
-function miniAppUrl(app: FastifyInstance) {
-  return `${app.config.ORDER_ORIGIN.replace(/\/$/, '')}/tg`;
+/** URL Mini App; `lang` membuat menu langsung tampil dalam bahasa chat pelanggan. */
+export function miniAppUrl(app: FastifyInstance, lang?: Lang) {
+  const base = `${app.config.ORDER_ORIGIN.replace(/\/$/, '')}/tg`;
+  return lang ? `${base}?lang=${lang}` : base;
 }
 
 async function customerLang(app: FastifyInstance, telegramId: string, fallback?: string): Promise<Lang> {
@@ -271,7 +273,7 @@ function createTelegram(app: FastifyInstance): TelegramService {
     const settings = await getSettings(app.db);
     const t = BOT_TEXT[lang];
     await ctx.reply(t.welcome.replace('{name}', settings.profile.name), {
-      reply_markup: new InlineKeyboard().webApp(t.order, miniAppUrl(app)),
+      reply_markup: new InlineKeyboard().webApp(t.order, miniAppUrl(app, lang)),
     });
     await ctx.reply(t.howTo + ' / ' + t.status, { reply_markup: mainKeyboard(lang) });
   });
@@ -282,7 +284,7 @@ function createTelegram(app: FastifyInstance): TelegramService {
   bot.hears(howToLabels, async (ctx) => {
     const lang = await langOf(ctx);
     await ctx.reply(BOT_TEXT[lang].howToBody, {
-      reply_markup: new InlineKeyboard().webApp(BOT_TEXT[lang].order, miniAppUrl(app)),
+      reply_markup: new InlineKeyboard().webApp(BOT_TEXT[lang].order, miniAppUrl(app, lang)),
     });
   });
 
@@ -331,7 +333,7 @@ function createTelegram(app: FastifyInstance): TelegramService {
         .where(eq(customers.telegramId, key))
         .catch(() => undefined);
     await ctx.reply(answer.text, {
-      reply_markup: new InlineKeyboard().webApp(BOT_TEXT[answer.lang].order, miniAppUrl(app)),
+      reply_markup: new InlineKeyboard().webApp(BOT_TEXT[answer.lang].order, miniAppUrl(app, answer.lang)),
     });
     // Pertanyaan lokasi → kirim juga pin lokasi restoran (bisa dibuka di Google Maps).
     if (isLocationQuestion(ctx.message.text)) {

@@ -8,7 +8,7 @@ import {
   isLocationQuestion,
   menuLookupReply,
 } from '../src/modules/ai/service';
-import { orderDetailMessage } from '../src/modules/telegram/service';
+import { miniAppUrl, orderDetailMessage } from '../src/modules/telegram/service';
 import { call, createTestApp, loginAs } from './helpers';
 
 describe('deteksi bahasa pesan', () => {
@@ -19,6 +19,16 @@ describe('deteksi bahasa pesan', () => {
     expect(detectLang('How much is the fried chicken?')).toBe('en');
     expect(detectLang('👍')).toBeNull();
     expect(detectLang('Pempek')).toBeNull();
+    // bahasa lain → Inggris
+    expect(detectLang('ไก่ทอดราคาเท่าไหร่')).toBe('en');
+    expect(detectLang('Gà rán bao nhiêu tiền?')).toBe('en');
+    expect(detectLang('チキンはいくら')).toBe('en');
+  });
+
+  it('tombol Pesan sekarang membuka menu dalam bahasa chat', () => {
+    const app = { config: { ORDER_ORIGIN: 'https://order.example.com/' } } as unknown as FastifyInstance;
+    expect(miniAppUrl(app, 'kh')).toBe('https://order.example.com/tg?lang=kh');
+    expect(miniAppUrl(app)).toBe('https://order.example.com/tg');
   });
 });
 

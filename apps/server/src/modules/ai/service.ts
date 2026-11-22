@@ -373,6 +373,9 @@ export function detectLang(text: string): Lang | null {
   const t = text.trim();
   if (!t) return null;
   if (/[ក-៿᧠-᧿]/.test(t)) return 'kh';
+  // Bahasa lain beraksara non-Latin (Thai, Jepang, Korea, Rusia, Arab, Hindi) atau Vietnam → Inggris
+  if (/[\u0E00-\u0E7F\u3040-\u30FF\uAC00-\uD7AF\u0400-\u04FF\u0600-\u06FF\u0904-\u0939]/.test(t)) return 'en';
+  if (/[Ạ-ỹđĐ]/.test(t)) return 'en';
   if (/[一-鿿㐀-䶿]/.test(t)) return 'zh';
   const id = t.match(ID_WORDS)?.length ?? 0;
   const en = t.match(EN_WORDS)?.length ?? 0;
@@ -479,7 +482,12 @@ export async function answerQuestion(app: FastifyInstance, question: string, lan
       system,
       question.slice(0, 1000),
     );
-    const aiLang = (LANGS as readonly string[]).includes(r.lang ?? '') ? (r.lang as Lang) : detected;
+    // Bahasa lain (Thai, Vietnam, …) → Inggris
+    const aiLang = (LANGS as readonly string[]).includes(r.lang ?? '')
+      ? (r.lang as Lang)
+      : r.lang === 'other'
+        ? 'en'
+        : detected;
     const answer = r.answer?.trim();
     if (!answer) return { text: FALLBACK_REPLY[aiLang], forward: true, reason: 'unsure', lang: aiLang };
     // Tidak yakin (komplain / urusan order) → tetap kirim jawaban AI, sekaligus teruskan ke admin.

@@ -50,6 +50,22 @@ export function detectBrowserLang(): Lang {
   return langFromCode(nav) ?? 'id';
 }
 
+/**
+ * Bahasa dari bot (`/tg?lang=kh`): pelanggan chat Khmer → menu Khmer. Diutamakan di atas pilihan lama.
+ * true bila diterapkan.
+ */
+export function applyLangParam(search: string): boolean {
+  let v: string | null = null;
+  try {
+    v = new URLSearchParams(search).get('lang');
+  } catch {
+    return false;
+  }
+  if (!v || !(LANGS as readonly string[]).includes(v)) return false;
+  setLang(v as Lang);
+  return true;
+}
+
 /** Terapkan bahasa dari Telegram bila pengguna belum pernah memilih sendiri. */
 export function applyTelegramLang(code: string | undefined): void {
   if (storedLang()) return;

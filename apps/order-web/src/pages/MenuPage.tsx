@@ -5,12 +5,13 @@
 import { useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { tl, type CustomerMode, type OrderType, type PublicMenuItem } from '@pos/shared';
+import { tl, type CustomerMode, type PublicMenuItem } from '@pos/shared';
 import { CartBar } from '../components/CartBar';
 import { SearchIcon } from '../components/Icons';
 import { BestCard, MenuItemCard } from '../components/MenuItemCard';
 import { TableBanner, TelegramBanner } from '../components/ModeBanner';
 import { OptionSheet } from '../components/OptionSheet';
+import { OrderTypeTiles } from '../components/OrderTypeTiles';
 import {
   BootErrorScreen,
   ErrorBlock,
@@ -50,41 +51,8 @@ export default function MenuPage({ mode: routeMode }: { mode: CustomerMode }) {
 }
 
 function OrderTypePicker() {
-  const { t } = useTranslation();
   const { state, update } = useCheckout();
-  const types: { value: OrderType; label: string }[] = [
-    { value: 'delivery', label: t('web.typeDelivery') },
-    { value: 'takeaway', label: t('web.typeTakeaway') },
-    { value: 'dine_in', label: t('web.typeDineIn') },
-  ];
-  return (
-    <div
-      role="radiogroup"
-      aria-label={t('web.orderType')}
-      className="grid grid-cols-3 overflow-hidden rounded-full border border-outline"
-    >
-      {types.map((ty, i) => {
-        const on = state.type === ty.value;
-        return (
-          <button
-            key={ty.value}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            onClick={() => update({ type: ty.value })}
-            className={cn(
-              'state-layer flex min-h-12 min-w-0 items-center justify-center gap-1 px-1 text-label-large',
-              i > 0 && 'border-l border-outline',
-              on ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface',
-            )}
-          >
-            {on ? <Icon name="check" size={18} /> : null}
-            <span className="truncate">{ty.label}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
+  return <OrderTypeTiles value={state.type} onChange={(type) => update({ type })} />;
 }
 
 function MenuScreen({ routeMode }: { routeMode: CustomerMode }) {

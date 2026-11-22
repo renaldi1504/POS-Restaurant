@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { tl } from '@pos/shared';
 import { OptionSheet } from '../components/OptionSheet';
+import { OrderTypeTiles } from '../components/OrderTypeTiles';
 import { Page } from '../components/Shell';
 import {
   BottomBar,
@@ -12,8 +13,8 @@ import {
   EmptyState,
   HeaderBar,
   Icon,
+  IconButton,
   Stepper,
-  cn,
   useToast,
 } from '../components/ui';
 import { errorMessage } from '../lib/api';
@@ -46,6 +47,12 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
   const { data: settings } = useSettings();
   const [editKey, setEditKey] = useState<string | null>(null);
   const noteId = useId();
+  const [noteKey, setNoteKey] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState('');
+  const saveNote = (line: { key: string; itemId: number; qty: number; optionIds: number[] }) => {
+    cart.replace(line.key, { ...line, note: noteDraft.trim() || undefined });
+    setNoteKey(null);
+  };
   const submit = useSubmitOrder(customer);
   const currency = mainCurrency(settings);
   const { priced, subtotal, count, allAvailable } = cartTotals(menu, cart.lines);
@@ -109,31 +116,7 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
         <>
           <main className="flex grow flex-col gap-3 p-4">
             {customer.mode === 'none' ? (
-              <div
-                role="radiogroup"
-                aria-label={t('web.orderType')}
-                className="grid grid-cols-3 overflow-hidden rounded-full border border-outline"
-              >
-                {(['delivery', 'takeaway', 'dine_in'] as const).map((ty, i) => (
-                  <button
-                    key={ty}
-                    type="button"
-                    role="radio"
-                    aria-checked={co.type === ty}
-                    onClick={() => update({ type: ty })}
-                    className={cn(
-                      'state-layer flex min-h-12 min-w-0 items-center justify-center gap-1 px-1 text-label-large',
-                      i > 0 && 'border-l border-outline',
-                      co.type === ty
-                        ? 'bg-secondary-container text-on-secondary-container'
-                        : 'text-on-surface',
-                    )}
-                  >
-                    {co.type === ty ? <Icon name="check" size={18} /> : null}
-                    <span className="truncate">{t(typeLabelKey(ty))}</span>
-                  </button>
-                ))}
-              </div>
+              <OrderTypeTiles value={co.type} onChange={(type) => update({ type })} />
             ) : null}
 
             <ul className="flex flex-col gap-2.5" aria-label={t('web.cartTitle')}>
@@ -154,9 +137,9 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
                               {p.options.map((o) => tl(o.name, lang)).join(', ')}
                             </span>
                           ) : null}
-                          {p.line.note ? (
+                          {p.line.note && noteKey !== p.line.key ? (
                             <span className="text-label-medium italic text-on-surface-variant">
-                              “{p.line.note}”
+                              📝 {p.line.note}
                             </span>
                           ) : null}
                           <span className="text-label-medium text-on-surface-variant tabular-nums">
@@ -167,6 +150,33 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
                           {money(p.total, currency)}
                         </b>
                       </div>
+                      {noteKey === p.line.key ? (
+                        <div className="mt-2 flex items-end gap-2">
+                          <div className="group/field relative flex grow rounded-xs border border-outline bg-surface-container-lowest focus-within:border-primary focus-within:outline-1 focus-within:outline-primary">
+                            <label
+                              htmlFor={`note-${p.line.key}`}
+                              className="pointer-events-none absolute left-4 right-4 top-1.5 truncate text-label-medium text-on-surface-variant group-focus-within/field:text-primary"
+                            >
+                              {t('web.itemNote', { name })}
+                            </label>
+                            <input
+                              id={`note-${p.line.key}`}
+                              autoFocus
+                              maxLength={200}
+                              placeholder={t('web.itemNotePh')}
+                              value={noteDraft}
+                              onChange={(e) => setNoteDraft(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') saveNote(p.line);
+                              }}
+                              className="h-14 w-full bg-transparent px-4 pt-5 text-body-large outline-none placeholder:text-on-surface-variant/70"
+                            />
+                          </div>
+                          <Button size="md" onClick={() => saveNote(p.line)}>
+                            {t('common.save')}
+                          </Button>
+                        </div>
+                      ) : null}
                       {!p.available ? (
                         <p className="mt-1 text-label-medium font-medium text-error" role="alert">
                           {t('web.itemUnavailable', { name })}
@@ -182,6 +192,15 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
                           incLabel={t('web.incItem', { name })}
                         />
                         <div className="flex gap-1.5">
+                          <IconButton
+                            icon="edit_note"
+                            label={t('web.itemNote', { name })}
+                            selected={!!p.line.note}
+                            onClick={() => {
+                              setNoteKey(noteKey === p.line.key ? null : p.line.key);
+                              setNoteDraft(p.line.note ?? '');
+                            }}
+                          />
                           {hasGroups && p.item?.available ? (
                             <Button size="md" variant="outlined" onClick={() => setEditKey(p.line.key)}>
                               {t('web.editOptions')}
@@ -190,7 +209,7 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
                           <Button
                             size="md"
                             variant="text"
-                            className="text-error"
+                            className="text-error!"
                             onClick={() => cart.remove(p.line.key)}
                             aria-label={t('web.removeItem', { name })}
                           >
