@@ -374,6 +374,7 @@ export const zh: Dict = {
     chooseUser: '请先选择您的名字',
   },
   cashier: {
+    shortcuts: '快捷方式',
     title: '收银',
     orderNo: '订单 {{no}}',
     shiftBy: '班次 {{shift}} · {{name}}',

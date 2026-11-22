@@ -374,6 +374,7 @@ export const kh: Dict = {
     chooseUser: 'សូមជ្រើសឈ្មោះរបស់អ្នកជាមុន',
   },
   cashier: {
+    shortcuts: 'ផ្លូវកាត់',
     title: 'គិតលុយ',
     orderNo: 'ការកុម្ម៉ង់ {{no}}',
     shiftBy: 'វេន {{shift}} · {{name}}',

@@ -356,6 +356,7 @@ export const en: Dict = {
     chooseUser: 'Choose your name first',
   },
   cashier: {
+    shortcuts: 'Shortcuts',
     title: 'Cashier',
     orderNo: 'Order {{no}}',
     shiftBy: 'Shift {{shift}} · {{name}}',

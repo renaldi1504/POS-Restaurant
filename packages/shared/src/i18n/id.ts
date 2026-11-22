@@ -271,6 +271,7 @@ export const id = {
     chooseUser: 'Pilih nama Anda dulu',
   },
   cashier: {
+    shortcuts: 'Pintasan',
     title: 'Kasir',
     orderNo: 'Order {{no}}',
     shiftBy: 'Shift {{shift}} · {{name}}',

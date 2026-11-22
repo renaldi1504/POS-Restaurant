@@ -42,6 +42,7 @@ describe('Kasir – pilih menu', () => {
   it('pintasan Pengeluaran (kasir) & Dashboard (hanya dengan izin laporan)', async () => {
     renderApp(<CashierPage />, { route: '/kasir', path: '/kasir' });
     expect(await screen.findByRole('button', { name: 'Pengeluaran' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Closing' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Dashboard/ })).not.toBeInTheDocument();
   });
 
