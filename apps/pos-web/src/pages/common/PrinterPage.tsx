@@ -179,9 +179,14 @@ export default function PrinterPage() {
             label={t('kitchen.sound')}
             description={prefs.muted ? t('kitchen.soundOff') : t('kitchen.soundOn')}
           />
-          <Button variant="outlined" size="md" onClick={() => beep('order', true)}>
-            {t('print.testSound')}
-          </Button>
+          <span className="text-label-medium text-on-surface-variant">{t('print.soundsHint')}</span>
+          <div className="grid grid-cols-1 gap-2 medium:grid-cols-3">
+            {(['order', 'kitchen', 'driver'] as const).map((k) => (
+              <Button key={k} variant="outlined" size="md" icon="volume_up" onClick={() => beep(k, true)}>
+                {t(`print.sound_${k}`)}
+              </Button>
+            ))}
+          </div>
         </Section>
       </main>
     </Screen>

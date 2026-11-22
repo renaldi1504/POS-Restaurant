@@ -50,7 +50,7 @@ export default function DriverPage() {
     queryFn: () => api.call('driverMine'),
     refetchInterval: 30_000,
   });
-  useSocketEvent('order.ready_for_pickup', () => beep('order'));
+  useSocketEvent('order.ready_for_pickup', () => beep('driver'));
 
   const refresh = () => void qc.invalidateQueries({ queryKey: ['driver'] });
   const onErr = (e: unknown) => {

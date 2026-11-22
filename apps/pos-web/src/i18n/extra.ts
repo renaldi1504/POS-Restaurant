@@ -417,6 +417,10 @@ export const extraId = {
     lang: 'Bahasa struk',
     auto: 'Cetak struk otomatis setelah bayar',
     testSound: 'Tes bunyi',
+    soundsHint: 'Bunyi dibedakan: order online masuk (kasir), pesanan baru (dapur), siap diantar (driver).',
+    sound_order: 'Tes bunyi order online',
+    sound_kitchen: 'Tes bunyi dapur',
+    sound_driver: 'Tes bunyi driver',
     receiptPreview: 'Pratinjau struk',
   },
   crop: {
@@ -970,6 +974,11 @@ export const extraEn: ExtraDict = {
     lang: 'Receipt language',
     auto: 'Print receipt automatically after payment',
     testSound: 'Test sound',
+    soundsHint:
+      'Each alert sounds different: new online order (cashier), new ticket (kitchen), ready to deliver (driver).',
+    sound_order: 'Test online-order sound',
+    sound_kitchen: 'Test kitchen sound',
+    sound_driver: 'Test driver sound',
     receiptPreview: 'Receipt preview',
   },
   crop: {

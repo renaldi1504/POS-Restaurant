@@ -411,6 +411,10 @@ export const extraZh: ExtraDict = {
     lang: '小票语言',
     auto: '付款后自动打印小票',
     testSound: '测试声音',
+    soundsHint: '提示音各不相同：新线上订单（收银）、新订单（厨房）、待配送（司机）。',
+    sound_order: '测试线上订单提示音',
+    sound_kitchen: '测试厨房提示音',
+    sound_driver: '测试司机提示音',
     receiptPreview: '小票预览',
   },
   crop: {
