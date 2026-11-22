@@ -4,6 +4,9 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   formatMoney,
+  openPeriods,
+  parseHHMM,
+  zonedParts,
   matchesLocalized,
   type Currency,
   type OptionDto,
@@ -44,6 +47,33 @@ export function money(amount: number, currency: Currency): string {
 /** "03:00" → "03.00" untuk bahasa Indonesia (sesuai mockup). */
 export function formatHour(hhmm: string, lang: string): string {
   return lang === 'id' ? hhmm.replace(':', '.') : hhmm;
+}
+
+type HoursLike = PublicSettingsResponse['hours'];
+
+/** Jam buka lagi saat tutup: sesi berikutnya (mis. habis istirahat siang), atau jam buka pertama. */
+export function reopenTime(hours: HoursLike): string {
+  return hours.nextOpen ?? hours.open;
+}
+
+/** Jam tutup sesi yang sedang berjalan (sesi berisi `now`); cadangan: jam tutup terakhir hari itu. */
+export function currentClose(hours: HoursLike, now: Date = new Date()): string {
+  const p = zonedParts(now);
+  const m = p.hour * 60 + p.minute;
+  const cur = openPeriods(hours).find((x) => {
+    const o = parseHHMM(x.open);
+    const c = parseHHMM(x.close);
+    if (o === c) return true;
+    return c > o ? m >= o && m < c : m >= o || m < c;
+  });
+  return cur?.close ?? hours.close;
+}
+
+/** Semua sesi bila ≥ 2 ("08.00–14.00 · 17.00–20.00"), selain itu null. */
+export function sessionsText(hours: HoursLike, lang: string): string | null {
+  const ps = openPeriods(hours);
+  if (ps.length < 2) return null;
+  return ps.map((x) => `${formatHour(x.open, lang)}–${formatHour(x.close, lang)}`).join(' · ');
 }
 
 export function groupsForItem(menu: PublicMenuResponse, item: PublicMenuItem): OptionGroupDto[] {

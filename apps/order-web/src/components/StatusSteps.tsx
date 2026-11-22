@@ -2,7 +2,7 @@
 import { useTranslation } from 'react-i18next';
 import type { PublicOrderDto } from '@pos/shared';
 import { CheckIcon } from './Icons';
-import { cn } from './ui';
+import { Icon, cn, type IconName } from './ui';
 
 export function stepIndex(status: PublicOrderDto['status']): number {
   switch (status) {
@@ -34,6 +34,12 @@ export function StatusSteps({ order }: { order: PublicOrderDto }) {
       ? t('order.stepServed')
       : t('order.stepReady');
   const steps = [t('order.stepReceived'), t('order.stepCooking'), third, t('web.stepDone')];
+  const icons: IconName[] = [
+    'receipt_long',
+    'skillet',
+    isDelivery ? 'two_wheeler' : 'restaurant',
+    'check_circle',
+  ];
   const allDone = order.status === 'done' || order.status === 'delivered';
   return (
     <ol className="flex flex-col" aria-label={t('order.statusTitle')} data-testid="status-steps">
@@ -50,28 +56,36 @@ export function StatusSteps({ order }: { order: PublicOrderDto }) {
             <div className="flex flex-col items-center self-stretch">
               <span
                 className={cn(
-                  'flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-label-medium font-medium',
-                  done && 'border-primary bg-primary text-on-primary',
-                  current && 'border-primary bg-secondary-container text-on-secondary-container',
-                  !done &&
-                    !current &&
-                    'border-outline-variant bg-surface-container-lowest text-on-surface-variant',
+                  'relative flex size-10 shrink-0 items-center justify-center rounded-full transition-colors',
+                  done && 'bg-primary text-on-primary',
+                  current &&
+                    'bg-primary-container text-on-primary-container ring-4 ring-primary-container/40',
+                  !done && !current && 'bg-surface-container-high text-on-surface-variant',
                 )}
                 aria-hidden
               >
-                {done ? <CheckIcon size={16} /> : i + 1}
+                {done ? <CheckIcon size={20} /> : <Icon name={icons[i]!} size={20} filled={current} />}
+                {current ? (
+                  <span className="absolute inset-0 animate-ping rounded-full bg-primary-container opacity-40 motion-reduce:hidden" />
+                ) : null}
               </span>
               {i < steps.length - 1 ? (
                 <span
-                  className={cn('my-0.5 w-0.5 grow', done ? 'bg-primary' : 'bg-surface-container-highest')}
+                  className={cn(
+                    'my-1 w-0.5 grow rounded-full',
+                    done ? 'bg-primary' : 'bg-surface-container-highest',
+                  )}
                 />
               ) : null}
             </div>
-            <div className="flex min-h-12 flex-col pb-2 pt-1">
+            <div className="flex min-h-14 flex-col pb-3 pt-2">
               <span
                 className={cn(
-                  'text-body-medium',
-                  current ? 'font-medium' : done ? 'font-medium' : 'text-on-surface-variant',
+                  current
+                    ? 'text-title-medium font-semibold text-on-surface'
+                    : done
+                      ? 'text-body-large font-medium'
+                      : 'text-body-large text-on-surface-variant',
                 )}
               >
                 {label}

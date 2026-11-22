@@ -5,6 +5,7 @@
 const id = {
   openUntil: 'Buka · sampai {{time}}',
   open24h: 'Buka 24 jam',
+  hoursSessions: 'Jam buka: {{sessions}}',
   closedOpensAt: 'Sedang tutup · buka jam {{time}}',
   closedBanner: 'Restoran sedang tutup. Menu tetap bisa dilihat, pesanan dibuka lagi jam {{time}}.',
   tgSub: 'Alamat tersimpan siap · kontak via Telegram',
@@ -162,6 +163,7 @@ export type WebDict = typeof id;
 const en: WebDict = {
   openUntil: 'Open · until {{time}}',
   open24h: 'Open 24 hours',
+  hoursSessions: 'Opening hours: {{sessions}}',
   closedOpensAt: 'Closed · opens at {{time}}',
   closedBanner: 'We are closed now. You can still browse the menu; ordering opens at {{time}}.',
   tgSub: 'Saved addresses ready · contact via Telegram',
@@ -316,6 +318,7 @@ const en: WebDict = {
 const kh: WebDict = {
   openUntil: 'បើក · ដល់ម៉ោង {{time}}',
   open24h: 'បើក 24 ម៉ោង',
+  hoursSessions: 'ម៉ោងបើក៖ {{sessions}}',
   closedOpensAt: 'បិទ · បើកម៉ោង {{time}}',
   closedBanner: 'ហាងបិទឥឡូវនេះ។ អាចមើលម៉ឺនុយបាន ការកម្ម៉ង់បើកវិញម៉ោង {{time}}។',
   tgSub: 'អាសយដ្ឋានបានរក្សាទុក · ទំនាក់ទំនងតាម Telegram',
@@ -468,6 +471,7 @@ const kh: WebDict = {
 const zh: WebDict = {
   openUntil: '营业中 · 至 {{time}}',
   open24h: '24 小时营业',
+  hoursSessions: '营业时间：{{sessions}}',
   closedOpensAt: '休息中 · {{time}} 开门',
   closedBanner: '餐厅现在休息。可以先看菜单，{{time}} 后可下单。',
   tgSub: '已保存地址 · 通过 Telegram 联系',

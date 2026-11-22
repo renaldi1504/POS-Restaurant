@@ -16,13 +16,23 @@ export function TableBill({ bill }: { bill: PublicTableBillResponse }) {
   const orders = [...bill.orders].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   return (
     <section className="flex flex-col gap-2.5" aria-labelledby="bill-title" data-testid="table-bill">
-      <h2 id="bill-title" className="text-body-large font-medium">
+      <h2 id="bill-title" className="font-display text-title-large">
         {t('web.tableBillTitle', { table: bill.table.name })}
       </h2>
       {orders.map((o, i) => (
-        <Card key={o.id} padded={false} className="flex flex-col gap-1 p-3">
+        <Card
+          key={o.id}
+          padded={false}
+          className="flex flex-col gap-1.5 rounded-2xl border-0 p-4 shadow-card"
+        >
           <div className="flex items-center justify-between gap-2">
-            <b className="text-body-medium">
+            <b className="flex items-center gap-2 text-title-medium font-semibold">
+              <span
+                aria-hidden
+                className="flex size-7 items-center justify-center rounded-full bg-primary-container text-label-medium text-on-primary-container"
+              >
+                {i + 1}
+              </span>
               {t('web.round', { n: i + 1 })} · {o.displayNo}
             </b>
             <Badge
@@ -52,14 +62,14 @@ export function TableBill({ bill }: { bill: PublicTableBillResponse }) {
           ))}
         </Card>
       ))}
-      <Card className="flex flex-col gap-1">
+      <Card className="flex flex-col gap-1 rounded-2xl border-0 bg-primary-container/45 text-on-primary-container">
         <div className="flex items-baseline justify-between">
           <span className="font-medium">{t('common.total')}</span>
-          <b className="text-headline-small tabular-nums">{money(bill.total, c)}</b>
+          <b className="text-headline-small font-bold tabular-nums">{money(bill.total, c)}</b>
         </div>
         {bill.paid > 0 ? (
           <>
-            <div className="flex justify-between text-body-medium text-on-surface-variant">
+            <div className="flex justify-between text-body-medium">
               <span>{t('web.paidLabel')}</span>
               <span className="tabular-nums">{money(bill.paid, c)}</span>
             </div>
@@ -69,7 +79,7 @@ export function TableBill({ bill }: { bill: PublicTableBillResponse }) {
             </div>
           </>
         ) : null}
-        <p className="text-label-medium text-on-surface-variant">{t('web.payAtCashier')}</p>
+        <p className="text-label-medium">{t('web.payAtCashier')}</p>
       </Card>
       <Button
         variant="tonal"

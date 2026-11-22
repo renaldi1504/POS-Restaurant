@@ -1,7 +1,7 @@
 /** Rekening ABA restoran (settings.payment.aba) — nama, nomor (bisa disalin), QR opsional. */
 import { useTranslation } from 'react-i18next';
 import type { PublicSettingsResponse } from '@pos/shared';
-import { useToast } from './ui';
+import { Icon, useToast } from './ui';
 
 export function AbaAccountInfo({ settings }: { settings: PublicSettingsResponse | undefined }) {
   const { t } = useTranslation();
@@ -27,21 +27,22 @@ export function AbaAccountInfo({ settings }: { settings: PublicSettingsResponse 
   };
   return (
     <div className="flex flex-col gap-2" data-testid="aba-account">
-      <dl className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1 text-label-medium">
+      <dl className="flex flex-col gap-0.5 rounded-xl bg-surface-container-low px-4 py-2.5 text-label-medium">
         {aba.accountName ? (
           <>
             <dt className="text-on-surface-variant">{t('web.abaAccountName')}</dt>
-            <dd className="font-medium">{aba.accountName}</dd>
+            <dd className="mb-1.5 text-body-large font-medium">{aba.accountName}</dd>
           </>
         ) : null}
         <dt className="text-on-surface-variant">{t('web.abaAccountNumber')}</dt>
         <dd className="flex items-center justify-between gap-2">
-          <b className="text-title-medium tabular-nums">{aba.accountNumber}</b>
+          <b className="text-title-large font-bold whitespace-nowrap tabular-nums">{aba.accountNumber}</b>
           <button
             type="button"
             onClick={() => void copy()}
-            className="min-h-10 rounded-sm border border-outline-variant px-3 text-label-medium font-medium"
+            className="state-layer flex min-h-12 shrink-0 items-center gap-1.5 rounded-full bg-secondary-container px-4 text-label-large text-on-secondary-container"
           >
+            <Icon name="content_copy" size={18} />
             {t('web.abaCopy')}
           </button>
         </dd>

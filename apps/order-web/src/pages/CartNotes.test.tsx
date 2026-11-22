@@ -14,7 +14,7 @@ describe('Keranjang: catatan per menu & tipe order ikon', () => {
     await user.click(await screen.findByRole('button', { name: 'Catatan untuk Kerupuk' }));
     await user.type(screen.getByRole('textbox', { name: 'Catatan untuk Kerupuk' }), 'yang renyah');
     await user.click(screen.getByRole('button', { name: 'Simpan' }));
-    expect(screen.getByText('📝 yang renyah')).toBeInTheDocument();
+    expect(screen.getByText('yang renyah')).toBeInTheDocument();
     const lines = cartStore.get();
     expect(lines.find((l) => l.itemId === 9)?.note).toBe('yang renyah');
     expect(lines.find((l) => l.itemId === 8)?.note).toBeUndefined();

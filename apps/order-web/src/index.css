@@ -2,6 +2,20 @@
 /* Token Material 3 bersama (warna, teks, bentuk, elevasi, ikon) — lihat file untuk daftar kelas. */
 @import '../../../packages/shared/styles/m3.css';
 
+/*
+ * Token turunan khusus web pelanggan (tetap dari peran M3, tanpa hex di komponen):
+ * - brand-deep: hijau tua untuk pita sampul toko (primary dicampur hitam).
+ * - shadow-card / float / up: bayangan lembut bernuansa hijau untuk kartu menu, bar keranjang, area aksi bawah.
+ * - radius-2xl: kartu menu & panel besar (lebih lega dari kartu M3 12 px).
+ */
+@theme {
+  --color-brand-deep: color-mix(in oklab, var(--color-primary) 70%, var(--color-black));
+  --shadow-card: 0 1px 2px rgb(0 33 21 / 0.06), 0 4px 16px -2px rgb(0 33 21 / 0.08);
+  --shadow-float: 0 10px 28px -6px rgb(0 33 21 / 0.45), 0 2px 6px rgb(0 0 0 / 0.12);
+  --shadow-up: 0 -8px 24px -8px rgb(0 33 21 / 0.14);
+  --radius-2xl: 20px;
+}
+
 /* Ukuran teks (settings.ui.textSize / per perangkat): skala rem global (skala teks M3 memakai rem). */
 html {
   font-size: 16px;
@@ -11,4 +25,69 @@ html[data-text-size='large'] {
 }
 html[data-text-size='xlarge'] {
   font-size: 20px;
+}
+
+/* Judul tampilan: Roboto sedikit dipadatkan & tebal (gaya papan nama rumah makan). Khmer/Mandarin tetap Noto. */
+@utility font-display {
+  font-weight: 750;
+  font-stretch: 85%;
+  letter-spacing: -0.01em;
+}
+
+/* Motif kawung halus (batik) — dipakai di pita sampul & ubin menu tanpa foto. Warna = currentColor. */
+@utility motif-kawung {
+  background-image:
+    radial-gradient(ellipse 22% 12% at 50% 22%, currentColor 96%, transparent 100%),
+    radial-gradient(ellipse 22% 12% at 50% 78%, currentColor 96%, transparent 100%),
+    radial-gradient(ellipse 12% 22% at 22% 50%, currentColor 96%, transparent 100%),
+    radial-gradient(ellipse 12% 22% at 78% 50%, currentColor 96%, transparent 100%),
+    radial-gradient(circle at 0 0, currentColor 7%, transparent 8%);
+  background-size: 24px 24px;
+}
+
+/* Skeleton: kilau bergerak; tanpa animasi bila prefers-reduced-motion (aturan global m3.css). */
+@keyframes order-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+@utility skeleton {
+  background-color: var(--color-surface-container-high);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-surface-container-lowest) 70%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: order-shimmer 1.4s var(--ease-standard) infinite;
+}
+
+/* Umpan balik "masuk keranjang": gelembung jumlah memantul sekali. */
+@keyframes order-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@utility animate-pop {
+  animation: order-pop 320ms var(--ease-standard);
+}
+@keyframes order-rise {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+@utility animate-rise {
+  animation: order-rise 300ms var(--ease-standard);
 }

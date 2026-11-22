@@ -60,7 +60,7 @@ export function ProofPicker({ value, onChange }: { value: File | null; onChange:
             <img
               src={preview}
               alt={t('web.proofPreview')}
-              className="max-h-64 w-full rounded-md border border-outline-variant object-contain bg-surface-container-lowest"
+              className="max-h-64 w-full rounded-xl border border-outline-variant bg-surface-container-lowest object-contain"
             />
           ) : (
             <p className="text-label-medium font-medium">{value.name}</p>
@@ -77,7 +77,7 @@ export function ProofPicker({ value, onChange }: { value: File | null; onChange:
       ) : (
         <label
           htmlFor={inputId}
-          className="state-layer flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-full bg-secondary-container text-label-large text-on-secondary-container"
+          className="state-layer flex min-h-20 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/45 bg-primary-container/20 px-4 text-label-large text-primary"
           aria-busy={busy || undefined}
         >
           <CameraIcon />

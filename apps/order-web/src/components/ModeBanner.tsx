@@ -13,7 +13,7 @@ export function TelegramBanner() {
   const name = tgUser?.first_name || session?.customer?.name || session?.customer?.username || '';
   return (
     <div
-      className="flex items-center gap-3 rounded-md bg-tertiary-container px-3 py-2 text-on-tertiary-container"
+      className="flex items-center gap-3 rounded-2xl bg-tertiary-container px-3 py-2.5 text-on-tertiary-container"
       data-testid="tg-banner"
     >
       <span
@@ -26,7 +26,7 @@ export function TelegramBanner() {
         <b className="text-label-large">{t('order.telegramHello', { name })}</b>
         <span className="text-label-medium font-normal">{t('web.tgSub')}</span>
       </span>
-      <span className="flex shrink-0 items-center gap-1 rounded-sm bg-tertiary px-2.5 py-1 text-label-medium text-on-tertiary">
+      <span className="flex shrink-0 items-center gap-1 rounded-full bg-tertiary px-2.5 py-1 text-label-medium text-on-tertiary">
         <Icon name="delivery_dining" size={16} />
         {t('web.typeDelivery')}
       </span>
@@ -50,12 +50,12 @@ export function TableBanner() {
   const hasOrders = (bill.data?.orders.length ?? 0) > 0;
   return (
     <div
-      className="flex items-center gap-3 rounded-md bg-secondary-container px-3 py-2 text-on-secondary-container"
+      className="flex items-center gap-3 rounded-2xl bg-secondary-container px-3 py-2.5 text-on-secondary-container"
       data-testid="table-banner"
     >
       <span
         aria-hidden
-        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-title-medium text-on-primary"
+        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary font-display text-title-large text-on-primary"
       >
         {short}
       </span>

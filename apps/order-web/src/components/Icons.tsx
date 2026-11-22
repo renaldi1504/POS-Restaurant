@@ -2,7 +2,6 @@
 import { Icon } from './ui';
 
 export const SearchIcon = ({ size = 24 }: { size?: number }) => <Icon name="search" size={size} />;
-export const FoodIcon = ({ size = 32 }: { size?: number }) => <Icon name="restaurant" size={size} />;
 export const LocateIcon = ({ size = 24 }: { size?: number }) => <Icon name="my_location" size={size} />;
 export const CheckIcon = ({ size = 18 }: { size?: number }) => <Icon name="check" size={size} />;
 export const CameraIcon = ({ size = 24 }: { size?: number }) => <Icon name="photo_camera" size={size} />;

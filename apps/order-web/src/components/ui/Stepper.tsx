@@ -14,7 +14,7 @@ export interface StepperProps {
   incLabel?: string;
 }
 
-/** Stepper − n + : tombol ikon outlined & tonal besar. Nilai di bawah `min` tidak bisa dipilih. */
+/** Stepper − n + dalam satu pil (tombol 48/56 px, + terisi primary). Nilai di bawah `min` tidak bisa dipilih. */
 export function Stepper({
   value,
   onChange,
@@ -30,10 +30,14 @@ export function Stepper({
     size === 'lg' ? 'size-14' : 'size-12',
   );
   return (
-    <div className="inline-flex items-center gap-2" role="group" aria-label={label}>
+    <div
+      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-container-high"
+      role="group"
+      aria-label={label}
+    >
       <button
         type="button"
-        className={cn(btn, 'border border-outline text-on-surface-variant')}
+        className={cn(btn, 'text-on-surface')}
         aria-label={decLabel ?? `Kurangi ${label}`}
         disabled={value <= min}
         onClick={() => onChange(Math.max(min, value - 1))}
@@ -42,8 +46,8 @@ export function Stepper({
       </button>
       <span
         className={cn(
-          'min-w-8 text-center tabular-nums',
-          size === 'lg' ? 'text-headline-small' : 'text-title-large',
+          'min-w-7 text-center font-bold tabular-nums',
+          size === 'lg' ? 'text-headline-small' : 'text-title-medium',
         )}
         aria-live="polite"
       >
@@ -51,7 +55,7 @@ export function Stepper({
       </span>
       <button
         type="button"
-        className={cn(btn, 'bg-primary text-on-primary')}
+        className={cn(btn, 'bg-primary text-on-primary shadow-e1 disabled:shadow-none')}
         aria-label={incLabel ?? `Tambah ${label}`}
         disabled={value >= max}
         onClick={() => onChange(Math.min(max, value + 1))}

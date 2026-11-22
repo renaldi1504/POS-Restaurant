@@ -51,7 +51,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             role="status"
             data-tone={t.tone}
             className={cn(
-              'flex min-h-12 w-full max-w-[560px] animate-fade-in items-center gap-3 rounded-xs bg-inverse-surface px-4 py-3 text-body-medium text-inverse-on-surface shadow-e3',
+              'flex min-h-12 w-full max-w-[480px] animate-rise items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-body-medium text-inverse-on-surface shadow-e3',
             )}
           >
             {toneIcon[t.tone]}

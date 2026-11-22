@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { tl } from '@pos/shared';
 import { OptionSheet } from '../components/OptionSheet';
+import { DishTile } from '../components/MenuItemCard';
 import { OrderTypeTiles } from '../components/OrderTypeTiles';
 import { Page } from '../components/Shell';
 import {
@@ -24,6 +25,7 @@ import { useCustomer } from '../lib/customer';
 import {
   cartTotals,
   formatHour,
+  reopenTime,
   groupsForItem,
   mainCurrency,
   minOrderGap,
@@ -97,7 +99,7 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
         subtitle={t(typeLabelKey(customer.orderType))}
         onBack={embedded ? undefined : () => navigate(customer.homePath)}
         backLabel={t('web.backToMenu')}
-        className={embedded ? 'bg-surface-container-low' : undefined}
+        className={embedded ? 'bg-surface-container-lowest/90' : undefined}
       />
       {count === 0 ? (
         <main className="flex grow flex-col p-4">
@@ -119,117 +121,131 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
               <OrderTypeTiles value={co.type} onChange={(type) => update({ type })} />
             ) : null}
 
-            <ul className="flex flex-col gap-2.5" aria-label={t('web.cartTitle')}>
+            <ul
+              className="flex flex-col divide-y divide-surface-container-high overflow-hidden rounded-2xl bg-surface-container-lowest shadow-card"
+              aria-label={t('web.cartTitle')}
+            >
               {priced.map((p) => {
                 const name = p.item ? tl(p.item.name, lang) : `#${p.line.itemId}`;
                 const hasGroups = !!(menu && p.item && groupsForItem(menu, p.item).length);
                 return (
-                  <li key={p.line.key}>
-                    <Card
-                      padded={false}
-                      className={p.available ? 'p-4' : 'border-error bg-error-container p-4'}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex min-w-0 flex-col gap-0.5">
-                          <b className="text-title-medium">{name}</b>
-                          {p.options.length ? (
-                            <span className="text-label-medium text-on-surface-variant">
-                              {p.options.map((o) => tl(o.name, lang)).join(', ')}
-                            </span>
-                          ) : null}
-                          {p.line.note && noteKey !== p.line.key ? (
-                            <span className="text-label-medium italic text-on-surface-variant">
-                              📝 {p.line.note}
-                            </span>
-                          ) : null}
-                          <span className="text-label-medium text-on-surface-variant tabular-nums">
-                            {money(p.unit, currency)}
-                          </span>
-                        </div>
-                        <b className="shrink-0 text-title-medium font-medium tabular-nums">
-                          {money(p.total, currency)}
-                        </b>
-                      </div>
-                      {noteKey === p.line.key ? (
-                        <div className="mt-2 flex items-end gap-2">
-                          <div className="group/field relative flex grow rounded-xs border border-outline bg-surface-container-lowest focus-within:border-primary focus-within:outline-1 focus-within:outline-primary">
-                            <label
-                              htmlFor={`note-${p.line.key}`}
-                              className="pointer-events-none absolute left-4 right-4 top-1.5 truncate text-label-medium text-on-surface-variant group-focus-within/field:text-primary"
-                            >
-                              {t('web.itemNote', { name })}
-                            </label>
-                            <input
-                              id={`note-${p.line.key}`}
-                              autoFocus
-                              maxLength={200}
-                              placeholder={t('web.itemNotePh')}
-                              value={noteDraft}
-                              onChange={(e) => setNoteDraft(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') saveNote(p.line);
-                              }}
-                              className="h-14 w-full bg-transparent px-4 pt-5 text-body-large outline-none placeholder:text-on-surface-variant/70"
-                            />
-                          </div>
-                          <Button size="md" onClick={() => saveNote(p.line)}>
-                            {t('common.save')}
-                          </Button>
-                        </div>
-                      ) : null}
-                      {!p.available ? (
-                        <p className="mt-1 text-label-medium font-medium text-error" role="alert">
-                          {t('web.itemUnavailable', { name })}
-                        </p>
-                      ) : null}
-                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                        <Stepper
-                          value={p.line.qty}
-                          min={1}
-                          onChange={(v) => cart.setQty(p.line.key, v)}
-                          label={t('web.qtyOf', { name })}
-                          decLabel={t('web.decItem', { name })}
-                          incLabel={t('web.incItem', { name })}
+                  <li key={p.line.key} className={p.available ? 'p-3' : 'bg-error-container/60 p-3'}>
+                    <div className="flex items-start gap-3">
+                      {p.item ? (
+                        <DishTile
+                          item={p.item}
+                          name={name}
+                          size="sm"
+                          soldOut={!p.available}
+                          className="size-14 rounded-md"
                         />
-                        <div className="flex gap-1.5">
-                          <IconButton
-                            icon="edit_note"
-                            label={t('web.itemNote', { name })}
-                            selected={!!p.line.note}
-                            onClick={() => {
-                              setNoteKey(noteKey === p.line.key ? null : p.line.key);
-                              setNoteDraft(p.line.note ?? '');
-                            }}
-                          />
-                          {hasGroups && p.item?.available ? (
-                            <Button size="md" variant="outlined" onClick={() => setEditKey(p.line.key)}>
-                              {t('web.editOptions')}
-                            </Button>
-                          ) : null}
-                          <Button
-                            size="md"
-                            variant="text"
-                            className="text-error!"
-                            onClick={() => cart.remove(p.line.key)}
-                            aria-label={t('web.removeItem', { name })}
-                          >
-                            {t('common.delete')}
-                          </Button>
+                      ) : null}
+                      <div className="flex min-w-0 grow flex-col gap-0.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <b className="text-title-medium font-semibold">{name}</b>
+                          <b className="shrink-0 text-title-medium font-bold tabular-nums">
+                            {money(p.total, currency)}
+                          </b>
                         </div>
+                        {p.options.length ? (
+                          <span className="text-body-medium text-on-surface-variant">
+                            {p.options.map((o) => tl(o.name, lang)).join(', ')}
+                          </span>
+                        ) : null}
+                        {hasGroups && p.item?.available ? (
+                          <button
+                            type="button"
+                            onClick={() => setEditKey(p.line.key)}
+                            className="state-layer -mx-2 -my-1.5 flex min-h-12 items-center gap-1 self-start rounded-full px-2 text-label-large text-primary"
+                          >
+                            <Icon name="edit" size={18} />
+                            {t('web.editOptions')}
+                          </button>
+                        ) : null}
+                        {p.line.note && noteKey !== p.line.key ? (
+                          <span className="mt-0.5 flex items-start gap-1 self-start rounded-md bg-warning-container/60 px-2 py-0.5 text-label-medium text-on-warning-container">
+                            <Icon name="edit_note" size={16} className="mt-px" />
+                            <span className="min-w-0 italic">{p.line.note}</span>
+                          </span>
+                        ) : null}
+                        <span className="text-label-medium text-on-surface-variant tabular-nums">
+                          {p.line.qty > 1 ? `${p.line.qty} × ` : ''}
+                          {money(p.unit, currency)}
+                        </span>
                       </div>
-                    </Card>
+                    </div>
+                    {noteKey === p.line.key ? (
+                      <div className="mt-3 flex items-end gap-2">
+                        <div className="group/field relative flex grow rounded-md border border-outline bg-surface-container-lowest focus-within:border-primary focus-within:outline-1 focus-within:outline-primary">
+                          <label
+                            htmlFor={`note-${p.line.key}`}
+                            className="pointer-events-none absolute left-4 right-4 top-1.5 truncate text-label-medium text-on-surface-variant group-focus-within/field:text-primary"
+                          >
+                            {t('web.itemNote', { name })}
+                          </label>
+                          <input
+                            id={`note-${p.line.key}`}
+                            autoFocus
+                            maxLength={200}
+                            placeholder={t('web.itemNotePh')}
+                            value={noteDraft}
+                            onChange={(e) => setNoteDraft(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveNote(p.line);
+                            }}
+                            className="h-14 w-full bg-transparent px-4 pt-5 text-body-large outline-none placeholder:text-on-surface-variant/70"
+                          />
+                        </div>
+                        <Button size="md" onClick={() => saveNote(p.line)}>
+                          {t('common.save')}
+                        </Button>
+                      </div>
+                    ) : null}
+                    {!p.available ? (
+                      <p className="mt-1 text-label-medium font-medium text-error" role="alert">
+                        {t('web.itemUnavailable', { name })}
+                      </p>
+                    ) : null}
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                      <div className="-ml-1 flex flex-wrap items-center">
+                        <IconButton
+                          icon="edit_note"
+                          label={t('web.itemNote', { name })}
+                          selected={!!p.line.note}
+                          className={p.line.note ? 'text-primary' : undefined}
+                          onClick={() => {
+                            setNoteKey(noteKey === p.line.key ? null : p.line.key);
+                            setNoteDraft(p.line.note ?? '');
+                          }}
+                        />
+                        <IconButton
+                          icon="delete"
+                          label={t('web.removeItem', { name })}
+                          className="text-error"
+                          onClick={() => cart.remove(p.line.key)}
+                        />
+                      </div>
+                      <Stepper
+                        value={p.line.qty}
+                        min={1}
+                        onChange={(v) => cart.setQty(p.line.key, v)}
+                        label={t('web.qtyOf', { name })}
+                        decLabel={t('web.decItem', { name })}
+                        incLabel={t('web.incItem', { name })}
+                      />
+                    </div>
                   </li>
                 );
               })}
             </ul>
 
             {embedded ? null : (
-              <Button variant="outlined" block onClick={() => navigate(customer.homePath)}>
+              <Button variant="tonal" block onClick={() => navigate(customer.homePath)}>
                 {t('web.addMore')}
               </Button>
             )}
 
-            <div className="group/field relative flex rounded-xs border border-outline bg-surface-container-lowest focus-within:border-primary focus-within:outline-1 focus-within:outline-primary">
+            <div className="group/field relative flex rounded-2xl border border-outline-variant bg-surface-container-lowest focus-within:border-primary focus-within:outline-1 focus-within:outline-primary">
               <label
                 htmlFor={noteId}
                 className="pointer-events-none absolute left-4 right-4 top-1.5 truncate text-label-medium text-on-surface-variant group-focus-within/field:text-primary"
@@ -248,12 +264,19 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
             </div>
 
             {customer.orderType === 'takeaway' ? (
-              <Card tone="info" className="text-body-medium">
+              <Card tone="info" className="flex items-start gap-3 rounded-2xl text-body-medium">
+                <Icon name="storefront" className="shrink-0" />
                 {t('web.pickupInfo')}
               </Card>
             ) : null}
             {customer.mode === 'none' && customer.orderType === 'dine_in' ? (
-              <Card tone="warn" className="text-body-medium" role="alert" data-testid="dine-info">
+              <Card
+                tone="warn"
+                className="flex items-start gap-3 rounded-2xl text-body-medium"
+                role="alert"
+                data-testid="dine-info"
+              >
+                <Icon name="qr_code_2" className="shrink-0" />
                 {t('web.dineInfo')}
               </Card>
             ) : null}
@@ -262,7 +285,7 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
           <BottomBar>
             <div className="flex items-baseline justify-between text-body-large">
               <span>{t('common.subtotal')}</span>
-              <b className="text-title-large font-medium tabular-nums">{money(subtotal, currency)}</b>
+              <b className="text-title-large font-bold tabular-nums">{money(subtotal, currency)}</b>
             </div>
             {isDelivery ? (
               <div className="flex justify-between text-body-medium text-on-surface-variant">
@@ -284,7 +307,7 @@ export default function CartPage({ embedded }: { embedded?: boolean } = {}) {
             ) : null}
             {closed && settings ? (
               <p className="text-center text-label-medium font-medium text-error" role="alert">
-                {t('web.closedOpensAt', { time: formatHour(settings.hours.open, lang) })}
+                {t('web.closedOpensAt', { time: formatHour(reopenTime(settings.hours), lang) })}
               </p>
             ) : null}
             <Button size="lg" block disabled={blocked} loading={submit.isPending} onClick={goNext}>

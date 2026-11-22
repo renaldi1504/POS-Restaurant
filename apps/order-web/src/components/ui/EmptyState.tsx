@@ -15,15 +15,17 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
       {typeof icon === 'string' ? (
-        <span className="flex size-20 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant">
-          <Icon name={icon as IconName} size={40} />
+        <span className="relative flex size-24 items-center justify-center rounded-full bg-primary-container/50 text-primary ring-8 ring-primary-container/25">
+          <Icon name={icon as IconName} size={44} />
         </span>
       ) : (
         icon
       )}
-      <p className="text-title-medium">{title}</p>
-      {description ? <p className="text-body-medium text-on-surface-variant">{description}</p> : null}
-      {action}
+      <p className="mt-2 font-display text-title-large">{title}</p>
+      {description ? (
+        <p className="max-w-xs text-body-medium text-on-surface-variant">{description}</p>
+      ) : null}
+      {action ? <div className="mt-2">{action}</div> : null}
     </div>
   );
 }

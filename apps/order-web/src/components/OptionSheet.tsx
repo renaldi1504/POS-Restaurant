@@ -17,7 +17,8 @@ import {
   type PublicMenuItem,
 } from '@pos/shared';
 import { money } from '../lib/menu';
-import { CheckIcon, ChevronLeft, FoodIcon } from './Icons';
+import { CheckIcon, ChevronLeft } from './Icons';
+import { DishTile } from './MenuItemCard';
 import { Icon, Stepper, cn } from './ui';
 
 export interface OptionSheetValue {
@@ -110,29 +111,25 @@ export function OptionSheet({
         className="flex h-dvh w-full max-w-[560px] flex-col bg-surface-container-low text-body-large shadow-e3 medium:h-auto medium:max-h-[90dvh] medium:overflow-hidden medium:rounded-xl"
       >
         <main className="flex min-h-0 grow flex-col overflow-y-auto">
-          <div className="relative flex h-[190px] shrink-0 items-center justify-center bg-surface-container-high text-outline">
-            {item.photoUrl ? (
-              <img src={item.photoUrl} alt="" className="size-full object-cover" />
-            ) : (
-              <FoodIcon size={40} />
-            )}
+          <div className="relative shrink-0">
+            <DishTile item={item} name={name} size="lg" className="h-[200px] w-full" />
             <button
               ref={backRef}
               type="button"
               onClick={onClose}
               aria-label={t('web.backToMenu')}
-              className="state-layer absolute left-3 top-3 flex size-12 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface shadow-e1"
+              className="state-layer absolute left-3 top-3 flex size-12 items-center justify-center rounded-full bg-surface-container-lowest/95 text-on-surface shadow-e2"
             >
               <ChevronLeft />
             </button>
           </div>
 
-          <div className="flex flex-col gap-1 px-6 pb-2 pt-4">
-            <h2 id={titleId} className="text-headline-small">
+          <div className="relative -mt-5 flex flex-col gap-1 rounded-t-xl bg-surface-container-low px-5 pb-2 pt-5">
+            <h2 id={titleId} className="font-display text-headline-small">
               {name}
             </h2>
             {desc ? <p className="text-body-medium text-on-surface-variant">{desc}</p> : null}
-            <b className="mt-0.5 text-title-medium text-primary tabular-nums">
+            <b className="mt-1 text-title-large font-bold tabular-nums">
               {hasPricedOptions
                 ? t('web.priceFrom', { price: money(item.price, currency) })
                 : money(item.price, currency)}
@@ -154,7 +151,7 @@ export function OptionSheet({
             return (
               <section
                 key={g.id}
-                className="mx-4 mt-3 flex flex-col rounded-md bg-surface-container-lowest px-4 pb-1 pt-3"
+                className="mx-4 mt-3 flex flex-col rounded-2xl bg-surface-container-lowest px-4 pb-1 pt-3 shadow-card"
                 aria-labelledby={labelId}
               >
                 <div className="mb-1 flex items-center justify-between gap-2">
@@ -168,7 +165,7 @@ export function OptionSheet({
                   </div>
                   <span
                     className={cn(
-                      'flex shrink-0 items-center gap-1 rounded-sm px-2 py-1 text-label-medium',
+                      'flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-label-medium',
                       badge.cls,
                     )}
                   >
@@ -233,7 +230,7 @@ export function OptionSheet({
             );
           })}
 
-          <section className="group/field relative mx-4 my-3 flex rounded-xs border border-outline bg-surface-container-lowest focus-within:border-primary focus-within:outline-1 focus-within:outline-primary">
+          <section className="group/field relative mx-4 my-3 flex rounded-2xl border border-outline-variant bg-surface-container-lowest focus-within:border-primary focus-within:outline-1 focus-within:outline-primary">
             <label
               htmlFor={noteId}
               className="pointer-events-none absolute left-4 right-4 top-1.5 truncate text-label-medium text-on-surface-variant group-focus-within/field:text-primary"
@@ -251,7 +248,7 @@ export function OptionSheet({
           </section>
         </main>
 
-        <footer className="flex shrink-0 flex-col gap-2 bg-surface-container px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 medium:pb-4">
+        <footer className="flex shrink-0 flex-col gap-2 rounded-t-2xl bg-surface-container-lowest px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 shadow-up medium:rounded-none medium:pb-4">
           {firstMissing ? (
             <p
               className="flex items-center justify-center gap-1 text-center text-label-large text-error"
@@ -275,7 +272,7 @@ export function OptionSheet({
               type="button"
               disabled={!canSubmit}
               onClick={() => onSubmit({ optionIds: selected, qty, note: note.trim() })}
-              className="state-layer h-14 min-w-0 grow truncate rounded-full bg-primary px-3 text-label-large text-on-primary disabled:bg-on-surface/12 disabled:text-on-surface/38"
+              className="state-layer h-14 min-w-0 grow truncate rounded-full bg-primary px-3 text-title-medium font-semibold text-on-primary shadow-e1 transition-[background-color,box-shadow] disabled:bg-on-surface/12 disabled:text-on-surface/38 disabled:shadow-none"
             >
               {mode === 'edit'
                 ? t('web.saveItem', { price: money(total, currency) })

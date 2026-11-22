@@ -32,7 +32,7 @@ describe('MenuPage (mode biasa)', () => {
       within(nav)
         .getAllByRole('button')
         .map((b) => b.textContent),
-    ).toEqual(['🔥 Terlaris3', 'Ayam2', 'Pempek2', 'Minuman3', 'Tambahan2']);
+    ).toEqual(['Terlaris3', 'Ayam2', 'Pempek2', 'Minuman3', 'Tambahan2']);
     expect(within(nav).getByRole('button', { name: /Terlaris/ })).toHaveAttribute('aria-pressed', 'true');
   });
 
@@ -141,6 +141,25 @@ describe('MenuPage (mode biasa)', () => {
     cartStore.reload();
     await openMenu();
     expect(screen.getByTestId('cart-bar')).toHaveTextContent('1 item · 2.000 ៛');
+  });
+
+  it('istirahat antar sesi: buka lagi jam sesi berikutnya + daftar sesi', async () => {
+    db.settings = makeSettings({
+      isOpen: false,
+      hours: {
+        open: '08:00',
+        close: '20:00',
+        periods: [
+          { open: '08:00', close: '14:00' },
+          { open: '17:00', close: '20:00' },
+        ],
+        nextOpen: '17:00',
+      },
+    });
+    await openMenu();
+    expect(screen.getByTestId('open-status')).toHaveTextContent('Sedang tutup · buka jam 17.00');
+    expect(screen.getByText(/pesanan dibuka lagi jam 17\.00/)).toBeInTheDocument();
+    expect(screen.getByTestId('open-sessions')).toHaveTextContent('Jam buka: 08.00–14.00 · 17.00–20.00');
   });
 
   it('jam tutup: status "Sedang tutup · buka jam …" dan pesan tidak bisa dikirim', async () => {

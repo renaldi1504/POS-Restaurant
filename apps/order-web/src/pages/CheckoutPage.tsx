@@ -6,7 +6,7 @@ import type { PublicPaymentMethod } from '@pos/shared';
 import { AbaAccountInfo } from '../components/AbaAccountInfo';
 import { ProofPicker } from '../components/ProofPicker';
 import { Page } from '../components/Shell';
-import { BottomBar, Button, Card, cn, HeaderBar, useToast } from '../components/ui';
+import { BottomBar, Button, Card, cn, HeaderBar, Icon, useToast, type IconName } from '../components/ui';
 import { errorMessage } from '../lib/api';
 import { useCart } from '../lib/cart';
 import { useCheckout } from '../lib/checkout';
@@ -14,6 +14,7 @@ import { useCustomer } from '../lib/customer';
 import {
   cartTotals,
   formatHour,
+  reopenTime,
   mainCurrency,
   minOrderGap,
   money,
@@ -24,7 +25,8 @@ import {
 import { useSubmitOrder } from '../lib/order';
 
 const inputCls =
-  'h-14 w-full rounded-xs border border-outline bg-surface-container-lowest px-4 text-body-large outline-primary focus:border-primary focus:outline-1';
+  'h-14 w-full rounded-md border border-outline bg-surface-container-lowest px-4 text-body-large outline-primary focus:border-primary focus:outline-1';
+const cardCls = 'rounded-2xl border-0 shadow-card';
 
 export default function CheckoutPage() {
   const { t, i18n } = useTranslation();
@@ -62,10 +64,11 @@ export default function CheckoutPage() {
       (customer.mode === 'telegram' && !co.address.addressId) ||
       (customer.mode === 'none' && !co.phone.trim()));
 
-  const methods: { value: PublicPaymentMethod; title: string; sub: string }[] = [
-    { value: 'aba', title: t('web.payAba'), sub: t('web.payAbaSub') },
+  const methods: { value: PublicPaymentMethod; title: string; sub: string; icon: IconName }[] = [
+    { value: 'aba', title: t('web.payAba'), sub: t('web.payAbaSub'), icon: 'account_balance' },
     {
       value: 'cash',
+      icon: 'payments',
       title: isDelivery ? t('web.payCashDelivery') : t('web.payCashCounter'),
       sub: t('web.payCashSub'),
     },
@@ -95,7 +98,7 @@ export default function CheckoutPage() {
         backLabel={t('common.back')}
       />
       <main className="flex grow flex-col gap-3 p-4">
-        <Card className="flex flex-col gap-1.5" aria-label={t('web.summary')}>
+        <Card className={cn('flex flex-col gap-1.5', cardCls)} aria-label={t('web.summary')}>
           <div className="flex justify-between text-body-medium">
             <span>{t('web.itemsCount', { count })}</span>
             <b className="tabular-nums">{money(subtotal, currency)}</b>
@@ -106,14 +109,17 @@ export default function CheckoutPage() {
               <span>{fee ? money(fee, currency) : t('web.feeConfirm')}</span>
             </div>
           ) : null}
-          <div className="flex items-baseline justify-between border-t border-outline-variant pt-1.5">
+          <div className="mt-1 flex items-baseline justify-between border-t border-dashed border-outline-variant pt-2.5">
             <span className="font-medium">{t('order.totalToPay')}</span>
-            <b className="text-headline-small tabular-nums">{money(total, currency)}</b>
+            <b className="text-headline-small font-bold tabular-nums">{money(total, currency)}</b>
           </div>
           {isDelivery && co.address.text ? (
-            <p className="text-label-medium text-on-surface-variant">
-              <b className="text-on-surface">{t('web.deliverTo')}:</b> {co.address.text}
-              {co.address.landmark ? ` · ${co.address.landmark}` : ''}
+            <p className="mt-1 flex items-start gap-2 rounded-md bg-surface-container-low px-3 py-2 text-label-medium text-on-surface-variant">
+              <Icon name="location_on" size={18} className="text-primary" />
+              <span className="min-w-0">
+                <b className="text-on-surface">{t('web.deliverTo')}:</b> {co.address.text}
+                {co.address.landmark ? ` · ${co.address.landmark}` : ''}
+              </span>
             </p>
           ) : null}
           {type === 'takeaway' ? (
@@ -125,8 +131,11 @@ export default function CheckoutPage() {
         </Card>
 
         {customer.mode === 'none' && !isDelivery ? (
-          <Card className="flex flex-col gap-2">
-            <b className="text-body-medium">{t('web.contact')}</b>
+          <Card className={cn('flex flex-col gap-2', cardCls)}>
+            <b className="flex items-center gap-2 text-title-medium">
+              <Icon name="person" className="text-primary" />
+              {t('web.contact')}
+            </b>
             <label htmlFor={nameId} className="text-label-medium font-medium">
               {t('web.yourName')}
             </label>
@@ -155,7 +164,7 @@ export default function CheckoutPage() {
         ) : null}
 
         <section aria-labelledby="pay-title" className="flex flex-col gap-2">
-          <h2 id="pay-title" className="text-title-medium">
+          <h2 id="pay-title" className="font-display text-title-large">
             {t('order.payment')}
           </h2>
           <div role="radiogroup" aria-labelledby="pay-title" className="flex flex-col gap-2">
@@ -169,24 +178,33 @@ export default function CheckoutPage() {
                   aria-checked={on}
                   onClick={() => update({ payment: m.value })}
                   className={cn(
-                    'state-layer flex min-h-[72px] items-center gap-4 rounded-md px-4 py-2.5 text-left',
+                    'state-layer flex min-h-[76px] items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-shadow',
                     on
-                      ? 'bg-secondary-container text-on-secondary-container outline-2 outline-primary'
-                      : 'border border-outline-variant bg-surface-container-lowest',
+                      ? 'bg-surface-container-lowest shadow-card ring-2 ring-primary'
+                      : 'bg-surface-container-lowest ring-1 ring-outline-variant',
                   )}
                 >
                   <span
                     aria-hidden
                     className={cn(
-                      'flex size-6 shrink-0 items-center justify-center rounded-full border-2',
-                      on ? 'border-primary' : 'border-on-surface-variant',
+                      'flex size-12 shrink-0 items-center justify-center rounded-full transition-colors',
+                      on ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant',
                     )}
                   >
-                    {on ? <span className="size-3 rounded-full bg-primary" /> : null}
+                    <Icon name={m.icon} filled={on} />
                   </span>
-                  <span className="flex flex-col">
-                    <b className="text-title-medium">{m.title}</b>
-                    <span className="text-body-medium opacity-80">{m.sub}</span>
+                  <span className="flex min-w-0 grow flex-col">
+                    <b className="text-title-medium font-semibold">{m.title}</b>
+                    <span className="text-body-medium text-on-surface-variant">{m.sub}</span>
+                  </span>
+                  <span
+                    aria-hidden
+                    className={cn(
+                      'flex size-6 shrink-0 items-center justify-center rounded-full border-2',
+                      on ? 'border-primary bg-primary text-on-primary' : 'border-outline',
+                    )}
+                  >
+                    {on ? <Icon name="check" size={16} /> : null}
                   </span>
                 </button>
               );
@@ -195,11 +213,11 @@ export default function CheckoutPage() {
         </section>
 
         {co.payment === 'aba' ? (
-          <Card className="flex flex-col gap-2.5" data-testid="aba-panel">
-            <b className="text-title-medium">{t('web.abaTitle')}</b>
-            <div className="flex items-baseline justify-between rounded-md bg-surface-container-highest px-4 py-3">
+          <Card className={cn('flex animate-fade-in flex-col gap-3', cardCls)} data-testid="aba-panel">
+            <b className="font-display text-title-large">{t('web.abaTitle')}</b>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 rounded-xl bg-primary-container/45 px-4 py-3 text-on-primary-container">
               <span className="text-body-medium">{t('web.abaAmount')}</span>
-              <b className="text-headline-small font-medium tabular-nums">{money(total, currency)}</b>
+              <b className="text-headline-small font-bold tabular-nums">{money(total, currency)}</b>
             </div>
             <AbaAccountInfo settings={settings} />
             <ProofPicker value={proof} onChange={setProof} />
@@ -212,7 +230,7 @@ export default function CheckoutPage() {
         {tried && (needName || needDeliveryInfo) ? (
           <ul
             role="alert"
-            className="flex flex-col gap-1 rounded-md bg-error-container p-3 text-label-medium font-medium text-on-error-container"
+            className="flex flex-col gap-1 rounded-2xl bg-error-container p-3 text-label-medium font-medium text-on-error-container"
           >
             {needName ? <li>{t('web.needName')}</li> : null}
             {needDeliveryInfo ? <li>{t('web.needAddress')}</li> : null}
@@ -235,7 +253,7 @@ export default function CheckoutPage() {
         ) : null}
         {closed && settings ? (
           <p className="text-center text-label-medium font-medium text-error" role="alert">
-            {t('web.closedOpensAt', { time: formatHour(settings.hours.open, i18n.language) })}
+            {t('web.closedOpensAt', { time: formatHour(reopenTime(settings.hours), i18n.language) })}
           </p>
         ) : null}
         <Button

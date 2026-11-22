@@ -26,7 +26,7 @@ const LABELS = [
 ] as const;
 
 const inputCls =
-  'h-14 w-full rounded-xs border border-outline bg-surface-container-lowest px-4 text-body-large outline-primary focus:border-primary focus:outline-1';
+  'h-14 w-full rounded-md border border-outline bg-surface-container-lowest px-4 text-body-large outline-primary focus:border-primary focus:outline-1';
 
 export default function AddressPage() {
   const { t, i18n } = useTranslation();
@@ -226,7 +226,7 @@ export default function AddressPage() {
         onBack={() => navigate('/keranjang')}
         backLabel={t('common.back')}
         right={
-          <span className="shrink-0 rounded-[7px] bg-tertiary-container px-2 py-1 text-label-medium font-medium text-on-tertiary-container">
+          <span className="shrink-0 rounded-full bg-tertiary-container px-2 py-1 text-label-medium font-medium text-on-tertiary-container">
             {t('web.typeDelivery')}
           </span>
         }
@@ -273,7 +273,7 @@ export default function AddressPage() {
                   aria-pressed={on}
                   onClick={() => pickSaved(s)}
                   className={cn(
-                    'h-11 rounded-full px-3.5 text-label-medium',
+                    'h-12 rounded-full px-4 text-label-large',
                     on
                       ? 'border-[1.5px] border-primary bg-secondary-container font-medium text-on-secondary-container'
                       : 'border border-outline-variant bg-surface-container-lowest font-medium',
@@ -286,7 +286,7 @@ export default function AddressPage() {
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-1 rounded-md bg-surface-container-lowest px-3 py-2.5">
+        <div className="flex flex-col gap-1 rounded-2xl bg-surface-container-lowest px-3 py-3 shadow-card">
           <label htmlFor={ids.text} className="text-label-medium font-medium">
             {t('web.addressText')}
           </label>
@@ -297,7 +297,7 @@ export default function AddressPage() {
             value={a.text}
             onChange={(e) => edit({ text: e.target.value })}
             placeholder={t('web.addressTextPlaceholder')}
-            className="rounded-sm border border-outline-variant p-2.5"
+            className="rounded-md border border-outline-variant p-2.5"
           />
           <span className="text-label-medium text-on-surface-variant" aria-live="polite">
             {geocoding
@@ -377,7 +377,7 @@ export default function AddressPage() {
                   aria-checked={a.label === l.value}
                   onClick={() => edit({ label: l.value })}
                   className={cn(
-                    'state-layer flex h-10 items-center gap-1 rounded-sm px-3 text-label-large',
+                    'state-layer flex h-12 items-center gap-1 rounded-full px-4 text-label-large',
                     a.label === l.value
                       ? 'bg-secondary-container text-on-secondary-container'
                       : 'border border-outline-variant bg-surface-container-lowest text-on-surface-variant',
@@ -392,7 +392,7 @@ export default function AddressPage() {
 
         {isTg ? (
           <>
-            <div className="flex items-center gap-3 rounded-md bg-tertiary-container px-3 py-2.5 text-on-tertiary-container">
+            <div className="flex items-center gap-3 rounded-2xl bg-tertiary-container px-3 py-2.5 text-on-tertiary-container">
               <span
                 aria-hidden
                 className="flex size-10 shrink-0 items-center justify-center rounded-full bg-tertiary text-on-tertiary"
@@ -441,7 +441,7 @@ export default function AddressPage() {
             )}
           </>
         ) : (
-          <fieldset className="flex flex-col gap-2 rounded-md bg-surface-container-lowest p-3">
+          <fieldset className="flex flex-col gap-2 rounded-2xl bg-surface-container-lowest p-3 shadow-card">
             <legend className="sr-only">{t('web.contact')}</legend>
             <b className="text-body-medium">{t('web.contact')}</b>
             <label htmlFor={ids.name} className="text-label-medium font-medium">
@@ -474,7 +474,7 @@ export default function AddressPage() {
         {tried && errors.length ? (
           <ul
             role="alert"
-            className="flex flex-col gap-1 rounded-md bg-error-container p-3 text-label-medium font-medium text-on-error-container"
+            className="flex flex-col gap-1 rounded-2xl bg-error-container p-3 text-label-medium font-medium text-on-error-container"
           >
             {errors.map((e) => (
               <li key={e}>{e}</li>

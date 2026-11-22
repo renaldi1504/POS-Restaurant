@@ -88,6 +88,9 @@ export const ICON_NAMES = [
   'swap_vert',
   'smart_toy',
   'edit_note',
+  // Web pelanggan (tampilan modern)
+  'account_balance',
+  'hourglass_top',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
