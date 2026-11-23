@@ -8,9 +8,22 @@
 import { and, desc, eq, gt } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { Bot, InlineKeyboard, InputFile, Keyboard, type Context } from 'grammy';
-import { formatMoney, LANGS, tl, type Lang, type OrderDto, type OrderStatus } from '@pos/shared';
+import {
+  businessDate,
+  formatMoney,
+  formatPeriods,
+  isOpenAt,
+  LANGS,
+  nextOpenTime,
+  tl,
+  type Lang,
+  type OrderDto,
+  type OrderStatus,
+  type Settings,
+} from '@pos/shared';
 import { dictionaries } from '@pos/shared/i18n';
 import { customers, orders, payments } from '../../db/schema';
+import { now } from '../../lib/clock';
 import { JOB_NAMES } from '../../lib/jobs';
 import { getSettings } from '../../lib/settings';
 import { privateKeyFromUrl } from '../../lib/upload';
@@ -31,6 +44,9 @@ export const BOT_TEXT: Record<
     howToBody: string;
     noOrders: string;
     rateLimited: string;
+    closed: string;
+    closedHoliday: string;
+    browse: string;
   }
 > = {
   id: {
@@ -42,6 +58,11 @@ export const BOT_TEXT: Record<
       '1. Tekan tombol "Pesan sekarang" / menu.\n2. Pilih menu & opsi, lalu masukkan ke keranjang.\n3. Pilih alamat pengantaran.\n4. Bayar cash saat diantar atau transfer ABA (upload bukti).\n5. Status pesanan dikirim otomatis ke chat ini.',
     noOrders: 'Belum ada pesanan aktif.',
     rateLimited: 'Terlalu banyak pertanyaan. Coba lagi nanti ya 🙏',
+    closed:
+      'Maaf kak, {name} sedang tutup 🙏\nKami buka lagi jam {next}.\n🕒 Jam buka: {hours}\n\nSementara itu, silakan lihat-lihat menu kami dulu 👇',
+    closedHoliday:
+      'Maaf kak, hari ini {name} libur 🙏\n🕒 Jam buka biasa: {hours}\n\nSilakan lihat-lihat menu kami dulu 👇',
+    browse: '👀 Lihat menu',
   },
   en: {
     welcome: 'Hello! Welcome to {name} 👋\nTap the button below to see the menu and order.',
@@ -52,6 +73,11 @@ export const BOT_TEXT: Record<
       '1. Tap "Order now" / the menu button.\n2. Choose dishes & options, add to cart.\n3. Choose your delivery address.\n4. Pay cash on delivery or by ABA transfer (upload the receipt).\n5. Order updates are sent to this chat automatically.',
     noOrders: 'You have no active orders.',
     rateLimited: 'Too many questions. Please try again later 🙏',
+    closed:
+      'Sorry, {name} is closed right now 🙏\nWe open again at {next}.\n🕒 Opening hours: {hours}\n\nMeanwhile, feel free to browse our menu 👇',
+    closedHoliday:
+      'Sorry, {name} is closed today 🙏\n🕒 Usual opening hours: {hours}\n\nFeel free to browse our menu 👇',
+    browse: '👀 Browse menu',
   },
   kh: {
     welcome: 'សួស្តី! សូមស្វាគមន៍មកកាន់ {name} 👋\nចុចប៊ូតុងខាងក្រោមដើម្បីមើលម៉ឺនុយ និងកុម្ម៉ង់។',
@@ -62,6 +88,9 @@ export const BOT_TEXT: Record<
       '1. ចុច "កុម្ម៉ង់ឥឡូវ"។\n2. ជ្រើសម្ហូប និងជម្រើស ដាក់ក្នុងកន្ត្រក។\n3. ជ្រើសអាសយដ្ឋានដឹកជញ្ជូន។\n4. បង់ប្រាក់សុទ្ធពេលដឹក ឬផ្ទេរ ABA (បញ្ចូលវិក្កយបត្រ)។\n5. ស្ថានភាពនឹងផ្ញើមកកាន់ឆាតនេះដោយស្វ័យប្រវត្តិ។',
     noOrders: 'មិនទាន់មានការកុម្ម៉ង់ទេ។',
     rateLimited: 'សំណួរច្រើនពេក។ សូមព្យាយាមម្តងទៀតពេលក្រោយ 🙏',
+    closed: 'សូមអភ័យទោស {name} កំពុងបិទ 🙏\nយើងនឹងបើកវិញម៉ោង {next}។\n🕒 ម៉ោងបើក៖ {hours}\n\nសូមមើលម៉ឺនុយរបស់យើងសិន 👇',
+    closedHoliday: 'សូមអភ័យទោស ថ្ងៃនេះ {name} ឈប់សម្រាក 🙏\n🕒 ម៉ោងបើកធម្មតា៖ {hours}\n\nសូមមើលម៉ឺនុយរបស់យើងសិន 👇',
+    browse: '👀 មើលម៉ឺនុយ',
   },
   zh: {
     welcome: '您好！欢迎光临 {name} 👋\n点击下方按钮查看菜单并下单。',
@@ -72,6 +101,10 @@ export const BOT_TEXT: Record<
       '1. 点击“立即点餐”/菜单按钮。\n2. 选择菜品和选项，加入购物车。\n3. 选择送餐地址。\n4. 货到付现金或ABA转账（上传凭证）。\n5. 订单状态会自动发送到此聊天。',
     noOrders: '暂无进行中的订单。',
     rateLimited: '提问次数过多，请稍后再试 🙏',
+    closed:
+      '抱歉，{name} 现在已打烊 🙏\n我们将于 {next} 重新营业。\n🕒 营业时间：{hours}\n\n您可以先看看我们的菜单 👇',
+    closedHoliday: '抱歉，{name} 今天休息 🙏\n🕒 平时营业时间：{hours}\n\n您可以先看看我们的菜单 👇',
+    browse: '👀 看看菜单',
   },
 };
 
@@ -236,16 +269,31 @@ async function customerLang(app: FastifyInstance, telegramId: string, fallback?:
 
 /** Tombol "Pesan sekarang": Mini App di chat bot. Di chat Telegram Business tombol web_app tidak
  * diizinkan → URL biasa langsung ke web order (bahasa chat + token sesi pelanggan Telegram). */
-function orderButton(app: FastifyInstance, lang: Lang, businessFor?: number) {
+function orderButton(app: FastifyInstance, lang: Lang, businessFor?: number, label = BOT_TEXT[lang].order) {
   const kb = new InlineKeyboard();
-  if (businessFor == null) return kb.webApp(BOT_TEXT[lang].order, miniAppUrl(app, lang));
-  return kb.url(BOT_TEXT[lang].order, businessOrderUrl(app, String(businessFor), lang));
+  if (businessFor == null) return kb.webApp(label, miniAppUrl(app, lang));
+  return kb.url(label, businessOrderUrl(app, String(businessFor), lang));
 }
 
 /** URL web order untuk pelanggan chat bisnis (berlaku 7 hari). */
 export function businessOrderUrl(app: FastifyInstance, telegramId: string, lang: Lang) {
   const t = createOrderLinkToken(app.config.SESSION_SECRET, telegramId, Math.floor(Date.now() / 1000));
   return `${miniAppUrl(app, lang)}&t=${t}`;
+}
+
+/**
+ * Di luar jam buka: kabari tutup + jam buka berikutnya (tanpa jawaban AI / menu), dengan tombol
+ * "Lihat menu" untuk melihat-lihat. null bila sedang buka.
+ */
+export function closedReply(settings: Settings, lang: Lang, at: Date = new Date()): string | null {
+  if (isOpenAt(at, settings.hours)) return null;
+  const t = BOT_TEXT[lang];
+  const hours = formatPeriods(settings.hours);
+  const holiday = settings.hours.holidays?.includes(businessDate(at, settings.hours)) ?? false;
+  return (holiday ? t.closedHoliday : t.closed)
+    .replace('{name}', settings.profile.name)
+    .replace('{next}', nextOpenTime(at, settings.hours) ?? settings.hours.open)
+    .replace('{hours}', hours);
 }
 
 /** Pelanggan dari chat Telegram Business → simpan/perbarui (bisa dicari kasir, notifikasi lewat akun bisnis). */
@@ -337,8 +385,9 @@ export function setupBot(app: FastifyInstance, bot: Bot, sendToAdmin: (text: str
         .catch(() => undefined);
     const settings = await getSettings(app.db);
     const t = BOT_TEXT[lang];
-    await ctx.reply(t.welcome.replace('{name}', settings.profile.name), {
-      reply_markup: new InlineKeyboard().webApp(t.order, miniAppUrl(app, lang)),
+    const closed = closedReply(settings, lang, now());
+    await ctx.reply(closed ?? t.welcome.replace('{name}', settings.profile.name), {
+      reply_markup: new InlineKeyboard().webApp(closed ? t.browse : t.order, miniAppUrl(app, lang)),
     });
     await ctx.reply(t.howTo + ' / ' + t.status, { reply_markup: mainKeyboard(lang) });
   });
@@ -420,6 +469,13 @@ export function setupBot(app: FastifyInstance, bot: Bot, sendToAdmin: (text: str
     const lang = detectLang(text) ?? stored;
     const key = String(from.id);
     if (!limiter.take(key)) return void (await ctx.reply(BOT_TEXT[lang].rateLimited));
+    // Tutup → beri tahu jam buka, bukan menu; tetap boleh melihat-lihat menu.
+    const closed = closedReply(await getSettings(app.db), lang, now());
+    if (closed) {
+      return void (await ctx.reply(closed, {
+        reply_markup: orderButton(app, lang, business ? from.id : undefined, BOT_TEXT[lang].browse),
+      }));
+    }
     await ctx.replyWithChatAction('typing').catch(() => undefined);
     const answer = await answerQuestion(app, text, lang);
     // Ingat bahasa pelanggan → notifikasi order ikut bahasa ini.

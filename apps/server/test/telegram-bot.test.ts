@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { OrderDto } from '@pos/shared';
+import type { OrderDto, Settings } from '@pos/shared';
 import {
   answerQuestion,
   buildMenuContext,
@@ -8,7 +8,7 @@ import {
   isLocationQuestion,
   menuLookupReply,
 } from '../src/modules/ai/service';
-import { miniAppUrl, orderDetailMessage } from '../src/modules/telegram/service';
+import { closedReply, miniAppUrl, orderDetailMessage } from '../src/modules/telegram/service';
 import { call, createTestApp, loginAs } from './helpers';
 
 describe('deteksi bahasa pesan', () => {
@@ -55,6 +55,35 @@ const order = {
   address: { text: 'Street 108', landmark: 'dekat Golden Lion' },
   note: null,
 } as unknown as OrderDto;
+
+describe('bot saat restoran tutup', () => {
+  const settings = {
+    profile: { name: 'RM Berkat' },
+    hours: {
+      open: '08:00',
+      close: '20:00',
+      periods: [
+        { open: '08:00', close: '14:00' },
+        { open: '17:00', close: '20:00' },
+      ],
+      holidays: ['2031-05-01'],
+    },
+  } as unknown as Settings;
+
+  it('di luar jam buka → kabar tutup, jam buka berikutnya & semua sesi; saat buka → null', () => {
+    const t = closedReply(settings, 'id', new Date('2031-05-02T15:00:00+07:00'))!;
+    expect(t).toContain('sedang tutup');
+    expect(t).toContain('buka lagi jam 17:00');
+    expect(t).toContain('08:00–14:00, 17:00–20:00');
+    expect(t).toContain('lihat-lihat menu');
+    expect(closedReply(settings, 'kh', new Date('2031-05-02T22:00:00+07:00'))).toContain('08:00');
+    expect(closedReply(settings, 'id', new Date('2031-05-02T09:00:00+07:00'))).toBeNull();
+  });
+
+  it('hari libur → pesan libur', () => {
+    expect(closedReply(settings, 'en', new Date('2031-05-01T10:00:00+07:00'))).toContain('closed today');
+  });
+});
 
 describe('rincian order ke pelanggan', () => {
   it('Khmer: nama menu, opsi, subtotal, diskon, ongkir, total', () => {
@@ -108,8 +137,15 @@ describe('tanya menu tanpa Gemini (cadangan)', () => {
     expect(hi.text).toContain('Selamat datang');
   });
 
-  it('tidak ada menu cocok → diteruskan ke admin dengan balasan sesuai bahasa', async () => {
+  it('tanya jam buka saat buka → jam buka dijawab, tidak diteruskan', async () => {
     const a = await answerQuestion(app, 'តើហាងបើកម៉ោងប៉ុន្មាន?', 'id');
+    expect(a.forward).toBe(false);
+    expect(a.lang).toBe('kh');
+    expect(a.text).toContain('ម៉ោងបើក');
+  });
+
+  it('tidak ada menu cocok → diteruskan ke admin dengan balasan sesuai bahasa', async () => {
+    const a = await answerQuestion(app, 'ខ្ញុំចង់ប្តឹងអំពីការដឹកជញ្ជូន', 'id');
     expect(a.forward).toBe(true);
     expect(a.lang).toBe('kh');
     expect(a.text).toContain('សូមអភ័យទោស');

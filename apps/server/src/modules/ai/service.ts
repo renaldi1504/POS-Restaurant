@@ -509,6 +509,17 @@ export async function menuListReply(app: FastifyInstance, lang: Lang): Promise<s
   return `${MENU_TITLE[lang]}\n\n${blocks.join('\n\n')}\n\n${ORDER_HINT[lang]}`.slice(0, 3800);
 }
 
+const HOURS_Q =
+  /(\bbuka\b|\btutup\b|jam\s*(berapa|buka|operasional)|\bopen\b|\bclose[sd]?\b|opening\s*hours|what\s*time|ម៉ោងបើក|បើក|បិទ|营业|几点|开门|关门)/iu;
+export const isHoursQuestion = (q: string) => HOURS_Q.test(q);
+
+const HOURS_REPLY: Record<Lang, string> = {
+  id: '✅ Kami sedang buka sekarang.\n🕒 Jam buka: {hours}',
+  en: "✅ We're open now.\n🕒 Opening hours: {hours}",
+  kh: '✅ យើងកំពុងបើកឥឡូវនេះ។\n🕒 ម៉ោងបើក៖ {hours}',
+  zh: '✅ 我们现在正在营业。\n🕒 营业时间：{hours}',
+};
+
 const GREETING =
   /^\s*(halo+|hal+o|hai+|hi+|hello+|hey|pagi|siang|sore|malam|selamat\s+\w+|permisi|assalamualaikum|សួស្តី|ជំរាបសួរ|你好|您好)[\s!.,kakbangmin🙏👋]*$/iu;
 export const isGreeting = (q: string) => GREETING.test(q);
@@ -538,6 +549,14 @@ export async function answerQuestion(app: FastifyInstance, question: string, lan
       const list = await menuListReply(app, detected).catch(() => null);
       if (list) return { text: list, forward: false, reason: 'lookup', lang: detected, error };
     }
+    if (isHoursQuestion(question))
+      return {
+        text: `${HOURS_REPLY[detected].replace('{hours}', formatPeriods(settings.hours))}\n\n${ORDER_HINT[detected]}`,
+        forward: false,
+        reason: 'lookup',
+        lang: detected,
+        error,
+      };
     if (isGreeting(question))
       return {
         text: GREETING_REPLY[detected].replace('{name}', settings.profile.name),
