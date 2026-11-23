@@ -363,6 +363,9 @@ export const en: Dict = {
     chooseUser: 'Choose your name first',
   },
   cashier: {
+    staleShift:
+      "The shift from {{date}} is still open. Today's orders are still recorded on that date, so today's history & reports are empty. Do the closing, then open a new shift.",
+    closeOldShift: 'Close the shift now',
     shortcuts: 'Shortcuts',
     title: 'Cashier',
     orderNo: 'Order {{no}}',

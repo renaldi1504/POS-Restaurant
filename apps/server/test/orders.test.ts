@@ -405,4 +405,20 @@ describe('daily numbering & business date', () => {
     await closeAllShifts(app);
     clock.reset();
   });
+
+  it('history (ordersList without date) follows a still-open shift from a previous day', async () => {
+    await closeAllShifts(app);
+    clock.set(new Date('2031-04-01T12:00:00+07:00'));
+    const shift = await openShift(app, kasir);
+    expect(shift.businessDate).toBe('2031-04-01');
+    // Lupa closing: keesokan harinya order tetap masuk ke tanggal shift.
+    clock.set(new Date('2031-04-02T12:00:00+07:00'));
+    const o = await createSimpleOrder(app, kasir, ids);
+    const res = await call(app, 'ordersList', { cookie: kasir, query: {} });
+    expect(res.statusCode, res.body).toBe(200);
+    const list = ListOrdersResponse.parse(res.json()).orders;
+    expect(list.map((x) => x.id)).toContain(o.id);
+    await closeAllShifts(app);
+    clock.reset();
+  });
 });

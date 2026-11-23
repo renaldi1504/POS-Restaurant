@@ -381,6 +381,9 @@ export const zh: Dict = {
     chooseUser: '请先选择您的名字',
   },
   cashier: {
+    staleShift:
+      '{{date}} 的班次尚未结算。今天的订单仍记在那一天，所以今天的记录和报表为空。请先结算，再开新班次。',
+    closeOldShift: '立即结算班次',
     shortcuts: '快捷方式',
     title: '收银',
     orderNo: '订单 {{no}}',

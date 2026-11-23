@@ -2,7 +2,7 @@ import { and, eq, gt, inArray, type SQL } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { ACTIVE_ORDER_STATUSES, hasPermission, type OrderStatus } from '@pos/shared';
 import { customers, orders } from '../../db/schema';
-import { currentBusinessDate } from '../../lib/business';
+import { currentBusinessDate, getOpenShift } from '../../lib/business';
 import { now } from '../../lib/clock';
 import { forbidden, unprocessable } from '../../lib/errors';
 import { defineRoute } from '../../lib/route';
@@ -27,7 +27,11 @@ export default async function ordersRoutes(app: FastifyInstance) {
     if (query.since) conds.push(gt(orders.updatedAt, new Date(query.since)));
     const crossDate = query.active || query.since || query.tableSessionId;
     if (query.date || !crossDate) {
-      const date = query.date ?? currentBusinessDate(await getSettings(app.db));
+      // Default: tanggal shift yang sedang buka (order masuk ke tanggal shift-nya), selain itu hari ini.
+      const date =
+        query.date ??
+        (await getOpenShift(app.db))?.businessDate ??
+        currentBusinessDate(await getSettings(app.db));
       conds.push(eq(orders.businessDate, date));
     }
     const list = await loadOrderDtos(app.db, and(...conds));

@@ -13,7 +13,7 @@ import {
 } from '@pos/shared';
 import { Card, Chip, EmptyState, Icon, cn } from '../../components/ui';
 import { ErrorBlock, LoadingBlock, Screen, usePane } from '../../components/common';
-import { CashierActions, CashierShortcuts } from '../../components/cashier/CashierHeader';
+import { CashierActions, CashierShortcuts, StaleShiftBanner } from '../../components/cashier/CashierHeader';
 import { OptionSheet } from '../../components/cashier/OptionSheet';
 import { useMe } from '../../lib/auth';
 import {
@@ -125,6 +125,7 @@ function MenuGrid({ shiftName, lang }: { shiftName: string; lang: string }) {
           </div>
           <CashierActions />
         </div>
+        <StaleShiftBanner />
         <CashierShortcuts />
         <div className="px-4">
           <label className="flex h-14 items-center gap-3 rounded-full bg-surface-container-high px-4 text-on-surface-variant focus-within:outline-3 focus-within:outline-secondary">

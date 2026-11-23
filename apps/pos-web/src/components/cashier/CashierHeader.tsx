@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { hasPermission } from '@pos/shared';
+import { hasPermission, type Lang } from '@pos/shared';
 import { Icon, IconButton } from '../ui';
+import { formatDayLabel } from '../../lib/format';
+import { useCurrentShift, usePublicSettings } from '../../lib/data';
 import { useMe } from '../../lib/auth';
 import { useOnlineAlarm } from '../../lib/online';
 
@@ -82,5 +84,45 @@ export function CashierActions({
         />
       ) : null}
     </>
+  );
+}
+
+/**
+ * Shift yang masih terbuka dari hari operasional sebelumnya (lupa closing): order baru tetap masuk
+ * ke tanggal shift itu, sehingga "Riwayat hari ini" & laporan hari ini kosong. Ingatkan untuk closing.
+ */
+export function StaleShiftBanner() {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { data: me } = useMe();
+  const shift = useCurrentShift();
+  const settings = usePublicSettings();
+  const today = settings.data?.businessDate;
+  const s = shift.data;
+  if (!s || !today || s.businessDate >= today) return null;
+  const canClose = hasPermission(me?.permissions, 'shift.manage');
+  return (
+    <div
+      role="alert"
+      data-testid="stale-shift-banner"
+      className="mx-4 flex flex-col gap-2 rounded-md bg-warning-container p-3 text-on-warning-container"
+    >
+      <div className="flex items-start gap-2">
+        <Icon name="warning" size={22} className="mt-0.5 shrink-0" />
+        <span className="text-body-medium">
+          {t('cashier.staleShift', { date: formatDayLabel(s.businessDate, i18n.language as Lang) })}
+        </span>
+      </div>
+      {canClose ? (
+        <button
+          type="button"
+          onClick={() => navigate('/kasir/closing')}
+          className="state-layer flex h-11 items-center justify-center gap-2 self-start rounded-full bg-warning px-5 text-label-large font-semibold text-on-warning"
+        >
+          <Icon name="lock" size={20} />
+          {t('cashier.closeOldShift')}
+        </button>
+      ) : null}
+    </div>
   );
 }

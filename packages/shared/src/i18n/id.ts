@@ -273,6 +273,9 @@ export const id = {
     chooseUser: 'Pilih nama Anda dulu',
   },
   cashier: {
+    staleShift:
+      'Shift tanggal {{date}} belum ditutup. Order hari ini masih masuk ke tanggal itu, jadi riwayat & laporan hari ini kosong. Lakukan closing lalu buka shift baru.',
+    closeOldShift: 'Closing shift sekarang',
     shortcuts: 'Pintasan',
     title: 'Kasir',
     orderNo: 'Order {{no}}',
