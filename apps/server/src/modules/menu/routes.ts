@@ -7,6 +7,7 @@ import { now } from '../../lib/clock';
 import { badRequest, conflict, notFound, validationError } from '../../lib/errors';
 import { defineRoute } from '../../lib/route';
 import { readImageUpload } from '../../lib/upload';
+import { scheduleMenuTranslations } from './autoTranslate';
 import {
   createItem,
   getAdminOptionGroup,
@@ -71,7 +72,15 @@ export default async function menuRoutes(app: FastifyInstance) {
   // Setiap perubahan menu oleh admin (berhasil) → klien muat ulang menu tanpa refresh.
   app.addHook('onResponse', async (req, reply) => {
     if (req.method === 'GET' || reply.statusCode >= 400) return;
-    if (MENU_ADMIN_PATH.test(req.url)) broadcastMenuChanged(app);
+    if (MENU_ADMIN_PATH.test(req.url)) {
+      broadcastMenuChanged(app);
+      // Bahasa yang masih kosong → diterjemahkan otomatis di server (jaring pengaman).
+      scheduleMenuTranslations(app, () => broadcastMenuChanged(app));
+    }
+  });
+  // Data lama yang belum diterjemahkan → isi sekali saat server menyala.
+  app.addHook('onReady', async () => {
+    scheduleMenuTranslations(app, () => broadcastMenuChanged(app), 5000);
   });
 
   // ---------- Staf ----------
