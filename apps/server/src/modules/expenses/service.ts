@@ -1,4 +1,4 @@
-import { asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, lt, type SQL } from 'drizzle-orm';
 import { convertMoney, type ExpenseDto, type Settings } from '@pos/shared';
 import type { DbOrTx } from '../../db/client';
 import { expenseCategories, expenses } from '../../db/schema';
@@ -8,11 +8,20 @@ export type ExpenseRow = typeof expenses.$inferSelect;
 
 export async function loadExpenses(db: DbOrTx, shiftIds: number[]): Promise<ExpenseDto[]> {
   if (!shiftIds.length) return [];
+  return loadExpensesWhere(db, inArray(expenses.shiftId, shiftIds));
+}
+
+/** Pengeluaran menurut waktu input [start, end) — tidak bergantung tanggal shift (laporan owner). */
+export async function loadExpensesBetween(db: DbOrTx, start: Date, end: Date): Promise<ExpenseDto[]> {
+  return loadExpensesWhere(db, and(gte(expenses.createdAt, start), lt(expenses.createdAt, end))!);
+}
+
+async function loadExpensesWhere(db: DbOrTx, where: SQL): Promise<ExpenseDto[]> {
   const rows = await db
     .select({ e: expenses, c: expenseCategories })
     .from(expenses)
     .innerJoin(expenseCategories, eq(expenseCategories.id, expenses.categoryId))
-    .where(inArray(expenses.shiftId, shiftIds))
+    .where(where)
     .orderBy(asc(expenses.createdAt), asc(expenses.id));
   const names = await userNameMap(
     db,

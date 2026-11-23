@@ -163,4 +163,33 @@ describe('laporan owner (rentang tanggal)', () => {
         .statusCode,
     ).toBe(422);
   });
+
+  it('mencatat order & pengeluaran di hari sebenarnya walau shift kemarin lupa di-closing; order belum bayar terlihat', async () => {
+    clock.set(new Date('2032-08-01T12:00:00+07:00'));
+    await closeAllShifts(app);
+    await openShift(app, kasir); // shift 2032-08-01, tidak di-closing
+    clock.set(new Date('2032-08-02T12:00:00+07:00'));
+    const paid = await createSimpleOrder(app, kasir, ids);
+    await call(app, 'paymentCreate', {
+      cookie: kasir,
+      body: { orderId: paid.id, lines: [{ method: 'cash', currency: 'KHR', amount: paid.total }] },
+    });
+    const unpaid = await createSimpleOrder(app, kasir, ids);
+    const cats = (await call(app, 'expenseCategories', { cookie: kasir })).json().categories;
+    await call(app, 'expenseCreate', {
+      cookie: kasir,
+      body: { categoryId: cats[0].id, amount: 3000, currency: 'KHR', source: 'cash' },
+    });
+    const r = RangeReport.parse(
+      (
+        await call(app, 'reportsRange', { cookie: owner, query: { from: '2032-08-02', to: '2032-08-02' } })
+      ).json(),
+    );
+    expect(r.totalSales).toBe(paid.total);
+    expect(r.orderCount).toBe(1);
+    expect(r.expensesTotal).toBe(3000);
+    expect(r.unpaid).toEqual({ count: 1, total: unpaid.total });
+    await closeAllShifts(app);
+    clock.reset();
+  });
 });

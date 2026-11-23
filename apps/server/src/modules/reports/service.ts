@@ -1,7 +1,8 @@
 /** Dashboard harian (SPEC §4.12). */
-import { and, asc, between, eq, gte, inArray, lt } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, lt } from 'drizzle-orm';
 import {
   addDays,
+  businessDate,
   businessDayRange,
   convertMoney,
   type RangeReport,
@@ -15,7 +16,7 @@ import {
 import type { DbOrTx } from '../../db/client';
 import { orderItems, orders, payments, shifts } from '../../db/schema';
 import { summarizeChannels, summarizeMethods } from '../closing/service';
-import { expenseTotals, loadExpenses } from '../expenses/service';
+import { expenseTotals, loadExpenses, loadExpensesBetween } from '../expenses/service';
 import { paymentCounts } from '../orders/dto';
 import { toShiftDto } from '../shifts/service';
 
@@ -115,27 +116,37 @@ function daysBetween(from: string, to: string): number {
 const countedOrder = (o: { status: string; paymentStatus: string }) =>
   o.status !== 'cancelled' && o.status !== 'rejected' && (o.paymentStatus === 'paid' || o.status === 'done');
 
+/**
+ * Laporan owner memakai WAKTU order/pengeluaran (bukan tanggal shift): bila shift lupa di-closing,
+ * order hari ini tetap tercatat di hari ini.
+ */
+function timeWindow(from: string, to: string, settings: Settings): { start: Date; end: Date } {
+  return {
+    start: businessDayRange(from, settings.hours).start,
+    end: businessDayRange(to, settings.hours).end,
+  };
+}
+
+function ordersBetween(db: DbOrTx, start: Date, end: Date) {
+  return db
+    .select()
+    .from(orders)
+    .where(and(gte(orders.createdAt, start), lt(orders.createdAt, end)));
+}
+
+const isUnpaidOpen = (o: { status: string; paymentStatus: string }) =>
+  o.status !== 'cancelled' && o.status !== 'rejected' && !countedOrder(o);
+
 /** Total singkat suatu rentang (untuk perbandingan periode sebelumnya). */
 async function rangeTotals(db: DbOrTx, from: string, to: string, settings: Settings): Promise<RangeTotals> {
-  const [rangeOrders, rangeShifts] = await Promise.all([
-    db
-      .select()
-      .from(orders)
-      .where(between(orders.businessDate, from, to)),
-    db
-      .select({ id: shifts.id })
-      .from(shifts)
-      .where(between(shifts.businessDate, from, to)),
+  const { start, end } = timeWindow(from, to, settings);
+  const [rangeOrders, rangeExpenses] = await Promise.all([
+    ordersBetween(db, start, end),
+    loadExpensesBetween(db, start, end),
   ]);
   const counted = rangeOrders.filter(countedOrder);
   const netSales = summarizeChannels(counted, settings).reduce((a, c) => a + c.net, 0);
-  const exp = expenseTotals(
-    await loadExpenses(
-      db,
-      rangeShifts.map((x) => x.id),
-    ),
-    settings,
-  );
+  const exp = expenseTotals(rangeExpenses, settings);
   const expensesTotal = exp.cashMain + exp.abaMain;
   return {
     totalSales: counted.reduce((a, o) => a + o.total, 0),
@@ -156,22 +167,17 @@ export async function rangeReport(
   const days = daysBetween(from, to);
   if (days > MAX_RANGE_DAYS) throw new Error('RANGE_TOO_LONG');
   const main = settings.currency.main;
-  const startRange = businessDayRange(from, settings.hours);
-  const endRange = businessDayRange(to, settings.hours);
-  const [rangeOrders, rangeShifts, rangePays] = await Promise.all([
-    db
-      .select()
-      .from(orders)
-      .where(between(orders.businessDate, from, to)),
-    db
-      .select()
-      .from(shifts)
-      .where(between(shifts.businessDate, from, to)),
+  const { start, end } = timeWindow(from, to, settings);
+  const [rangeOrders, expenseList, rangePays] = await Promise.all([
+    ordersBetween(db, start, end),
+    loadExpensesBetween(db, start, end),
     db
       .select()
       .from(payments)
-      .where(and(gte(payments.createdAt, startRange.start), lt(payments.createdAt, endRange.end))),
+      .where(and(gte(payments.createdAt, start), lt(payments.createdAt, end))),
   ]);
+  const dayOf = (d: Date | string) => businessDate(new Date(d), settings.hours);
+  const unpaid = rangeOrders.filter(isUnpaidOpen);
   const counted = rangeOrders.filter(countedOrder);
   const cancelledCount = rangeOrders.filter(
     (o) => o.status === 'cancelled' || o.status === 'rejected',
@@ -180,11 +186,6 @@ export async function rangeReport(
   const totalSales = counted.reduce((a, o) => a + o.total, 0);
   const netSales = byChannel.reduce((a, c) => a + c.net, 0);
 
-  const expenseList = await loadExpenses(
-    db,
-    rangeShifts.map((x) => x.id),
-  );
-  const shiftDate = new Map(rangeShifts.map((x) => [x.id, x.businessDate]));
   const exp = expenseTotals(expenseList, settings);
   const expensesTotal = exp.cashMain + exp.abaMain;
 
@@ -192,7 +193,7 @@ export async function rangeReport(
   const dayMap = new Map<string, { sales: number; expenses: number; orders: number }>();
   for (let d = from; d <= to; d = addDays(d, 1)) dayMap.set(d, { sales: 0, expenses: 0, orders: 0 });
   for (const o of counted) {
-    const b = dayMap.get(o.businessDate);
+    const b = dayMap.get(dayOf(o.createdAt));
     if (b) {
       b.sales += o.total;
       b.orders++;
@@ -201,7 +202,7 @@ export async function rangeReport(
   const byCategory = new Map<string, { total: number; count: number }>();
   for (const e of expenseList) {
     const m = convertMoney(e.amount, e.currency, main, settings.currency.rates);
-    const b = dayMap.get(shiftDate.get(e.shiftId) ?? '');
+    const b = dayMap.get(dayOf(e.createdAt));
     if (b) b.expenses += m;
     const c = byCategory.get(e.category.name) ?? { total: 0, count: 0 };
     c.total += m;
@@ -235,6 +236,7 @@ export async function rangeReport(
     orderCount: counted.length,
     averageOrder: counted.length ? Math.round(totalSales / counted.length) : 0,
     cancelledCount,
+    unpaid: { count: unpaid.length, total: unpaid.reduce((a, o) => a + o.total, 0) },
     byDay: [...dayMap.entries()].map(([date, v]) => ({ date, ...v })),
     byChannel,
     byMethod: summarizeMethods(rangePays.filter(paymentCounts), settings),

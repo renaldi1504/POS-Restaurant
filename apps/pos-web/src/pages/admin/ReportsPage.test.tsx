@@ -15,6 +15,7 @@ const r: RangeReport = {
   orderCount: 8,
   averageOrder: 12500,
   cancelledCount: 1,
+  unpaid: { count: 0, total: 0 },
   byDay: [
     { date: '2026-11-16', sales: 60000, expenses: 10000, orders: 5 },
     { date: '2026-11-17', sales: 40000, expenses: 20000, orders: 3 },

@@ -212,6 +212,10 @@ export const extraKh: ExtraDict = {
     sourceFoodpanda: 'FOODPANDA',
   },
   riwayat: {
+    all: 'ទាំងអស់',
+    prevDay: 'ថ្ងៃមុន',
+    nextDay: 'ថ្ងៃបន្ទាប់',
+    pickDate: 'ជ្រើសរើសថ្ងៃ',
     active: 'នៅសកម្ម',
     today: 'ទាំងអស់ថ្ងៃនេះ',
   },
@@ -539,6 +543,7 @@ export const extraKh: ExtraDict = {
     why: 'ក្រោយដំឡើង កម្មវិធីបើកពេញអេក្រង់ពីរូបតំណាងលើអេក្រង់ដើម លឿនជាង និងអាចបោះពុម្ពទៅម៉ាស៊ីនព្រីន Bluetooth។',
   },
   rpt: {
+    unpaid: 'ការកុម្ម៉ង់ {{count}} មិនទាន់បង់/បញ្ចប់ (មិនទាន់គិតក្នុងការលក់)',
     title: 'របាយការណ៍ម្ចាស់ហាង',
     period: 'រយៈពេលរបាយការណ៍',
     p: {

@@ -214,7 +214,14 @@ export const extraId = {
     sourceGrab: 'GRAB',
     sourceFoodpanda: 'FOODPANDA',
   },
-  riwayat: { active: 'Masih aktif', today: 'Semua hari ini' },
+  riwayat: {
+    active: 'Masih aktif',
+    today: 'Semua hari ini',
+    all: 'Semua',
+    prevDay: 'Hari sebelumnya',
+    nextDay: 'Hari berikutnya',
+    pickDate: 'Pilih tanggal',
+  },
   keluar: {
     thisShift: 'Shift ini',
     forWhat: 'Untuk apa?',
@@ -539,6 +546,7 @@ export const extraId = {
     why: 'Setelah dipasang, aplikasi terbuka layar penuh dari ikon di layar utama, lebih cepat, dan bisa mencetak ke printer Bluetooth.',
   },
   rpt: {
+    unpaid: '{{count}} order belum dibayar/selesai (belum masuk penjualan)',
     title: 'Laporan owner',
     period: 'Periode laporan',
     p: {
@@ -822,7 +830,14 @@ export const extraEn: ExtraDict = {
     sourceGrab: 'GRAB',
     sourceFoodpanda: 'FOODPANDA',
   },
-  riwayat: { active: 'Still active', today: 'All today' },
+  riwayat: {
+    active: 'Still active',
+    today: 'All today',
+    all: 'All',
+    prevDay: 'Previous day',
+    nextDay: 'Next day',
+    pickDate: 'Pick a date',
+  },
   keluar: {
     thisShift: 'This shift',
     forWhat: 'What for?',
@@ -1148,6 +1163,7 @@ export const extraEn: ExtraDict = {
     why: 'Once installed, the app opens full screen from its home-screen icon, starts faster and can print to a Bluetooth printer.',
   },
   rpt: {
+    unpaid: '{{count}} orders not yet paid/done (not in sales yet)',
     title: 'Owner reports',
     period: 'Report period',
     p: {

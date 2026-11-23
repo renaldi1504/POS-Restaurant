@@ -180,6 +180,16 @@ export function ReportBody({ r, lang }: { r: RangeReport; lang: Lang }) {
           </span>
         </div>
       </div>
+      {r.unpaid.count > 0 ? (
+        <div
+          data-testid="rpt-unpaid"
+          className="flex items-center gap-3 rounded-md bg-warning-container p-3 text-on-warning-container"
+        >
+          <Icon name="schedule" size={22} className="shrink-0" />
+          <span className="grow text-body-medium">{t('rpt.unpaid', { count: r.unpaid.count })}</span>
+          <b className="tabular-nums">{fmt(r.unpaid.total)}</b>
+        </div>
+      ) : null}
       <span className="text-label-medium text-on-surface-variant">
         {t('rpt.prevNote', {
           from: formatDayLabel(r.previous.from, lang),

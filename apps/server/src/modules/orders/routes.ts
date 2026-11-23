@@ -1,6 +1,6 @@
-import { and, eq, gt, inArray, type SQL } from 'drizzle-orm';
+import { and, eq, gt, gte, inArray, lt, or, type SQL } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
-import { ACTIVE_ORDER_STATUSES, hasPermission, type OrderStatus } from '@pos/shared';
+import { ACTIVE_ORDER_STATUSES, businessDayRange, hasPermission, type OrderStatus } from '@pos/shared';
 import { customers, orders } from '../../db/schema';
 import { currentBusinessDate, getOpenShift } from '../../lib/business';
 import { now } from '../../lib/clock';
@@ -27,12 +27,15 @@ export default async function ordersRoutes(app: FastifyInstance) {
     if (query.since) conds.push(gt(orders.updatedAt, new Date(query.since)));
     const crossDate = query.active || query.since || query.tableSessionId;
     if (query.date || !crossDate) {
-      // Default: tanggal shift yang sedang buka (order masuk ke tanggal shift-nya), selain itu hari ini.
-      const date =
-        query.date ??
-        (await getOpenShift(app.db))?.businessDate ??
-        currentBusinessDate(await getSettings(app.db));
-      conds.push(eq(orders.businessDate, date));
+      const settings = await getSettings(app.db);
+      // Default: hari ini — order bertanggal shift yang masih buka ATAU dibuat dalam hari operasional
+      // ini (shift lupa di-closing tidak membuat riwayat kosong).
+      const date = query.date ?? (await getOpenShift(app.db))?.businessDate ?? currentBusinessDate(settings);
+      const day = query.date ?? currentBusinessDate(settings);
+      const { start, end } = businessDayRange(day, settings.hours);
+      conds.push(
+        or(eq(orders.businessDate, date), and(gte(orders.createdAt, start), lt(orders.createdAt, end)))!,
+      );
     }
     const list = await loadOrderDtos(app.db, and(...conds));
     return { orders: list, serverTime };

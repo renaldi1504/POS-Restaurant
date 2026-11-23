@@ -3,8 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { formatMoney } from '@pos/shared';
-import { Badge, EmptyState } from '../../components/ui';
+import { addDays, formatMoney, hasPermission, type Lang } from '@pos/shared';
+import { Badge, EmptyState, Icon, IconButton } from '../../components/ui';
+import { useMe } from '../../lib/auth';
+import { usePublicSettings } from '../../lib/data';
+import { formatDayLabel } from '../../lib/format';
 import {
   ErrorBlock,
   LoadingBlock,
@@ -18,12 +21,18 @@ import {
 import { api, qk } from '../../lib/api';
 
 export default function HistoryPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { data: me } = useMe();
+  const isOwner = hasPermission(me?.permissions, 'reports.owner');
+  const today = usePublicSettings().data?.businessDate ?? '';
   const [tab, setTab] = useState<'active' | 'all'>('active');
-  const filter = tab === 'active' ? ({ active: 'true' } as const) : {};
+  // Owner bisa melihat riwayat tanggal mana pun (null = hari ini).
+  const [date, setDate] = useState<string | null>(null);
+  const viewDate = isOwner && date && date !== today ? date : null;
+  const filter = tab === 'active' ? ({ active: 'true' } as const) : viewDate ? { date: viewDate } : {};
   const q = useQuery({
-    queryKey: qk.orders({ history: tab }),
+    queryKey: qk.orders({ history: tab, date: viewDate ?? 'today' }),
     queryFn: () => api.call('ordersList', { query: filter }),
   });
   const orders = [...(q.data?.orders ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -39,11 +48,38 @@ export default function HistoryPage() {
           onChange={setTab}
           tabs={[
             { value: 'active', label: t('riwayat.active') },
-            { value: 'all', label: t('riwayat.today') },
+            { value: 'all', label: isOwner ? t('riwayat.all') : t('riwayat.today') },
           ]}
         />
       </TopBar>
       <main className="flex min-h-0 grow flex-col gap-2 overflow-y-auto p-3">
+        {isOwner && tab === 'all' && today ? (
+          <div className="flex shrink-0 items-center gap-1" data-testid="history-date">
+            <IconButton
+              icon="chevron_left"
+              label={t('riwayat.prevDay')}
+              onClick={() => setDate(addDays(viewDate ?? today, -1))}
+            />
+            <label className="relative flex h-11 grow items-center justify-center gap-2 rounded-full bg-surface-container-high px-4 text-label-large">
+              <Icon name="calendar_month" size={18} />
+              {viewDate ? formatDayLabel(viewDate, i18n.language as Lang) : t('riwayat.today')}
+              <input
+                type="date"
+                aria-label={t('riwayat.pickDate')}
+                value={viewDate ?? today}
+                max={today}
+                onChange={(e) => setDate(e.target.value || null)}
+                className="absolute inset-0 opacity-0"
+              />
+            </label>
+            <IconButton
+              icon="chevron_right"
+              label={t('riwayat.nextDay')}
+              disabled={!viewDate}
+              onClick={() => setDate(viewDate && addDays(viewDate, 1) < today ? addDays(viewDate, 1) : null)}
+            />
+          </div>
+        ) : null}
         {q.isLoading ? <LoadingBlock /> : null}
         {q.isError ? <ErrorBlock error={q.error} onRetry={() => void q.refetch()} /> : null}
         {q.data && !orders.length ? <EmptyState title={t('common.empty')} /> : null}

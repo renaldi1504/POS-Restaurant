@@ -212,6 +212,10 @@ export const extraZh: ExtraDict = {
     sourceFoodpanda: 'FOODPANDA',
   },
   riwayat: {
+    all: '全部',
+    prevDay: '前一天',
+    nextDay: '后一天',
+    pickDate: '选择日期',
     active: '进行中',
     today: '今天全部',
   },
@@ -538,6 +542,7 @@ export const extraZh: ExtraDict = {
     why: '安装后，应用可从主屏幕图标全屏打开，启动更快，并可打印到蓝牙打印机。',
   },
   rpt: {
+    unpaid: '{{count}} 个订单未付款/未完成（尚未计入销售）',
     title: '店主报表',
     period: '报表期间',
     p: {

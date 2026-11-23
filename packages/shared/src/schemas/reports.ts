@@ -81,6 +81,10 @@ export const RangeReport = RangeTotals.extend({
   currency: Currency,
   averageOrder: MoneyAmount,
   cancelledCount: z.number().int().nonnegative(),
+  /** Order aktif yang belum dibayar/selesai di rentang ini (belum masuk penjualan). */
+  unpaid: z
+    .object({ count: z.number().int().nonnegative(), total: MoneyAmount })
+    .default({ count: 0, total: 0 }),
   byDay: z.array(DayPoint),
   byChannel: z.array(ChannelSummary),
   byMethod: z.array(MethodSummary),

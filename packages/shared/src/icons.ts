@@ -38,6 +38,7 @@ export const ICON_NAMES = [
   'chat',
   'check',
   'check_circle',
+  'chevron_left',
   'chevron_right',
   'close',
   'content_copy',
