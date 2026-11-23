@@ -1,0 +1,1 @@
+ALTER TABLE "customers" ADD COLUMN "tg_business_connection_id" text;

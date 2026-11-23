@@ -191,7 +191,8 @@ export class HourlyRateLimiter {
 export interface TelegramService {
   enabled: boolean;
   handleUpdate(update: unknown): Promise<void>;
-  sendMessage(chatId: string | number, text: string): Promise<void>;
+  /** `businessConnectionId`: kirim lewat akun Telegram Business (chat pribadi pemilik). */
+  sendMessage(chatId: string | number, text: string, businessConnectionId?: string | null): Promise<void>;
   sendPhotoToAdmin(file: InputFile, caption: string): Promise<void>;
   sendToAdmin(text: string): Promise<void>;
 }
@@ -222,44 +223,56 @@ async function customerLang(app: FastifyInstance, telegramId: string, fallback?:
   return langFromTelegram(fallback) ?? 'id';
 }
 
-function createTelegram(app: FastifyInstance): TelegramService {
-  const token = app.config.TELEGRAM_BOT_TOKEN;
-  const adminChat = app.config.TELEGRAM_ADMIN_CHAT_ID;
-  if (!token) {
-    return {
-      enabled: false,
-      async handleUpdate() {},
-      async sendMessage(chatId, text) {
-        app.log.debug({ chatId, text }, 'telegram disabled: sendMessage diabaikan');
-      },
-      async sendPhotoToAdmin() {},
-      async sendToAdmin(text) {
-        app.log.debug({ text }, 'telegram disabled: sendToAdmin diabaikan');
-      },
-    };
-  }
+/** Tombol "Pesan sekarang": Mini App di chat bot; di chat Telegram Business (tombol web_app tidak
+ * diizinkan) → tautan ke chat bot, /start membuka menu dalam bahasa yang sama. */
+function orderButton(app: FastifyInstance, bot: Bot, lang: Lang, business: boolean) {
+  const kb = new InlineKeyboard();
+  if (!business) return kb.webApp(BOT_TEXT[lang].order, miniAppUrl(app, lang));
+  return kb.url(BOT_TEXT[lang].order, `https://t.me/${bot.botInfo.username}?start=order_${lang}`);
+}
 
-  const bot = new Bot(token);
+/** Pelanggan dari chat Telegram Business → simpan/perbarui (bisa dicari kasir, notifikasi lewat akun bisnis). */
+async function upsertBusinessCustomer(
+  app: FastifyInstance,
+  from: { id: number; first_name: string; last_name?: string; username?: string },
+  businessConnectionId: string,
+  lang: Lang,
+) {
+  const name = [from.first_name, from.last_name].filter(Boolean).join(' ') || null;
+  await app.db
+    .insert(customers)
+    .values({
+      telegramId: String(from.id),
+      name,
+      username: from.username ?? null,
+      lang,
+      tgBusinessConnectionId: businessConnectionId,
+    })
+    .onConflictDoUpdate({
+      target: customers.telegramId,
+      set: {
+        tgBusinessConnectionId: businessConnectionId,
+        ...(from.username ? { username: from.username } : {}),
+      },
+    });
+}
+
+/** Daftarkan semua handler bot (dipisah agar bisa diuji tanpa jaringan). */
+export function setupBot(app: FastifyInstance, bot: Bot, sendToAdmin: (text: string) => Promise<void>) {
   const limiter = new HourlyRateLimiter(20);
-  let initPromise: Promise<void> | null = null;
-  const init = () =>
-    (initPromise ??= (async () => {
-      await bot.init();
-      try {
-        await bot.api.setChatMenuButton({
-          menu_button: { type: 'web_app', text: 'Menu', web_app: { url: miniAppUrl(app) } },
-        });
-      } catch (err) {
-        app.log.warn({ err: (err as Error).message }, 'setChatMenuButton gagal');
-      }
-    })().catch((err) => {
-      initPromise = null;
-      throw err;
-    }));
-
-  const sendToAdmin = async (text: string) => {
-    if (!adminChat) return;
-    await bot.api.sendMessage(adminChat, text.slice(0, 4000));
+  /** business_connection_id → id user pemilik akun bisnis (pesan dari pemilik tidak dijawab bot). */
+  const owners = new Map<string, number>();
+  const ownerOf = async (connId: string): Promise<number | null> => {
+    const cached = owners.get(connId);
+    if (cached) return cached;
+    try {
+      const c = await bot.api.getBusinessConnection(connId);
+      owners.set(connId, c.user.id);
+      return c.user.id;
+    } catch (err) {
+      app.log.warn({ err: (err as Error).message }, 'getBusinessConnection gagal');
+      return null;
+    }
   };
 
   const langOf = async (ctx: Context) =>
@@ -268,8 +281,34 @@ function createTelegram(app: FastifyInstance): TelegramService {
   const mainKeyboard = (lang: Lang) =>
     new Keyboard().text(BOT_TEXT[lang].howTo).text(BOT_TEXT[lang].status).resized().persistent();
 
+  // Telegram Business: akun pribadi/premium menghubungkan bot ini → chat pelanggan dijawab bot.
+  bot.on('business_connection', async (ctx) => {
+    const c = ctx.update.business_connection!;
+    owners.set(c.id, c.user.id);
+    const canReply = !!c.rights?.can_reply;
+    app.log.info(
+      { id: c.id, user: c.user.id, enabled: c.is_enabled, canReply },
+      'Telegram Business connection',
+    );
+    await sendToAdmin(
+      !c.is_enabled
+        ? `🔌 Bot dilepas dari akun Telegram Business ${c.user.first_name}.`
+        : canReply
+          ? `✅ Bot terhubung ke akun Telegram Business ${c.user.first_name}. Chat pelanggan akan dijawab otomatis.`
+          : `⚠️ Bot terhubung ke akun ${c.user.first_name}, tapi izin "Balas pesan" belum aktif. Buka Telegram → Settings → Telegram Business → Chatbots → aktifkan "Reply to messages".`,
+    ).catch(() => undefined);
+  });
+
   bot.command('start', async (ctx) => {
-    const lang = await langOf(ctx);
+    // Payload "order_kh" dari tombol di chat bisnis → bahasa menu ikut bahasa chat.
+    const payload = /^order_(id|en|kh|zh)$/.exec(ctx.match ?? '')?.[1] as Lang | undefined;
+    const lang = payload ?? (await langOf(ctx));
+    if (payload && ctx.from)
+      await app.db
+        .update(customers)
+        .set({ lang: payload })
+        .where(eq(customers.telegramId, String(ctx.from.id)))
+        .catch(() => undefined);
     const settings = await getSettings(app.db);
     const t = BOT_TEXT[lang];
     await ctx.reply(t.welcome.replace('{name}', settings.profile.name), {
@@ -281,14 +320,12 @@ function createTelegram(app: FastifyInstance): TelegramService {
   const howToLabels = LANGS.map((l) => BOT_TEXT[l].howTo);
   const statusLabels = LANGS.map((l) => BOT_TEXT[l].status);
 
-  bot.hears(howToLabels, async (ctx) => {
+  bot.on('message:text').hears(howToLabels, async (ctx) => {
     const lang = await langOf(ctx);
-    await ctx.reply(BOT_TEXT[lang].howToBody, {
-      reply_markup: new InlineKeyboard().webApp(BOT_TEXT[lang].order, miniAppUrl(app, lang)),
-    });
+    await ctx.reply(BOT_TEXT[lang].howToBody, { reply_markup: orderButton(app, bot, lang, false) });
   });
 
-  bot.hears(statusLabels, async (ctx) => {
+  bot.on('message:text').hears(statusLabels, async (ctx) => {
     const lang = await langOf(ctx);
     const settings = await getSettings(app.db);
     const [c] = ctx.from
@@ -317,14 +354,16 @@ function createTelegram(app: FastifyInstance): TelegramService {
     await ctx.reply(text);
   });
 
-  bot.on('message:text', async (ctx) => {
+  /** Pertanyaan bebas (chat bot langsung atau chat Telegram Business) → AI. */
+  const answerText = async (ctx: Context, text: string, business: boolean) => {
+    const from = ctx.from!;
     const stored = await langOf(ctx);
     // Bahasa pesan ini (aksara/kata) — balas dengan bahasa yang sama, mis. Khmer → Khmer.
-    const lang = detectLang(ctx.message.text) ?? stored;
-    const key = String(ctx.from.id);
+    const lang = detectLang(text) ?? stored;
+    const key = String(from.id);
     if (!limiter.take(key)) return void (await ctx.reply(BOT_TEXT[lang].rateLimited));
     await ctx.replyWithChatAction('typing').catch(() => undefined);
-    const answer = await answerQuestion(app, ctx.message.text, lang);
+    const answer = await answerQuestion(app, text, lang);
     // Ingat bahasa pelanggan → notifikasi order ikut bahasa ini.
     if (answer.lang !== stored)
       await app.db
@@ -332,11 +371,9 @@ function createTelegram(app: FastifyInstance): TelegramService {
         .set({ lang: answer.lang })
         .where(eq(customers.telegramId, key))
         .catch(() => undefined);
-    await ctx.reply(answer.text, {
-      reply_markup: new InlineKeyboard().webApp(BOT_TEXT[answer.lang].order, miniAppUrl(app, answer.lang)),
-    });
+    await ctx.reply(answer.text, { reply_markup: orderButton(app, bot, answer.lang, business) });
     // Pertanyaan lokasi → kirim juga pin lokasi restoran (bisa dibuka di Google Maps).
-    if (isLocationQuestion(ctx.message.text)) {
+    if (isLocationQuestion(text)) {
       const s = await getSettings(app.db);
       if (s.profile.lat != null && s.profile.lng != null)
         await ctx
@@ -344,17 +381,72 @@ function createTelegram(app: FastifyInstance): TelegramService {
           .catch(() => undefined);
     }
     if (answer.forward) {
-      const who = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(' ');
+      const who = [from.first_name, from.last_name].filter(Boolean).join(' ');
       await app.jobs
         .enqueue(JOB_NAMES.telegramAdmin, {
           kind: 'question',
-          text: `❓ ${who}${ctx.from.username ? ` (@${ctx.from.username})` : ''} [${ctx.from.id}] (${answer.reason}):\n${ctx.message.text}`,
+          text: `❓ ${who}${from.username ? ` (@${from.username})` : ''} [${from.id}]${business ? ' · Business' : ''} (${answer.reason}):\n${text}`,
         })
-        .catch(() => sendToAdmin(`❓ ${who}: ${ctx.message.text}`));
+        .catch(() => sendToAdmin(`❓ ${who}: ${text}`));
     }
+  };
+
+  bot.on('message:text', (ctx) => answerText(ctx, ctx.message.text, false));
+
+  bot.on('business_message:text', async (ctx) => {
+    const msg = ctx.businessMessage;
+    const from = msg.from;
+    if (!from || from.is_bot) return;
+    // Pesan yang dikirim pemilik akun (balasan manual staf) → jangan dijawab bot.
+    if (from.id === (await ownerOf(msg.business_connection_id))) return;
+    const lang = detectLang(msg.text) ?? (await langOf(ctx));
+    await upsertBusinessCustomer(app, from, msg.business_connection_id, lang).catch((err) =>
+      app.log.warn({ err: (err as Error).message }, 'simpan pelanggan business gagal'),
+    );
+    await answerText(ctx, msg.text, true);
   });
 
   bot.catch((err) => app.log.error({ err: err.error }, 'grammY error'));
+}
+
+function createTelegram(app: FastifyInstance): TelegramService {
+  const token = app.config.TELEGRAM_BOT_TOKEN;
+  const adminChat = app.config.TELEGRAM_ADMIN_CHAT_ID;
+  if (!token) {
+    return {
+      enabled: false,
+      async handleUpdate() {},
+      async sendMessage(chatId, text) {
+        app.log.debug({ chatId, text }, 'telegram disabled: sendMessage diabaikan');
+      },
+      async sendPhotoToAdmin() {},
+      async sendToAdmin(text) {
+        app.log.debug({ text }, 'telegram disabled: sendToAdmin diabaikan');
+      },
+    };
+  }
+
+  const bot = new Bot(token);
+  const sendToAdmin = async (text: string) => {
+    if (!adminChat) return;
+    await bot.api.sendMessage(adminChat, text.slice(0, 4000));
+  };
+  setupBot(app, bot, sendToAdmin);
+  let initPromise: Promise<void> | null = null;
+  const init = () =>
+    (initPromise ??= (async () => {
+      await bot.init();
+      try {
+        await bot.api.setChatMenuButton({
+          menu_button: { type: 'web_app', text: 'Menu', web_app: { url: miniAppUrl(app) } },
+        });
+      } catch (err) {
+        app.log.warn({ err: (err as Error).message }, 'setChatMenuButton gagal');
+      }
+    })().catch((err) => {
+      initPromise = null;
+      throw err;
+    }));
 
   return {
     enabled: true,
@@ -362,7 +454,15 @@ function createTelegram(app: FastifyInstance): TelegramService {
       await init();
       await bot.handleUpdate(update as never);
     },
-    async sendMessage(chatId, text) {
+    async sendMessage(chatId, text, businessConnectionId) {
+      if (businessConnectionId) {
+        try {
+          await bot.api.sendMessage(chatId, text, { business_connection_id: businessConnectionId });
+          return;
+        } catch (err) {
+          app.log.warn({ err: (err as Error).message }, 'kirim via Telegram Business gagal, coba langsung');
+        }
+      }
       await bot.api.sendMessage(chatId, text);
     },
     async sendPhotoToAdmin(file, caption) {
@@ -380,15 +480,17 @@ export async function handleNotifyJob(app: FastifyInstance, data: { orderId: str
   const o = await getOrderDto(app.db, data.orderId);
   if (!o.customer?.telegramId) return;
   const [c] = await app.db
-    .select({ lang: customers.lang })
+    .select({ lang: customers.lang, biz: customers.tgBusinessConnectionId })
     .from(customers)
     .where(eq(customers.id, o.customer.id));
+  const biz = c?.biz ?? null;
   const lang = (LANGS as readonly string[]).includes(c?.lang ?? '') ? (c!.lang as Lang) : 'id';
   const settings = await getSettings(app.db);
   if (data.status === 'pending_accept' || (data.status === 'accepted' && o.createdByStaff)) {
     await tg.sendMessage(
       o.customer.telegramId,
       orderDetailMessage({ lang, restaurant: settings.profile.name, order: o }),
+      biz,
     );
     return;
   }
@@ -403,6 +505,7 @@ export async function handleNotifyJob(app: FastifyInstance, data: { orderId: str
       reason:
         data.status === 'rejected' ? o.rejectReason : data.status === 'cancelled' ? o.cancelReason : null,
     }),
+    biz,
   );
 }
 

@@ -28,7 +28,8 @@ set -a; . "$APP/.env"; set +a
 if [[ -n "${TELEGRAM_BOT_TOKEN:-}" ]]; then
   echo "==> Set webhook Telegram"
   curl -fsS "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
-    -d "url=${POS_ORIGIN}/tg/webhook" -d "secret_token=${TELEGRAM_WEBHOOK_SECRET}" && echo
+    -d "url=${POS_ORIGIN}/tg/webhook" -d "secret_token=${TELEGRAM_WEBHOOK_SECRET}" \
+    --data-urlencode 'allowed_updates=["message","edited_message","callback_query","my_chat_member","business_connection","business_message","edited_business_message"]' && echo
 fi
 sleep 2
 curl -fsS http://127.0.0.1:3000/api/health >/dev/null && echo "✓ Selesai — server OK" || echo "!! Server belum jawab: sudo -iu pos pm2 logs pos-server"

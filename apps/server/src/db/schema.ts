@@ -242,6 +242,8 @@ export const customers = pgTable('customers', {
   username: text('username'),
   phone: text('phone'),
   lang: text('lang').notNull().default('id'),
+  /** Chat lewat akun Telegram Business → notifikasi dikirim lewat koneksi ini. */
+  tgBusinessConnectionId: text('tg_business_connection_id'),
   createdAt: createdAt(),
 });
 
