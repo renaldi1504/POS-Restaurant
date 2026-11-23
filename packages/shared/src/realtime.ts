@@ -13,6 +13,7 @@ import { TableStatus } from './enums';
 import type { PermissionKey } from './permissions';
 import { Id, IsoDateTime, Uuid } from './schemas/common';
 import { OrderDto, PublicOrderDto } from './schemas/orders';
+import type { OrderMessagePayload } from './schemas/chat';
 
 export const ROOMS = {
   cashier: 'cashier',
@@ -86,6 +87,7 @@ export interface StaffServerToClientEvents {
   'menu.availability': (p: MenuAvailabilityPayload) => void;
   'menu.changed': (p: MenuChangedPayload) => void;
   'payment.proof_received': (p: PaymentProofPayload) => void;
+  'order.message': (p: OrderMessagePayload) => void;
 }
 
 /** Event yang diterima order-web (room customer:<id> / table:<sessionId>). */

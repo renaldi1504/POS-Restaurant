@@ -457,3 +457,24 @@ export const auditLogs = pgTable(
     index('audit_logs_created_idx').on(t.createdAt),
   ],
 );
+
+/** Chat driver/staf ↔ pelanggan Telegram per order (relay lewat bot). */
+export const orderMessages = pgTable(
+  'order_messages',
+  {
+    id: id(),
+    orderId: uuid('order_id')
+      .notNull()
+      .references(() => orders.id, { onDelete: 'cascade' }),
+    direction: text('direction').$type<'out' | 'in'>().notNull(),
+    kind: text('kind').$type<'text' | 'photo' | 'location'>().notNull(),
+    text: text('text'),
+    template: text('template'),
+    photoUrl: text('photo_url'),
+    lat: doublePrecision('lat'),
+    lng: doublePrecision('lng'),
+    staffId: integer('staff_id').references(() => users.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index('order_messages_order_idx').on(t.orderId, t.createdAt)],
+);

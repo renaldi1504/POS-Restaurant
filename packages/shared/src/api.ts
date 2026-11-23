@@ -12,6 +12,7 @@ import * as Au from './schemas/auth';
 import { IdParam, OkResponse, UuidParam } from './schemas/common';
 import * as C from './schemas/customers';
 import * as D from './schemas/drivers';
+import * as Chat from './schemas/chat';
 import * as M from './schemas/menu';
 import * as O from './schemas/orders';
 import * as Pay from './schemas/payments';
@@ -502,6 +503,33 @@ export const endpoints = {
     body: D.DriverReleaseRequest,
     response: D.DriverOrderResponse,
     description: 'Lepas order (admin: pindah ke driver lain)',
+  }),
+
+  orderMessages: def({
+    method: 'GET',
+    path: '/api/orders/:id/messages',
+    ...staff('driver.deliver', 'order.create', 'order.accept'),
+    params: UuidParam,
+    response: Chat.OrderMessagesResponse,
+    description: 'Chat driver ↔ pelanggan (Telegram) untuk order ini',
+  }),
+  orderMessageSend: def({
+    method: 'POST',
+    path: '/api/orders/:id/messages',
+    ...staff('driver.deliver', 'order.create', 'order.accept'),
+    params: UuidParam,
+    body: Chat.SendOrderMessageRequest,
+    response: Chat.OrderMessageResponse,
+    description: 'Kirim pesan teks / template (diterjemahkan ke bahasa pelanggan) lewat bot',
+  }),
+  orderMessagePhoto: def({
+    method: 'POST',
+    path: '/api/orders/:id/messages/photo',
+    ...staff('driver.deliver', 'order.create', 'order.accept'),
+    params: UuidParam,
+    multipart: true,
+    response: Chat.OrderMessageResponse,
+    description: 'Kirim foto ke pelanggan lewat bot',
   }),
 
   // ================= Staf: shift, pengeluaran, closing =================

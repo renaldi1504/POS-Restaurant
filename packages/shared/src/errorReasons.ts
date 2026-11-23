@@ -55,6 +55,8 @@ export const ERROR_REASONS = {
   notYourOrder: 'Order ini bukan milik Anda',
   adminOnlyReassign: 'Hanya admin yang bisa memindah order',
   driverDeliveryOnly: 'Driver hanya bisa melihat order delivery',
+  chatDriverOnly: 'Hanya driver order ini yang bisa chat',
+  chatNoTelegram: 'Pelanggan ini tidak memakai Telegram — hubungi lewat telepon',
   kitchenStartReadyOnly: 'Dapur hanya bisa Mulai masak / Siap',
   transitionNotAllowed: 'Status tidak bisa diubah dari {{from}} ke {{to}}',
   optionsInvalidFor: 'Pilihan untuk {{name}} belum benar',

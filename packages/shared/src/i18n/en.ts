@@ -168,6 +168,8 @@ export const en: Dict = {
     notYourOrder: 'This order is not yours',
     adminOnlyReassign: 'Only an admin can reassign orders',
     driverDeliveryOnly: 'Drivers can only see delivery orders',
+    chatDriverOnly: 'Only the driver of this order can chat',
+    chatNoTelegram: 'This customer does not use Telegram — contact them by phone',
     kitchenStartReadyOnly: 'Kitchen can only Start cooking / Ready',
     transitionNotAllowed: 'Status cannot change from {{from}} to {{to}}',
     optionsInvalidFor: 'Choices for {{name}} are not complete',

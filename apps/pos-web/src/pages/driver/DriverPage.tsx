@@ -20,6 +20,7 @@ import { beep } from '../../lib/sound';
 import { useSocketEvent, useSocketStatus } from '../../lib/socket';
 import { useChangeLang, useLang } from '../../lib/useLang';
 import { DriverMap, type MapPin } from './DriverMap';
+import { OrderChat, useUnreadChats } from '../../components/driver/OrderChat';
 
 export function telegramLink(c: DriverOrderDto['customer']): string | null {
   if (!c) return null;
@@ -39,6 +40,8 @@ export default function DriverPage() {
   const { connected } = useSocketStatus();
   const [tab, setTab] = useState<'ready' | 'mine'>('ready');
   const [confirm, setConfirm] = useState<DriverOrderDto | null>(null);
+  const [chat, setChat] = useState<DriverOrderDto | null>(null);
+  const { unread, markRead } = useUnreadChats();
 
   const available = useQuery({
     queryKey: qk.driverAvailable,
@@ -274,7 +277,7 @@ export default function DriverPage() {
                             <Icon name="call" size={20} />
                             {t('driver.call')}
                           </a>
-                        ) : tg ? (
+                        ) : tg && !o.customer?.telegramId ? (
                           <a
                             href={tg}
                             className="state-layer flex h-12 items-center justify-center gap-1.5 rounded-full border border-outline text-label-large text-primary"
@@ -282,19 +285,32 @@ export default function DriverPage() {
                             <Icon name="send" size={20} />
                             Telegram
                           </a>
-                        ) : (
+                        ) : !o.customer?.telegramId ? (
                           <span className="flex h-12 items-center justify-center rounded-full border border-outline-variant text-label-medium text-on-surface-variant">
                             —
                           </span>
-                        )}
-                        {phone && tg ? (
-                          <a
-                            href={tg}
-                            className="state-layer col-span-2 flex h-12 items-center justify-center gap-1.5 rounded-full border border-outline text-label-large text-primary"
+                        ) : null}
+                        {o.customer?.telegramId ? (
+                          <button
+                            type="button"
+                            data-testid="driver-chat"
+                            onClick={() => {
+                              markRead(o.id);
+                              setChat(o);
+                            }}
+                            className={cn(
+                              'state-layer relative flex h-12 items-center justify-center gap-1.5 rounded-full border border-outline text-label-large text-primary',
+                              phone && 'col-span-2',
+                            )}
                           >
                             <Icon name="chat" size={20} />
-                            {t('driver.chat')}
-                          </a>
+                            {t('chat.open')}
+                            {unread[o.id] ? (
+                              <span className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-error text-label-medium text-on-error">
+                                {unread[o.id]}
+                              </span>
+                            ) : null}
+                          </button>
                         ) : null}
                       </div>
                     ) : null}
@@ -388,6 +404,16 @@ export default function DriverPage() {
         ) : null}
       </Sheet>
       {!q.data && !q.isLoading && !q.isError ? <EmptyState title={t('common.empty')} /> : null}
+      {chat ? (
+        <OrderChat
+          orderId={chat.id}
+          title={`${chat.displayNo} · ${chat.customer?.name ?? chat.customerName ?? ''}`}
+          onClose={() => {
+            markRead(chat.id);
+            setChat(null);
+          }}
+        />
+      ) : null}
     </Screen>
   );
 }

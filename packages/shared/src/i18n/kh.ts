@@ -186,6 +186,8 @@ export const kh: Dict = {
     notYourOrder: 'ការកុម្ម៉ង់នេះមិនមែនជារបស់អ្នកទេ',
     adminOnlyReassign: 'មានតែអ្នកគ្រប់គ្រងអាចផ្ទេរការកុម្ម៉ង់',
     driverDeliveryOnly: 'អ្នកដឹកមើលបានតែការកុម្ម៉ង់ដឹកជញ្ជូន',
+    chatDriverOnly: 'មានតែអ្នកដឹកនៃការកុម្ម៉ង់នេះទេដែលអាចឆាតបាន',
+    chatNoTelegram: 'អតិថិជននេះមិនប្រើ Telegram ទេ — សូមទូរស័ព្ទទៅ',
     kitchenStartReadyOnly: 'ផ្ទះបាយអាចចុចបានតែ ចាប់ផ្តើមចម្អិន / រួចរាល់',
     transitionNotAllowed: 'មិនអាចប្តូរស្ថានភាពពី {{from}} ទៅ {{to}}',
     optionsInvalidFor: 'ជម្រើសសម្រាប់ {{name}} មិនទាន់ត្រឹមត្រូវ',

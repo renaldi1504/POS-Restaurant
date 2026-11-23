@@ -12,7 +12,29 @@ describe('Aplikasi driver – alur Ambil', () => {
     let available: DriverOrderDto[] = [makeDriverOrder()];
     let mine: DriverOrderDto[] = [];
     let collected: unknown = null;
+    let sentChat: unknown = null;
     server.use(
+      http.get('*/api/orders/:id/messages', () =>
+        HttpResponse.json({ messages: [], canChat: true, customerLang: 'kh' }),
+      ),
+      http.post('*/api/orders/:id/messages', async ({ request, params }) => {
+        sentChat = await request.json();
+        return HttpResponse.json({
+          message: {
+            id: 1,
+            orderId: params.id,
+            direction: 'out',
+            kind: 'text',
+            text: 'ខ្ញុំបានមកដល់',
+            template: 'arrived',
+            photoUrl: null,
+            lat: null,
+            lng: null,
+            staff: { id: 5, name: 'Driver' },
+            createdAt: new Date().toISOString(),
+          },
+        });
+      }),
       http.get('*/api/auth/me', () => HttpResponse.json({ user: { ...fx.driver, lang: 'id' } })),
       http.get('*/api/driver/available', () => HttpResponse.json({ orders: available })),
       http.get('*/api/driver/mine', () =>
@@ -55,10 +77,13 @@ describe('Aplikasi driver – alur Ambil', () => {
       'https://www.google.com/maps/dir/?api=1&destination=10.64,103.51',
     );
     expect(within(mineCard).getByRole('link', { name: 'Telepon' })).toHaveAttribute('href', 'tel:012999888');
-    expect(within(mineCard).getByRole('link', { name: 'Chat Telegram' })).toHaveAttribute(
-      'href',
-      'https://t.me/sokha',
-    );
+    // Chat dengan pelanggan Telegram langsung dari aplikasi (relay lewat bot)
+    await userEvent.click(within(mineCard).getByRole('button', { name: 'Chat' }));
+    const chat = await screen.findByTestId('order-chat');
+    await userEvent.click(await within(chat).findByRole('button', { name: 'Sudah sampai' }));
+    expect(sentChat).toEqual({ template: 'arrived' });
+    expect(await within(chat).findByText('Sudah sampai', { selector: 'span' })).toBeInTheDocument();
+    await userEvent.click(within(chat).getByRole('button', { name: 'Tutup' }));
     await userEvent.click(within(mineCard).getByRole('button', { name: 'Sudah diambil' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Sudah sampai' }));
     const dialog = await screen.findByRole('dialog');

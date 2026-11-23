@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { OrderChat } from '../../components/driver/OrderChat';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { formatMoney, hasPermission, nextStatuses, type OrderDto, type OrderStatus } from '@pos/shared';
-import { Badge, Button, Sheet, useToast } from '../../components/ui';
+import { Badge, Button, Icon, Sheet, useToast } from '../../components/ui';
 import {
   ErrorBlock,
   LoadingBlock,
@@ -107,6 +108,7 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [proofOpen, setProofOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const q = useQuery({
     queryKey: qk.order(orderId),
     queryFn: () => api.call('orderGet', { params: { id: orderId } }),
@@ -195,6 +197,17 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
                 <span className="text-on-surface-variant"> · {order.customer.phone}</span>
               ) : null}
             </div>
+          ) : null}
+          {order.customer?.telegramId && order.type === 'delivery' ? (
+            <button
+              type="button"
+              data-testid="order-chat-open"
+              onClick={() => setChatOpen(true)}
+              className="state-layer flex h-11 items-center gap-2 self-start rounded-full border border-outline px-4 text-label-large text-primary"
+            >
+              <Icon name="chat" size={20} />
+              {t('chat.title')}
+            </button>
           ) : null}
           {order.address ? (
             <div className="text-label-medium text-on-surface-variant">
@@ -364,6 +377,13 @@ export function ExistingOrderView({ orderId }: { orderId: string }) {
           <img src={order.proofUrl} alt={t('payment.proof')} className="w-full rounded-md" />
         ) : null}
       </Sheet>
+      {chatOpen ? (
+        <OrderChat
+          orderId={order.id}
+          title={`${order.displayNo} · ${order.customerName ?? order.customer?.name ?? ''}`}
+          onClose={() => setChatOpen(false)}
+        />
+      ) : null}
     </Screen>
   );
 }

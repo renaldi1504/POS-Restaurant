@@ -186,6 +186,8 @@ export const zh: Dict = {
     notYourOrder: '这不是你的订单',
     adminOnlyReassign: '只有管理员可以转派订单',
     driverDeliveryOnly: '司机只能查看外送订单',
+    chatDriverOnly: '只有该订单的骑手可以聊天',
+    chatNoTelegram: '该顾客未使用 Telegram——请电话联系',
     kitchenStartReadyOnly: '厨房只能操作 开始制作 / 完成',
     transitionNotAllowed: '状态不能从 {{from}} 改为 {{to}}',
     optionsInvalidFor: '{{name}} 的选项还没选好',

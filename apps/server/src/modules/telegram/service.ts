@@ -15,6 +15,7 @@ import { JOB_NAMES } from '../../lib/jobs';
 import { getSettings } from '../../lib/settings';
 import { privateKeyFromUrl } from '../../lib/upload';
 import { answerQuestion, detectLang, isLocationQuestion } from '../ai/service';
+import { activeDeliveryFor, recordIncoming } from '../chat/service';
 import { getOrderDto } from '../orders/dto';
 import { langFromTelegram } from './initData';
 import { createOrderLinkToken } from './orderLink';
@@ -195,6 +196,15 @@ export interface TelegramService {
   /** `businessConnectionId`: kirim lewat akun Telegram Business (chat pribadi pemilik). */
   sendMessage(chatId: string | number, text: string, businessConnectionId?: string | null): Promise<void>;
   sendPhotoToAdmin(file: InputFile, caption: string): Promise<void>;
+  /** Kirim foto ke pelanggan (chat driver). */
+  sendPhoto(
+    chatId: string | number,
+    file: Buffer,
+    caption: string,
+    businessConnectionId?: string | null,
+  ): Promise<void>;
+  /** Unduh file kiriman pelanggan (foto chat) dari server Telegram. */
+  downloadFile(fileId: string): Promise<Buffer | null>;
   sendToAdmin(text: string): Promise<void>;
 }
 
@@ -262,6 +272,15 @@ async function upsertBusinessCustomer(
         ...(from.username ? { username: from.username } : {}),
       },
     });
+}
+
+/** Unduh file dari Telegram (maks 20 MB lewat Bot API). */
+export async function downloadTelegramFile(bot: Bot, token: string, fileId: string): Promise<Buffer | null> {
+  const f = await bot.api.getFile(fileId);
+  if (!f.file_path) return null;
+  const res = await fetch(`https://api.telegram.org/file/bot${token}/${f.file_path}`);
+  if (!res.ok) return null;
+  return Buffer.from(await res.arrayBuffer());
 }
 
 /** Daftarkan semua handler bot (dipisah agar bisa diuji tanpa jaringan). */
@@ -361,9 +380,41 @@ export function setupBot(app: FastifyInstance, bot: Bot, sendToAdmin: (text: str
     await ctx.reply(text);
   });
 
+  /** Pesan pemilik akun bisnis (balasan manual) / bot → abaikan. */
+  const ignoreBusiness = async (ctx: Context) => {
+    const m = ctx.businessMessage;
+    if (!m) return false;
+    if (!m.from || m.from.is_bot || !m.business_connection_id) return true;
+    return m.from.id === (await ownerOf(m.business_connection_id));
+  };
+
+  /**
+   * Pelanggan yang order delivery-nya sedang diantar → pesan (teks/foto/lokasi) diteruskan ke
+   * aplikasi driver, tidak dijawab AI. Mengembalikan true bila diteruskan.
+   */
+  const relayToDriver = async (
+    ctx: Context,
+    msg: { kind: 'text' | 'photo' | 'location'; text?: string; fileId?: string; lat?: number; lng?: number },
+  ): Promise<boolean> => {
+    if (!ctx.from) return false;
+    const orderId = await activeDeliveryFor(app, String(ctx.from.id)).catch(() => null);
+    if (!orderId) return false;
+    let photoUrl: string | null = null;
+    if (msg.fileId) {
+      const data = await downloadTelegramFile(bot, bot.token, msg.fileId).catch(() => null);
+      if (data)
+        photoUrl = (
+          await app.storage.save({ data, mimetype: 'image/jpeg', visibility: 'private', folder: 'chat' })
+        ).url;
+    }
+    await recordIncoming(app, orderId, { ...msg, photoUrl });
+    return true;
+  };
+
   /** Pertanyaan bebas (chat bot langsung atau chat Telegram Business) → AI. */
   const answerText = async (ctx: Context, text: string, business: boolean) => {
     const from = ctx.from!;
+    if (await relayToDriver(ctx, { kind: 'text', text })) return;
     const stored = await langOf(ctx);
     // Bahasa pesan ini (aksara/kata) — balas dengan bahasa yang sama, mis. Khmer → Khmer.
     const lang = detectLang(text) ?? stored;
@@ -402,12 +453,23 @@ export function setupBot(app: FastifyInstance, bot: Bot, sendToAdmin: (text: str
 
   bot.on('message:text', (ctx) => answerText(ctx, ctx.message.text, false));
 
+  // Foto & lokasi dari pelanggan yang sedang diantar → ke aplikasi driver.
+  bot.on(['message:photo', 'business_message:photo'], async (ctx) => {
+    if (await ignoreBusiness(ctx)) return;
+    const photo = ctx.msg.photo.at(-1);
+    if (photo) await relayToDriver(ctx, { kind: 'photo', fileId: photo.file_id, text: ctx.msg.caption });
+  });
+  bot.on(['message:location', 'business_message:location'], async (ctx) => {
+    if (await ignoreBusiness(ctx)) return;
+    const l = ctx.msg.location;
+    await relayToDriver(ctx, { kind: 'location', lat: l.latitude, lng: l.longitude });
+  });
+
   bot.on('business_message:text', async (ctx) => {
     const msg = ctx.businessMessage;
     const from = msg.from;
-    if (!from || from.is_bot) return;
     // Pesan yang dikirim pemilik akun (balasan manual staf) → jangan dijawab bot.
-    if (from.id === (await ownerOf(msg.business_connection_id))) return;
+    if (!from || !msg.business_connection_id || (await ignoreBusiness(ctx))) return;
     const lang = detectLang(msg.text) ?? (await langOf(ctx));
     await upsertBusinessCustomer(app, from, msg.business_connection_id, lang).catch((err) =>
       app.log.warn({ err: (err as Error).message }, 'simpan pelanggan business gagal'),
@@ -429,6 +491,12 @@ function createTelegram(app: FastifyInstance): TelegramService {
         app.log.debug({ chatId, text }, 'telegram disabled: sendMessage diabaikan');
       },
       async sendPhotoToAdmin() {},
+      async sendPhoto(chatId, _file, caption) {
+        app.log.debug({ chatId, caption }, 'telegram disabled: sendPhoto diabaikan');
+      },
+      async downloadFile() {
+        return null;
+      },
       async sendToAdmin(text) {
         app.log.debug({ text }, 'telegram disabled: sendToAdmin diabaikan');
       },
@@ -473,6 +541,27 @@ function createTelegram(app: FastifyInstance): TelegramService {
         }
       }
       await bot.api.sendMessage(chatId, text);
+    },
+    async sendPhoto(chatId, file, caption, businessConnectionId) {
+      const opts = { caption: caption.slice(0, 1000) };
+      if (businessConnectionId) {
+        try {
+          await bot.api.sendPhoto(chatId, new InputFile(file), {
+            ...opts,
+            business_connection_id: businessConnectionId,
+          });
+          return;
+        } catch (err) {
+          app.log.warn(
+            { err: (err as Error).message },
+            'kirim foto via Telegram Business gagal, coba langsung',
+          );
+        }
+      }
+      await bot.api.sendPhoto(chatId, new InputFile(file), opts);
+    },
+    async downloadFile(fileId) {
+      return downloadTelegramFile(bot, token, fileId);
     },
     async sendPhotoToAdmin(file, caption) {
       if (!adminChat) return;

@@ -22,3 +22,4 @@ export * from './schemas/public';
 export * from './schemas/admin';
 export * from './schemas/reports';
 export * from './schemas/customers';
+export * from './schemas/chat';
