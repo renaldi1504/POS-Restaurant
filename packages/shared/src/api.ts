@@ -131,6 +131,15 @@ export const endpoints = {
     rateLimitPerMin: 30,
     description: 'Login otomatis Mini App (validasi HMAC initData, max 24 jam)',
   }),
+  publicSessionTelegramLink: def({
+    method: 'POST',
+    path: '/api/public/session/telegram-link',
+    auth: 'none',
+    body: P.TelegramLinkSessionRequest,
+    response: P.CustomerSessionResponse,
+    rateLimitPerMin: 30,
+    description: 'Login dari tautan "Pesan sekarang" di chat Telegram Business (token HMAC, 7 hari)',
+  }),
   publicSessionTable: def({
     method: 'POST',
     path: '/api/public/session/table',

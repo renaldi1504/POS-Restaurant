@@ -4,7 +4,12 @@ import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { customers } from '../src/db/schema';
 import { setupBot } from '../src/modules/telegram/service';
-import { createTestApp } from './helpers';
+import {
+  ORDER_LINK_TTL_SEC,
+  createOrderLinkToken,
+  verifyOrderLinkToken,
+} from '../src/modules/telegram/orderLink';
+import { call, createTestApp } from './helpers';
 
 let app: FastifyInstance;
 const calls: { method: string; payload: Record<string, unknown> }[] = [];
@@ -77,13 +82,31 @@ describe('Telegram Business (akun premium terhubung ke bot)', () => {
     expect(sent[0]!.payload.business_connection_id).toBe('BC1');
     expect(sent[0]!.payload.chat_id).toBe(CUSTOMER);
     const kb = JSON.stringify(sent[0]!.payload.reply_markup);
-    expect(kb).toContain('https://t.me/berkat_bot?start=order_id');
     expect(kb).not.toContain('web_app');
+    const url = JSON.parse(kb).inline_keyboard[0][0].url as string;
+    expect(url).toMatch(/\/tg\?lang=id&t=/);
+    // Token di tautan → sesi pelanggan Telegram yang sama (pesanan & notifikasi tersambung).
+    const token = new URL(url).searchParams.get('t')!;
+    const res = await call(app, 'publicSessionTelegramLink', { body: { token } });
+    expect(res.statusCode, res.body).toBe(200);
+    expect(res.json()).toMatchObject({ mode: 'telegram', customer: { telegramId: String(CUSTOMER) } });
     const [c] = await app.db
       .select()
       .from(customers)
       .where(eq(customers.telegramId, String(CUSTOMER)));
     expect(c).toMatchObject({ username: 'sokdara', tgBusinessConnectionId: 'BC1' });
+  });
+
+  it('token tautan palsu / kedaluwarsa ditolak', async () => {
+    const bad = await call(app, 'publicSessionTelegramLink', {
+      body: { token: 'Nzc3MDAwMS45OTk5OTk5OTk5.xxxxxxxxxxxxxxxxxxxxxxxx' },
+    });
+    expect(bad.statusCode).toBe(401);
+    const old = createOrderLinkToken(app.config.SESSION_SECRET, '42', 1000);
+    expect(verifyOrderLinkToken(app.config.SESSION_SECRET, old, 1000 + ORDER_LINK_TTL_SEC + 1)).toEqual({
+      ok: false,
+      reason: 'expired',
+    });
   });
 
   it('balasan manual dari pemilik akun tidak dijawab bot', async () => {

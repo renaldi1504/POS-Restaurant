@@ -72,6 +72,17 @@ function routeMode(pathname: string): Persisted | null {
   return null;
 }
 
+/** Ambil `t` dari URL lalu hapus dari address bar (tidak ikut tersalin / dibagikan). */
+function takeLinkToken(): string | null {
+  if (typeof location === 'undefined') return null;
+  const url = new URL(location.href);
+  const t = url.searchParams.get('t');
+  if (!t) return null;
+  url.searchParams.delete('t');
+  history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+  return t;
+}
+
 async function bootTelegram(): Promise<BootResult> {
   const fromHash = hashInitData();
   const wa = await loadTelegram();
@@ -80,6 +91,18 @@ async function bootTelegram(): Promise<BootResult> {
   if (!applyLangParam(typeof location !== 'undefined' ? location.search : ''))
     applyTelegramLang(tgUser?.language_code);
   if (!initData) {
+    // Tautan dari chat Telegram Business (?t=token) → tukar jadi sesi pelanggan Telegram.
+    const linkToken = takeLinkToken();
+    if (linkToken) {
+      try {
+        const session = await api.call('publicSessionTelegramLink', { body: { token: linkToken } });
+        reconnectSocket();
+        return { session, tg: wa, tgUser };
+      } catch (e) {
+        if (isApiError(e) && (e.status === 0 || e.status >= 500)) throw new BootError('network');
+        /* token kedaluwarsa → coba sesi lama di bawah */
+      }
+    }
     // Bukan di dalam Telegram: pakai sesi Telegram lama bila cookie masih ada.
     try {
       const s = await api.call('publicSession');

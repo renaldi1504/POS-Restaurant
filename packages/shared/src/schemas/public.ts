@@ -21,6 +21,10 @@ export type PublicTableRef = z.infer<typeof PublicTableRef>;
 export const TelegramSessionRequest = z.object({ initData: z.string().min(1).max(8192) });
 export type TelegramSessionRequest = z.infer<typeof TelegramSessionRequest>;
 
+/** `POST /public/session/telegram-link` — tautan bertanda tangan dari chat Telegram Business. */
+export const TelegramLinkSessionRequest = z.object({ token: z.string().min(10).max(200) });
+export type TelegramLinkSessionRequest = z.infer<typeof TelegramLinkSessionRequest>;
+
 /** `POST /public/session/table` — dari URL `/m/<qrToken>`. */
 export const TableSessionRequest = z.object({ qrToken: z.string().min(16).max(64) });
 export type TableSessionRequest = z.infer<typeof TableSessionRequest>;

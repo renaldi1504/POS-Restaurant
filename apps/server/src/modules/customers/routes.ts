@@ -15,6 +15,7 @@ import { getOrderDto, loadOrderDtos, toPublicOrder } from '../orders/dto';
 import { afterOrderChange, createOrder } from '../orders/service';
 import { recordProof } from '../payments/service';
 import { langFromTelegram, validateInitData } from '../telegram/initData';
+import { verifyOrderLinkToken } from '../telegram/orderLink';
 import { emitTableUpdated, getOpenSession, sessionBill, toSessionDto } from '../tables/service';
 import { assertOrderAccess, ensureCustomer, myOrdersWhere, sessionResponse } from './service';
 
@@ -56,6 +57,26 @@ export default async function customersRoutes(app: FastifyInstance) {
       customerId = c!.id;
     }
     const ctx = await upsertCustomerSession(app, req, reply, { customerId, tableId: null });
+    return sessionResponse(app.db, ctx);
+  });
+
+  defineRoute(app, 'publicSessionTelegramLink', async ({ body, req, reply }) => {
+    const r = verifyOrderLinkToken(app.config.SESSION_SECRET, body.token, Math.floor(now().getTime() / 1000));
+    if (!r.ok)
+      throw new AppError(
+        401,
+        'TELEGRAM_AUTH_FAILED',
+        r.reason === 'expired'
+          ? 'Sesi Telegram kedaluwarsa, buka ulang Mini App'
+          : 'Data Telegram tidak valid',
+        { reason: r.reason },
+      );
+    const [c] = await app.db
+      .insert(customers)
+      .values({ telegramId: r.telegramId })
+      .onConflictDoUpdate({ target: customers.telegramId, set: { telegramId: r.telegramId } })
+      .returning({ id: customers.id });
+    const ctx = await upsertCustomerSession(app, req, reply, { customerId: c!.id, tableId: null });
     return sessionResponse(app.db, ctx);
   });
 

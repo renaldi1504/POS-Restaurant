@@ -17,6 +17,7 @@ import { privateKeyFromUrl } from '../../lib/upload';
 import { answerQuestion, detectLang, isLocationQuestion } from '../ai/service';
 import { getOrderDto } from '../orders/dto';
 import { langFromTelegram } from './initData';
+import { createOrderLinkToken } from './orderLink';
 
 // ---------- Teks bot ----------
 export const BOT_TEXT: Record<
@@ -223,12 +224,18 @@ async function customerLang(app: FastifyInstance, telegramId: string, fallback?:
   return langFromTelegram(fallback) ?? 'id';
 }
 
-/** Tombol "Pesan sekarang": Mini App di chat bot; di chat Telegram Business (tombol web_app tidak
- * diizinkan) → tautan ke chat bot, /start membuka menu dalam bahasa yang sama. */
-function orderButton(app: FastifyInstance, bot: Bot, lang: Lang, business: boolean) {
+/** Tombol "Pesan sekarang": Mini App di chat bot. Di chat Telegram Business tombol web_app tidak
+ * diizinkan → URL biasa langsung ke web order (bahasa chat + token sesi pelanggan Telegram). */
+function orderButton(app: FastifyInstance, lang: Lang, businessFor?: number) {
   const kb = new InlineKeyboard();
-  if (!business) return kb.webApp(BOT_TEXT[lang].order, miniAppUrl(app, lang));
-  return kb.url(BOT_TEXT[lang].order, `https://t.me/${bot.botInfo.username}?start=order_${lang}`);
+  if (businessFor == null) return kb.webApp(BOT_TEXT[lang].order, miniAppUrl(app, lang));
+  return kb.url(BOT_TEXT[lang].order, businessOrderUrl(app, String(businessFor), lang));
+}
+
+/** URL web order untuk pelanggan chat bisnis (berlaku 7 hari). */
+export function businessOrderUrl(app: FastifyInstance, telegramId: string, lang: Lang) {
+  const t = createOrderLinkToken(app.config.SESSION_SECRET, telegramId, Math.floor(Date.now() / 1000));
+  return `${miniAppUrl(app, lang)}&t=${t}`;
 }
 
 /** Pelanggan dari chat Telegram Business → simpan/perbarui (bisa dicari kasir, notifikasi lewat akun bisnis). */
@@ -322,7 +329,7 @@ export function setupBot(app: FastifyInstance, bot: Bot, sendToAdmin: (text: str
 
   bot.on('message:text').hears(howToLabels, async (ctx) => {
     const lang = await langOf(ctx);
-    await ctx.reply(BOT_TEXT[lang].howToBody, { reply_markup: orderButton(app, bot, lang, false) });
+    await ctx.reply(BOT_TEXT[lang].howToBody, { reply_markup: orderButton(app, lang) });
   });
 
   bot.on('message:text').hears(statusLabels, async (ctx) => {
@@ -371,7 +378,9 @@ export function setupBot(app: FastifyInstance, bot: Bot, sendToAdmin: (text: str
         .set({ lang: answer.lang })
         .where(eq(customers.telegramId, key))
         .catch(() => undefined);
-    await ctx.reply(answer.text, { reply_markup: orderButton(app, bot, answer.lang, business) });
+    await ctx.reply(answer.text, {
+      reply_markup: orderButton(app, answer.lang, business ? from.id : undefined),
+    });
     // Pertanyaan lokasi → kirim juga pin lokasi restoran (bisa dibuka di Google Maps).
     if (isLocationQuestion(text)) {
       const s = await getSettings(app.db);
