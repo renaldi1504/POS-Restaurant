@@ -410,6 +410,32 @@ const ORDER_HINT: Record<Lang, string> = {
  * Cadangan tanpa Gemini (key kosong / kuota habis): cari nama menu di pesan (semua bahasa) lalu balas
  * harga & opsinya. null bila tidak ada menu yang cocok.
  */
+/** Kata umum yang tidak dipakai untuk mencocokkan nama menu. */
+const STOPWORDS = new Set(
+  (
+    'ada adakah apa apakah kak kakak bang bos min halo hai hallo hello boleh bisa mau minta tolong harga ' +
+    'berapa brp yang dan atau ini itu nya dong deh sih ya yah gak tidak masih jual menu pesan order ' +
+    'the and for how much price do you have is are any can please want with what there'
+  ).split(' '),
+);
+
+const words = (t: string) =>
+  t
+    .toLowerCase()
+    .normalize('NFKC')
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w.length >= 3 && !STOPWORDS.has(w));
+
+/** Teks (khususnya Khmer/Mandarin tanpa spasi) memuat nama menu utuh? */
+const containsName = (q: string, n: string | undefined) => {
+  const x = n?.toLowerCase().trim();
+  return !!x && x.length >= 2 && q.includes(x);
+};
+
+/**
+ * Cadangan tanpa AI: cari menu yang disebut pelanggan. Cocok bila nama menu utuh ada di pertanyaan,
+ * atau kata-kata pertanyaan ("ayam goreng") cocok dengan kata di nama menu — ambil skor tertinggi.
+ */
 export async function menuLookupReply(
   app: FastifyInstance,
   question: string,
@@ -418,13 +444,19 @@ export async function menuLookupReply(
   const s = await getSettings(app.db);
   const [items, groups] = await Promise.all([loadItems(app.db), loadOptionGroups(app.db)]);
   const q = question.toLowerCase();
-  const hits = items.filter((i) =>
-    LANGS.some((l) => {
-      const n = i.name[l]?.toLowerCase().trim();
-      return !!n && n.length >= 3 && q.includes(n);
-    }),
-  );
-  if (!hits.length) return null;
+  const qWords = new Set(words(question));
+  const scored = items
+    .map((i) => {
+      if (LANGS.some((l) => containsName(q, i.name[l]))) return { i, score: 100 };
+      const nameWords = new Set(LANGS.flatMap((l) => words(i.name[l] ?? '')));
+      let score = 0;
+      for (const w of qWords) if (nameWords.has(w)) score++;
+      return { i, score };
+    })
+    .filter((x) => x.score > 0);
+  if (!scored.length) return null;
+  const best = Math.max(...scored.map((x) => x.score));
+  const hits = scored.filter((x) => x.score === best).map((x) => x.i);
   const cur = s.currency.main;
   const lines = hits.slice(0, 8).map((i) => {
     const opts = i.optionGroupIds
@@ -445,6 +477,49 @@ export async function menuLookupReply(
   return `${lines.join('\n\n')}\n\n${ORDER_HINT[lang]}`;
 }
 
+const MENU_REQUEST =
+  /(\bmenu\b|\bmenunya\b|daftar\s*(menu|harga)|jual\s*apa|ada\s*apa\s*aja|what\s+do\s+you\s+(have|sell)|price\s*list|ម៉ឺនុយ|មុខម្ហូប|菜单|菜單|有什么)/iu;
+export const isMenuRequest = (q: string) => MENU_REQUEST.test(q);
+
+const MENU_TITLE: Record<Lang, string> = {
+  id: '📋 Menu kami:',
+  en: '📋 Our menu:',
+  kh: '📋 ម៉ឺនុយរបស់យើង៖',
+  zh: '📋 我们的菜单：',
+};
+
+/** Cadangan tanpa AI: daftar menu per kategori dengan harga (yang tersedia). */
+export async function menuListReply(app: FastifyInstance, lang: Lang): Promise<string | null> {
+  const s = await getSettings(app.db);
+  const [cats, items] = await Promise.all([listCategories(app.db), loadItems(app.db)]);
+  const avail = items.filter((i) => i.available);
+  if (!avail.length) return null;
+  const cur = s.currency.main;
+  const blocks: string[] = [];
+  let count = 0;
+  for (const c of cats) {
+    const list = avail.filter((i) => i.categoryId === c.id);
+    if (!list.length || count >= 60) continue;
+    const rows = list
+      .slice(0, 60 - count)
+      .map((i) => `• ${tl(i.name, lang)} — ${formatMoney(i.prices.store, cur)}`);
+    count += rows.length;
+    blocks.push(`*${tl(c.name, lang)}*\n${rows.join('\n')}`.replace(/\*/g, ''));
+  }
+  return `${MENU_TITLE[lang]}\n\n${blocks.join('\n\n')}\n\n${ORDER_HINT[lang]}`.slice(0, 3800);
+}
+
+const GREETING =
+  /^\s*(halo+|hal+o|hai+|hi+|hello+|hey|pagi|siang|sore|malam|selamat\s+\w+|permisi|assalamualaikum|សួស្តី|ជំរាបសួរ|你好|您好)[\s!.,kakbangmin🙏👋]*$/iu;
+export const isGreeting = (q: string) => GREETING.test(q);
+
+const GREETING_REPLY: Record<Lang, string> = {
+  id: 'Halo kak 👋 Selamat datang di {name}! Mau lihat menu atau tanya harga? Ketik nama menunya, atau ketik "menu".',
+  en: 'Hello 👋 Welcome to {name}! Want to see the menu or ask a price? Type a dish name, or type "menu".',
+  kh: 'សួស្តី 👋 សូមស្វាគមន៍មកកាន់ {name}! ចង់មើលម៉ឺនុយ ឬសួរតម្លៃ? វាយឈ្មោះម្ហូប ឬវាយ "ម៉ឺនុយ"។',
+  zh: '您好 👋 欢迎光临 {name}！想看菜单或问价格？请输入菜名，或输入“菜单”。',
+};
+
 export async function answerQuestion(app: FastifyInstance, question: string, lang: Lang): Promise<AiAnswer> {
   const settings = await getSettings(app.db);
   const detected = detectLang(question) ?? lang;
@@ -459,6 +534,18 @@ export async function answerQuestion(app: FastifyInstance, question: string, lan
       };
     const lookup = await menuLookupReply(app, question, detected).catch(() => null);
     if (lookup) return { text: lookup, forward: false, reason: 'lookup', lang: detected, error };
+    if (isMenuRequest(question)) {
+      const list = await menuListReply(app, detected).catch(() => null);
+      if (list) return { text: list, forward: false, reason: 'lookup', lang: detected, error };
+    }
+    if (isGreeting(question))
+      return {
+        text: GREETING_REPLY[detected].replace('{name}', settings.profile.name),
+        forward: false,
+        reason: 'lookup',
+        lang: detected,
+        error,
+      };
     return { text: FALLBACK_REPLY[detected], forward: true, reason, lang: detected, error };
   };
   if (!genai(app)) return fallback('disabled', 'GEMINI_API_KEY kosong di .env server');

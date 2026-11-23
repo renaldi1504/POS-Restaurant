@@ -385,7 +385,7 @@ export function setupBot(app: FastifyInstance, bot: Bot, sendToAdmin: (text: str
       await app.jobs
         .enqueue(JOB_NAMES.telegramAdmin, {
           kind: 'question',
-          text: `❓ ${who}${from.username ? ` (@${from.username})` : ''} [${from.id}]${business ? ' · Business' : ''} (${answer.reason}):\n${text}`,
+          text: `❓ ${who}${from.username ? ` (@${from.username})` : ''} [${from.id}]${business ? ' · Business' : ''} (${answer.reason}${answer.error ? `: ${answer.error.slice(0, 160)}` : ''}):\n${text}`,
         })
         .catch(() => sendToAdmin(`❓ ${who}: ${text}`));
     }

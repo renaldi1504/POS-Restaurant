@@ -95,6 +95,19 @@ describe('tanya menu tanpa Gemini (cadangan)', () => {
     expect(a.text).toContain('Price');
   });
 
+  it('kata sebagian ("ada ayam?"), minta menu, dan salam dijawab tanpa diteruskan', async () => {
+    const part = await answerQuestion(app, 'kak ada ayam?', 'id');
+    expect(part.forward).toBe(false);
+    expect(part.text).toContain('Ayam Goreng');
+    const menu = await answerQuestion(app, 'boleh menu kak', 'id');
+    expect(menu.forward).toBe(false);
+    expect(menu.text).toContain('Menu kami');
+    expect(menu.text).toMatch(/Ayam Goreng — /);
+    const hi = await answerQuestion(app, 'halo kak', 'id');
+    expect(hi.forward).toBe(false);
+    expect(hi.text).toContain('Selamat datang');
+  });
+
   it('tidak ada menu cocok → diteruskan ke admin dengan balasan sesuai bahasa', async () => {
     const a = await answerQuestion(app, 'តើហាងបើកម៉ោងប៉ុន្មាន?', 'id');
     expect(a.forward).toBe(true);
