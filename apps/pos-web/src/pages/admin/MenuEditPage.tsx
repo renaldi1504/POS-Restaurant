@@ -107,7 +107,11 @@ export default function MenuEditPage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      const tr = await fillMissing({ name: d.name, desc: d.desc });
+      const orig = item.data ? draftFrom(item.data.item) : null;
+      const tr = await fillMissing(
+        { name: d.name, desc: d.desc },
+        orig ? { name: orig.name, desc: orig.desc } : {},
+      );
       const body: CreateItemRequest = {
         categoryId: d.categoryId!,
         name: cleanLoc(tr.name),

@@ -91,10 +91,12 @@ export default function OptionGroupEditPage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      const tr = await fillMissing<string>({
-        __group: name,
-        ...Object.fromEntries(opts.map((o) => [o.key, o.name])),
-      });
+      const tr = await fillMissing<string>(
+        { __group: name, ...Object.fromEntries(opts.map((o) => [o.key, o.name])) },
+        group
+          ? { __group: group.name, ...Object.fromEntries(group.options.map((o) => [`o${o.id}`, o.name])) }
+          : {},
+      );
       const options = opts
         .filter((o) => o.name.id.trim())
         .map((o, i) => ({

@@ -379,8 +379,8 @@ function CategoriesSheet({
     void qc.invalidateQueries({ queryKey: qk.menu });
   };
   /** Terjemahkan bahasa yang masih kosong (Gemini; tanpa key server → mock). */
-  const fillMissing = async (text: Loc): Promise<LocalizedText> =>
-    cleanLoc((await fillMissingTexts({ c: text })).c);
+  const fillMissing = async (text: Loc, original?: Loc): Promise<LocalizedText> =>
+    cleanLoc((await fillMissingTexts({ c: text }, { c: original })).c);
   const create = useMutation({
     mutationFn: async () =>
       api.call('adminCategoryCreate', {
@@ -394,7 +394,10 @@ function CategoriesSheet({
   });
   const update = useMutation({
     mutationFn: async (f: CatForm) =>
-      api.call('adminCategoryUpdate', { params: { id: f.id! }, body: { name: await fillMissing(f.text) } }),
+      api.call('adminCategoryUpdate', {
+        params: { id: f.id! },
+        body: { name: await fillMissing(f.text, sorted.find((c) => c.id === f.id)?.name) },
+      }),
     onSuccess: () => {
       setForm(null);
       done();

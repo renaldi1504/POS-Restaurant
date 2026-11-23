@@ -112,10 +112,28 @@ export function missingLangs(v: Loc): Lang[] {
 }
 
 /**
- * Saat menyimpan: terjemahkan otomatis semua teks yang bahasanya masih kosong (satu panggilan).
+ * Bila teks Indonesia diubah, terjemahan lama yang TIDAK diedit manual (masih sama dengan aslinya)
+ * dianggap usang → dikosongkan supaya diterjemahkan ulang.
+ */
+export function clearStale(v: Loc, original: Loc | undefined): Loc {
+  if (!original || original.id.trim() === v.id.trim()) return v;
+  const out = { ...v };
+  for (const l of LANGS) if (l !== 'id' && (out[l] ?? '') === (original[l] ?? '')) delete out[l];
+  return out;
+}
+
+/**
+ * Saat menyimpan: terjemahkan otomatis semua teks yang bahasanya masih kosong — atau usang karena
+ * teks Indonesia diubah (lihat `originals`) — dalam satu panggilan.
  * Gagal / tanpa internet → teks dikembalikan apa adanya (tetap bisa disimpan).
  */
-export async function fillMissing<K extends string>(texts: Record<K, Loc>): Promise<Record<K, Loc>> {
+export async function fillMissing<K extends string>(
+  input: Record<K, Loc>,
+  originals: Partial<Record<K, Loc>> = {},
+): Promise<Record<K, Loc>> {
+  const texts = Object.fromEntries(
+    (Object.keys(input) as K[]).map((k) => [k, clearStale(input[k], originals[k])]),
+  ) as Record<K, Loc>;
   const keys = (Object.keys(texts) as K[]).filter((k) => texts[k].id.trim() && missingLangs(texts[k]).length);
   if (!keys.length) return texts;
   const res = await api
@@ -123,7 +141,7 @@ export async function fillMissing<K extends string>(texts: Record<K, Loc>): Prom
       body: { entries: keys.map((k) => ({ key: k, text: { ...texts[k], id: texts[k].id.trim() } })) },
     })
     .catch(() => null);
-  if (!res || res.provider === 'none') return texts;
+  if (!res || res.provider === 'none') return input;
   const out = { ...texts };
   for (const e of res.entries) {
     const k = e.key as K;
