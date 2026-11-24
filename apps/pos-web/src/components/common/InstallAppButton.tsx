@@ -2,13 +2,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Icon, Sheet } from '../ui';
+import { isNativeApp } from '../../lib/printer/nativeBle';
 import { promptInstall, useInstallState } from '../../lib/install';
 
 export function InstallAppButton({ className }: { className?: string }) {
   const { t } = useTranslation();
   const state = useInstallState();
   const [help, setHelp] = useState(false);
-  if (state === 'installed') return null;
+  // Sudah di aplikasi iPad (native) / sudah terpasang → tidak perlu tombol pasang.
+  if (state === 'installed' || isNativeApp()) return null;
   return (
     <>
       <Button

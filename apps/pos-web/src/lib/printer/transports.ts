@@ -1,6 +1,8 @@
 /**
  * Transport printer: Web Serial (Bluetooth SPP / USB) dan Web Bluetooth (BLE).
+ * Di aplikasi iPad (Capacitor) Bluetooth memakai plugin native — lihat nativeBle.ts.
  */
+import { isNativeApp, reconnectNativeBle, requestNativeBle } from './nativeBle';
 
 /** Bluetooth Serial Port Profile (RFCOMM) — printer thermal klasik yang dipasangkan di OS. */
 export const SPP_UUID = '00001101-0000-1000-8000-00805f9b34fb';
@@ -20,7 +22,8 @@ export interface PrinterTransport {
 }
 
 export const supportsSerial = () => typeof navigator !== 'undefined' && !!navigator.serial;
-export const supportsBluetooth = () => typeof navigator !== 'undefined' && !!navigator.bluetooth;
+export const supportsBluetooth = () =>
+  isNativeApp() || (typeof navigator !== 'undefined' && !!navigator.bluetooth);
 
 // ---------------- Web Serial ----------------
 class SerialTransport implements PrinterTransport {
@@ -127,6 +130,8 @@ async function connectBle(device: BluetoothDevice): Promise<PrinterTransport> {
 }
 
 export async function requestBluetooth(): Promise<PrinterTransport> {
+  // Aplikasi iPad/iOS: Bluetooth native (Safari tidak punya Web Bluetooth).
+  if (isNativeApp()) return requestNativeBle(BLE_SERVICES);
   if (!navigator.bluetooth) throw new Error('localErr.noBluetooth');
   const device = await navigator.bluetooth.requestDevice({
     acceptAllDevices: true,
@@ -136,6 +141,7 @@ export async function requestBluetooth(): Promise<PrinterTransport> {
 }
 
 export async function reconnectBluetooth(): Promise<PrinterTransport | null> {
+  if (isNativeApp()) return reconnectNativeBle(BLE_SERVICES);
   const devices = (await navigator.bluetooth?.getDevices?.()) ?? [];
   const d = devices[0];
   return d ? connectBle(d) : null;

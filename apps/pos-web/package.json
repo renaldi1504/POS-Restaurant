@@ -12,6 +12,8 @@
     "icons": "node ../../scripts/gen-icons.mjs public"
   },
   "dependencies": {
+    "@capacitor-community/bluetooth-le": "^8.4.0",
+    "@capacitor/core": "^8.6.2",
     "@pos/shared": "workspace:*",
     "@tanstack/react-query": "^5.108.2",
     "@vis.gl/react-google-maps": "^1.10.2",

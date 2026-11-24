@@ -88,9 +88,18 @@ export async function printBytes(data: Uint8Array): Promise<void> {
   }
   set({ busy: true, error: null });
   try {
-    await transport.write(data);
+    try {
+      await transport.write(data);
+    } catch {
+      // Koneksi basi (mis. iPad baru bangun dari layar mati) → sambung ulang sekali lalu ulangi.
+      await transport.close().catch(() => undefined);
+      transport = null;
+      const ok = await reconnectPrinter();
+      if (!ok || !transport) throw new Error('localErr.notConnected');
+      await (transport as PrinterTransport).write(data);
+    }
   } catch (e) {
-    set({ error: (e as Error).message, connected: transport.isOpen() });
+    set({ error: (e as Error).message, connected: !!transport?.isOpen() });
     throw e;
   } finally {
     set({ busy: false });
