@@ -466,6 +466,7 @@ export const extraZh: ExtraDict = {
     serial: 'Bluetooth / USB (Serial)',
     ble: 'Bluetooth BLE',
     unsupported: '此浏览器不支持打印机。请在安卓或电脑上使用 Chrome。',
+    unsupportedIos: 'iPad 上的 Safari 无法连接打印机。请通过“POS Berkat”应用打开 POS，而不是 Safari。',
     howTo: '先在手机蓝牙设置里配对打印机，再点 Serial。BLE 打印机请点 Bluetooth BLE。',
     forget: '忘记打印机',
     paper: '纸张宽度',

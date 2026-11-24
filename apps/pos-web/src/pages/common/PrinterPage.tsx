@@ -51,6 +51,15 @@ export function testReceipt(
   };
 }
 
+/** iPad / iPhone (iPadOS modern melapor sebagai Mac dengan layar sentuh). */
+function isAppleMobile(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+}
+
 export default function PrinterPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -118,7 +127,9 @@ export default function PrinterPage() {
             </Button>
           </div>
           {!supportsSerial() && !supportsBluetooth() ? (
-            <span className="text-label-medium text-error">{t('print.unsupported')}</span>
+            <span className="text-label-medium text-error">
+              {isAppleMobile() ? t('print.unsupportedIos') : t('print.unsupported')}
+            </span>
           ) : (
             <span className="text-label-medium text-on-surface-variant">{t('print.howTo')}</span>
           )}

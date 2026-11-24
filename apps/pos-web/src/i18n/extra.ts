@@ -475,6 +475,8 @@ export const extraId = {
     serial: 'Bluetooth / USB (Serial)',
     ble: 'Bluetooth BLE',
     unsupported: 'Browser ini tidak mendukung printer. Pakai Chrome di Android / komputer.',
+    unsupportedIos:
+      'Safari iPad tidak bisa tersambung ke printer. Buka POS lewat aplikasi "POS Berkat" (dipasang lewat Xcode), bukan lewat Safari / ikon Layar Utama.',
     howTo:
       'Pasangkan printer di pengaturan Bluetooth HP dulu, lalu tekan Serial. Printer BLE: tekan Bluetooth BLE.',
     forget: 'Lupakan printer',
@@ -1109,6 +1111,8 @@ export const extraEn: ExtraDict = {
     serial: 'Bluetooth / USB (Serial)',
     ble: 'Bluetooth BLE',
     unsupported: 'This browser does not support printers. Use Chrome on Android / desktop.',
+    unsupportedIos:
+      'Safari on iPad cannot connect to printers. Open the POS in the "POS Berkat" app (installed via Xcode), not in Safari / a Home Screen icon.',
     howTo:
       'Pair the printer in the phone’s Bluetooth settings first, then tap Serial. BLE printers: tap Bluetooth BLE.',
     forget: 'Forget printer',

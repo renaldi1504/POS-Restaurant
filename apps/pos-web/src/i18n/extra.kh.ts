@@ -467,6 +467,8 @@ export const extraKh: ExtraDict = {
     serial: 'Bluetooth / USB (Serial)',
     ble: 'Bluetooth BLE',
     unsupported: 'កម្មវិធីរុករកនេះមិនគាំទ្រម៉ាស៊ីនព្រីន។ សូមប្រើ Chrome លើ Android / កុំព្យូទ័រ។',
+    unsupportedIos:
+      'Safari លើ iPad មិនអាចភ្ជាប់ម៉ាស៊ីនព្រីនបានទេ។ សូមបើក POS តាមកម្មវិធី "POS Berkat" មិនមែនតាម Safari ទេ។',
     howTo: 'ភ្ជាប់ព្រីនក្នុងការកំណត់ Bluetooth ទូរស័ព្ទជាមុន រួចចុច Serial។ ព្រីន BLE៖ ចុច Bluetooth BLE។',
     forget: 'បំភ្លេចម៉ាស៊ីនព្រីន',
     paper: 'ទំហំក្រដាស',
