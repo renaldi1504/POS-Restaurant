@@ -1,6 +1,7 @@
 /** Printer & suara (per perangkat): hubungkan printer thermal, kertas, bahasa struk, tes cetak, bunyi. */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { appMode } from '../../lib/printer/nativeBle';
 import { useNavigate } from 'react-router';
 import { Button, Segmented, useToast } from '../../components/ui';
 import { ReceiptPreview, Screen, Section, Switch, TopBar } from '../../components/common';
@@ -133,6 +134,9 @@ export default function PrinterPage() {
           ) : (
             <span className="text-label-medium text-on-surface-variant">{t('print.howTo')}</span>
           )}
+          <span data-testid="printer-mode" className="text-label-small text-on-surface-variant">
+            {t(`print.mode.${appMode()}`)} · v{typeof __APP_BUILD__ !== 'undefined' ? __APP_BUILD__ : 'dev'}
+          </span>
           {prefs.printer !== 'none' ? (
             <Button variant="text" size="md" className="text-error" onClick={() => void disconnectPrinter()}>
               {t('print.forget')}

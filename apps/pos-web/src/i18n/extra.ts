@@ -477,6 +477,12 @@ export const extraId = {
     unsupported: 'Browser ini tidak mendukung printer. Pakai Chrome di Android / komputer.',
     unsupportedIos:
       'Safari iPad tidak bisa tersambung ke printer. Buka POS lewat aplikasi "POS Berkat" (dipasang lewat Xcode), bukan lewat Safari / ikon Layar Utama.',
+    mode: {
+      native: 'Mode: aplikasi iPad (Bluetooth native aktif)',
+      'app-no-bridge':
+        'Mode: aplikasi iPad, tapi bridge Bluetooth TIDAK aktif — cek POS_URL lalu sync & Run ulang',
+      browser: 'Mode: browser',
+    },
     howTo:
       'Pasangkan printer di pengaturan Bluetooth HP dulu, lalu tekan Serial. Printer BLE: tekan Bluetooth BLE.',
     forget: 'Lupakan printer',
@@ -1113,6 +1119,12 @@ export const extraEn: ExtraDict = {
     unsupported: 'This browser does not support printers. Use Chrome on Android / desktop.',
     unsupportedIos:
       'Safari on iPad cannot connect to printers. Open the POS in the "POS Berkat" app (installed via Xcode), not in Safari / a Home Screen icon.',
+    mode: {
+      native: 'Mode: iPad app (native Bluetooth active)',
+      'app-no-bridge':
+        'Mode: iPad app, but the Bluetooth bridge is NOT active — check POS_URL, then sync & Run again',
+      browser: 'Mode: browser',
+    },
     howTo:
       'Pair the printer in the phone’s Bluetooth settings first, then tap Serial. BLE printers: tap Bluetooth BLE.',
     forget: 'Forget printer',

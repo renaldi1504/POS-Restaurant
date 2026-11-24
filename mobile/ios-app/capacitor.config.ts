@@ -11,10 +11,13 @@ const config: CapacitorConfig = {
   appId: 'com.rumahmakanberkat.pos',
   appName: 'POS Berkat',
   webDir: 'www',
+  // Penanda agar POS tahu sedang di aplikasi iPad (diagnosa bridge Bluetooth di halaman Printer).
+  appendUserAgent: 'POSBerkatApp/1',
   server: {
     url: POS_URL,
     cleartext: false,
     errorPath: 'index.html',
+    allowNavigation: [new URL(POS_URL).host],
   },
   ios: {
     contentInset: 'never',

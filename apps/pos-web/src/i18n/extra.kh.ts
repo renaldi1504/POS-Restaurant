@@ -469,6 +469,11 @@ export const extraKh: ExtraDict = {
     unsupported: 'កម្មវិធីរុករកនេះមិនគាំទ្រម៉ាស៊ីនព្រីន។ សូមប្រើ Chrome លើ Android / កុំព្យូទ័រ។',
     unsupportedIos:
       'Safari លើ iPad មិនអាចភ្ជាប់ម៉ាស៊ីនព្រីនបានទេ។ សូមបើក POS តាមកម្មវិធី "POS Berkat" មិនមែនតាម Safari ទេ។',
+    mode: {
+      native: 'របៀប៖ កម្មវិធី iPad (Bluetooth ដើមដំណើរការ)',
+      'app-no-bridge': 'របៀប៖ កម្មវិធី iPad ប៉ុន្តែ Bluetooth bridge មិនដំណើរការ — ពិនិត្យ POS_URL',
+      browser: 'របៀប៖ កម្មវិធីរុករក',
+    },
     howTo: 'ភ្ជាប់ព្រីនក្នុងការកំណត់ Bluetooth ទូរស័ព្ទជាមុន រួចចុច Serial។ ព្រីន BLE៖ ចុច Bluetooth BLE។',
     forget: 'បំភ្លេចម៉ាស៊ីនព្រីន',
     paper: 'ទំហំក្រដាស',

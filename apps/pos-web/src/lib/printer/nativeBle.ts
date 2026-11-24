@@ -11,11 +11,20 @@ interface CapacitorGlobal {
   isNativePlatform?: () => boolean;
 }
 
-/** Berjalan di dalam aplikasi native (Capacitor)? */
+/** Berjalan di dalam aplikasi native (Capacitor) dengan bridge aktif? */
 export function isNativeApp(): boolean {
   if (typeof window === 'undefined') return false;
   const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
   return !!cap?.isNativePlatform?.();
+}
+
+/** Mode untuk diagnosa di halaman Printer. */
+export function appMode(): 'native' | 'app-no-bridge' | 'browser' {
+  if (isNativeApp()) return 'native';
+  // Aplikasi iPad menambahkan "POSBerkatApp" di user agent (capacitor.config appendUserAgent).
+  if (typeof navigator !== 'undefined' && navigator.userAgent.includes('POSBerkatApp'))
+    return 'app-no-bridge';
+  return 'browser';
 }
 
 const plugin = () => import('@capacitor-community/bluetooth-le');
