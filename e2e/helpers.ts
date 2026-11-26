@@ -162,7 +162,12 @@ export async function closeShiftIfOpen(api: APIRequestContext): Promise<void> {
   if (!cur) return;
   const preview = await json<{
     expected: { cashByCurrency: Record<'KHR' | 'USD' | 'IDR', number>; abaMain: number };
+    drivers: { id: number; settledAt: string | null; cashCollected: number }[];
   }>(await api.get('/api/closing/preview'));
+  // Setoran driver dulu (closing ditolak selama uang masih di driver).
+  for (const d of preview.drivers)
+    if (!d.settledAt && d.cashCollected > 0)
+      await json(await api.post(`/api/driver-settlements/${d.id}/settle`));
   const c = preview.expected.cashByCurrency;
   await json(
     await api.post('/api/closing', {

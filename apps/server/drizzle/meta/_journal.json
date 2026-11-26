@@ -43,6 +43,13 @@
       "when": 1795683175177,
       "tag": "0005_delivery_photo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795685146379,
+      "tag": "0006_shift_opening_expected",
+      "breakpoints": true
     }
   ]
 }

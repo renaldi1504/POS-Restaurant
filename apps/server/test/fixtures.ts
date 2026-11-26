@@ -23,7 +23,8 @@ export async function openShift(
 ) {
   const res = await call(app, 'shiftOpen', {
     cookie,
-    body: { name: 'Pagi', openingCash: { KHR: 0, USD: 0, IDR: 0, ...openingCash } },
+    // Catatan selalu dikirim: file tes lain bisa saja meninggalkan sisa laci di closing terakhir (DB bersama).
+    body: { name: 'Pagi', openingCash: { KHR: 0, USD: 0, IDR: 0, ...openingCash }, note: 'tes' },
   });
   expect(res.statusCode, res.body).toBe(200);
   return res.json().shift as { id: number; businessDate: string };

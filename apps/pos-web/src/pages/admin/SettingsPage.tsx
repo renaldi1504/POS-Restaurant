@@ -371,6 +371,17 @@ export default function SettingsPage() {
               if (names.length) set('shift', { names });
             }}
           />
+          <span className="text-body-medium font-medium">{t('setx.float')}</span>
+          <span className="-mt-2 text-label-medium text-on-surface-variant">{t('setx.floatHint')}</span>
+          {d.currency.enabled.map((c) => (
+            <MoneyInput
+              key={c}
+              label={t('setx.floatIn', { currency: c })}
+              currency={c}
+              value={d.shift.float[c]}
+              onChange={(v) => set('shift', { float: { ...d.shift.float, [c]: v ?? 0 } })}
+            />
+          ))}
         </Section>
 
         <Section title={t('setx.abaTitle')}>

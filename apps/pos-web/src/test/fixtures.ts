@@ -264,6 +264,29 @@ export const closingPreview: ClosingPreview = {
   ],
   expenses: { cashMain: 70000, abaMain: 85000, cashByCurrency: { KHR: 70000, USD: 0, IDR: 0 }, count: 3 },
   expected: { cashMain: 1120000, abaMain: 555000, cashByCurrency: { KHR: 1038000, USD: 2000, IDR: 0 } },
+  pockets: [
+    {
+      method: 'cash',
+      currency: 'KHR',
+      opening: 250000,
+      sales: 860000,
+      change: 2000,
+      expenses: 70000,
+      expected: 1038000,
+    },
+    { method: 'cash', currency: 'USD', opening: 2000, sales: 0, change: 0, expenses: 0, expected: 2000 },
+    {
+      method: 'aba',
+      currency: 'KHR',
+      opening: 0,
+      sales: 640000,
+      change: 0,
+      expenses: 85000,
+      expected: 555000,
+    },
+    { method: 'aba', currency: 'USD', opening: 0, sales: 1500, change: 0, expenses: 0, expected: 1500 },
+  ],
+  suggestedKeep: { KHR: 100000, USD: 2000, IDR: 0 },
   drivers: [
     {
       id: 1,

@@ -155,6 +155,12 @@ describe('driver flow', () => {
     expect(p.statusCode, p.body).toBe(200);
     const d = p.json().drivers.find((x: { driver: { name: string } }) => x.driver.name === 'Driver');
     expect(d).toMatchObject({ deliveries: 1, cashCollected: 13000, settledAt: null });
+    // Closing ditolak selama uang masih di driver
+    const blocked = await call(app, 'closingCreate', {
+      cookie: kasir,
+      body: { shiftId: p.json().shift.id, actual: { cashByCurrency: { KHR: 0, USD: 0, IDR: 0 } }, note: 'x' },
+    });
+    expect(blocked.json().error.code).toBe('CLOSING_DRIVERS_UNSETTLED');
     const s = await call(app, 'driverSettlementSettle', { cookie: kasir, params: { id: d.id } });
     expect(s.statusCode, s.body).toBe(200);
     expect(s.json().settlement.settledAt).not.toBeNull();

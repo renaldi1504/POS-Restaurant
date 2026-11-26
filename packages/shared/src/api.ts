@@ -550,6 +550,13 @@ export const endpoints = {
     response: S.ShiftResponse,
     description: 'Buka shift (SHIFT_ALREADY_OPEN bila masih ada)',
   }),
+  shiftOpeningSuggestion: def({
+    method: 'GET',
+    path: '/api/shifts/opening-suggestion',
+    ...staff('shift.manage'),
+    response: S.OpeningSuggestionResponse,
+    description: 'Modal yang seharusnya ada di laci = sisa closing terakhir',
+  }),
   shiftCurrent: def({
     method: 'GET',
     path: '/api/shifts/current',

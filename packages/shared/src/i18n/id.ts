@@ -136,6 +136,8 @@ export const id = {
     TABLE_OCCUPIED: 'Meja sedang terisi',
     TELEGRAM_AUTH_FAILED: 'Login Telegram gagal, buka ulang dari bot',
     CLOSING_NOTE_REQUIRED: 'Ada selisih, isi catatan',
+    CLOSING_DRIVERS_UNSETTLED: 'Masih ada uang di driver yang belum disetor',
+    OPENING_NOTE_REQUIRED: 'Modal awal beda dengan sisa closing terakhir, isi catatan',
     FILE_TOO_LARGE: 'File terlalu besar (maks. 5 MB)',
     UNSUPPORTED_FILE: 'Jenis file tidak didukung',
     INTEGRATION_DISABLED: 'Fitur belum diaktifkan',

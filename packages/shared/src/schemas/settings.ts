@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Currency, TextSize } from '../enums';
-import { HHMM, Lat, Lng, NonNegMoney, Ymd } from './common';
+import { HHMM, Lat, Lng, MoneyByCurrency, NonNegMoney, Ymd } from './common';
 
 export const ProfileSettings = z.object({
   name: z.string().min(1).max(100),
@@ -71,6 +71,8 @@ export const ShiftSettings = z.object({
   autoAvailableOnOpen: z.boolean(),
   /** Nama shift yang ditawarkan saat buka shift. */
   names: z.array(z.string().min(1).max(30)),
+  /** Modal tetap yang ditinggal di laci saat closing (sisanya disetor ke owner), per mata uang. */
+  float: MoneyByCurrency,
 });
 /** Rekening ABA untuk transfer pelanggan (ditampilkan di web pelanggan). */
 export const AbaAccount = z.object({
@@ -124,7 +126,7 @@ export const DEFAULT_SETTINGS: Settings = {
   qr: { requireAccept: true },
   commissions: { grab: 30, foodpanda: 30 },
   ui: { textSize: 'normal' },
-  shift: { autoAvailableOnOpen: false, names: ['Pagi', 'Malam'] },
+  shift: { autoAvailableOnOpen: false, names: ['Pagi', 'Malam'], float: { KHR: 0, USD: 0, IDR: 0 } },
   payment: { aba: { accountName: '', accountNumber: '', qrImageUrl: null } },
   telegram: { groupUrl: '' },
 };

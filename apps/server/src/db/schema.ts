@@ -276,6 +276,9 @@ export const shifts = pgTable(
     closedAt: tsz('closed_at'),
     openingCash: jsonb('opening_cash').$type<MoneyByCurrency>().notNull(),
     openingDenominations: jsonb('opening_denominations').$type<DenominationCounts>(),
+    /** Modal seharusnya = uang yang ditinggal di laci saat closing sebelumnya. */
+    openingExpected: jsonb('opening_expected').$type<MoneyByCurrency>(),
+    openingNote: text('opening_note'),
   },
   (t) => [index('shifts_business_date_idx').on(t.businessDate)],
 );

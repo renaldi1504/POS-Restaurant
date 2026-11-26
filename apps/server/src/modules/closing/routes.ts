@@ -25,15 +25,53 @@ export default async function closingRoutes(app: FastifyInstance) {
       if (!shift) throw notFound('Shift tidak ditemukan');
       if (shift.closedAt) throw unprocessable('SHIFT_CLOSED', 'Shift sudah closing');
       const preview = await computePreview(tx, shift, settings);
+      // Uang cash yang masih dipegang driver harus disetor dulu (sudah dihitung "seharusnya di laci").
+      const unsettled = preview.drivers.filter((d) => !d.settledAt && d.cashCollected > 0);
+      if (unsettled.length)
+        throw unprocessable('CLOSING_DRIVERS_UNSETTLED', 'Masih ada uang di driver yang belum disetor', {
+          drivers: unsettled.map((d) => d.driver.name),
+        });
       const cashByCurrency = body.actual.cashByCurrency;
       const actualCashMain = sumMain(cashByCurrency, settings);
+      const abaByCurrency = body.actual.abaByCurrency;
+      const abaActualMain = abaByCurrency ? sumMain(abaByCurrency, settings) : (body.actual.abaMain ?? 0);
+      // Selisih per kantong — tanpa konversi kurs, jadi tidak ada selisih karena kurs/pembulatan.
+      const pockets = preview.pockets.map((pk) => {
+        const actual =
+          pk.method === 'cash' ? (cashByCurrency[pk.currency] ?? 0) : (abaByCurrency?.[pk.currency] ?? 0);
+        return {
+          method: pk.method,
+          currency: pk.currency,
+          expected: pk.expected,
+          actual,
+          diff: actual - pk.expected,
+        };
+      });
       const diff = {
         cashMain: actualCashMain - preview.expected.cashMain,
-        abaMain: body.actual.abaMain - preview.expected.abaMain,
+        abaMain: abaActualMain - preview.expected.abaMain,
+        pockets,
       };
+      const hasDiff = abaByCurrency
+        ? pockets.some((pk) => pk.diff !== 0)
+        : pockets.some((pk) => pk.method === 'cash' && pk.diff !== 0) || diff.abaMain !== 0;
       const note = body.note?.trim() || null;
-      if ((diff.cashMain !== 0 || diff.abaMain !== 0) && !note)
-        throw unprocessable('CLOSING_NOTE_REQUIRED', 'Ada selisih: wajib isi catatan', diff);
+      if (hasDiff && !note)
+        throw unprocessable('CLOSING_NOTE_REQUIRED', 'Ada selisih: wajib isi catatan', {
+          cashMain: diff.cashMain,
+          abaMain: diff.abaMain,
+        });
+      // Ditinggal di laci (modal shift berikutnya) ≤ uang fisik; sisanya disetor ke owner.
+      const kept = { KHR: 0, USD: 0, IDR: 0 };
+      const deposit = { KHR: 0, USD: 0, IDR: 0 };
+      for (const c of ['KHR', 'USD', 'IDR'] as const) {
+        const counted = cashByCurrency[c] ?? 0;
+        const want = body.kept ? (body.kept[c] ?? 0) : Math.min(preview.suggestedKeep[c] ?? 0, counted);
+        if (want > counted)
+          throw unprocessable('VALIDATION_ERROR', 'Uang yang ditinggal melebihi uang fisik', { currency: c });
+        kept[c] = want;
+        deposit[c] = counted - want;
+      }
       const at = now();
       const [existing] = await tx.select().from(closings).where(eq(closings.shiftId, shift.id));
       if (existing) throw conflict('CONFLICT', 'Shift sudah closing');
@@ -42,9 +80,12 @@ export default async function closingRoutes(app: FastifyInstance) {
         expected: preview.expected,
         actual: {
           cashMain: actualCashMain,
-          abaMain: body.actual.abaMain,
+          abaMain: abaActualMain,
           cashByCurrency,
           ...(body.actual.denominations ? { denominations: body.actual.denominations } : {}),
+          ...(abaByCurrency ? { abaByCurrency } : {}),
+          kept,
+          deposit,
         },
         diff,
         note,
@@ -57,7 +98,7 @@ export default async function closingRoutes(app: FastifyInstance) {
         action: 'shift.close',
         entity: 'shift',
         entityId: shift.id,
-        after: { expected: preview.expected, actualCashMain, abaMain: body.actual.abaMain, diff },
+        after: { pockets, kept, deposit, actualCashMain, abaMain: abaActualMain },
         reason: note,
       });
       return { preview: { ...preview, shift: { ...preview.shift, closedAt: at.toISOString() } } };

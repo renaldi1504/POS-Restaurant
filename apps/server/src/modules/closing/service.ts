@@ -9,6 +9,7 @@ import {
   percentOf,
   type ChannelSummary,
   type ClosingDto,
+  type ClosingPocket,
   type ClosingPreview,
   type Currency,
   type DriverSettlementDto,
@@ -55,6 +56,51 @@ export function summarizeMethods(pays: PaymentRow[], settings: Settings): Method
     }
     return { method, byCurrency, totalMain: list.reduce((a, p) => a + netMain(p), 0) };
   });
+}
+
+/**
+ * Kantong closing per metode × mata uang tanpa konversi kurs (SPEC closing 2 mata uang).
+ * Kembalian selalu diberikan dalam Riel → dikurangkan dari kantong Cash KHR.
+ */
+export function computePockets(
+  opening: Record<Currency, number>,
+  pays: PaymentRow[],
+  expenseList: { amount: number; currency: Currency; source: string }[],
+  settings: Settings,
+): ClosingPocket[] {
+  const main = settings.currency.main;
+  const used = new Set<Currency>(settings.currency.enabled);
+  for (const p of pays) used.add(p.currency);
+  for (const e of expenseList) used.add(e.currency);
+  for (const c of CURRENCIES) if (opening[c]) used.add(c);
+  const currencies = CURRENCIES.filter((c) => used.has(c));
+  const out: ClosingPocket[] = [];
+  for (const method of ['cash', 'aba'] as const) {
+    for (const currency of currencies) {
+      const list = pays.filter((p) => p.method === method && p.currency === currency);
+      const sales = list.reduce((a, p) => a + p.amount, 0);
+      const change =
+        method === 'cash' && currency === 'KHR'
+          ? pays
+              .filter((p) => p.method === 'cash')
+              .reduce((a, p) => a + convertMoney(p.changeMain, main, 'KHR', settings.currency.rates), 0)
+          : 0;
+      const expenses = expenseList
+        .filter((e) => e.source === method && e.currency === currency)
+        .reduce((a, e) => a + e.amount, 0);
+      const open = method === 'cash' ? opening[currency] : 0;
+      out.push({
+        method,
+        currency,
+        opening: open,
+        sales,
+        change,
+        expenses,
+        expected: open + sales - change - expenses,
+      });
+    }
+  }
+  return out;
 }
 
 export const sumMain = (by: Record<Currency, number>, settings: Settings) =>
@@ -155,6 +201,12 @@ export async function computePreview(
       cashMain: sumMain(cashByCurrency, settings),
       abaMain: aba.totalMain - exp.abaMain,
       cashByCurrency,
+    },
+    pockets: computePockets(opening, pays, expenseList, settings),
+    suggestedKeep: {
+      KHR: settings.shift.float.KHR ?? 0,
+      USD: settings.shift.float.USD ?? 0,
+      IDR: settings.shift.float.IDR ?? 0,
     },
     drivers: await driverSettlementsFor(db, shift, shiftOrders, pays),
     unpaidOrderCount: valid.filter((o) => o.paymentStatus !== 'paid').length,

@@ -1,55 +1,66 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
+import type { Currency } from '@pos/shared';
 import { closingPreview, fx } from '../../test/fixtures';
 import { renderApp } from '../../test/render';
 import { moneyCtxFrom } from '../../lib/data';
+import { defaultKeep } from '../../lib/closing';
 import { ClosingResultView } from './ClosingPage';
 
 const money = moneyCtxFrom(fx.publicSettings);
 
-describe('Closing – langkah 3 (hasil)', () => {
-  it('menampilkan selisih kurang, rumus modal + jual − keluar, dan catatan wajib', () => {
-    renderApp(
-      <ClosingResultView
-        preview={closingPreview}
-        money={money}
-        actualCash={{ KHR: 1033000, USD: 2000, IDR: 0 }}
-        abaMain={555000}
-        note=""
-        onNote={() => {}}
-        noteError
-      />,
+function view(over: {
+  cash?: Record<Currency, number>;
+  aba?: Partial<Record<Currency, number>>;
+  kept?: Record<Currency, number>;
+  noteError?: boolean;
+}) {
+  const cash = over.cash ?? { KHR: 1033000, USD: 2000, IDR: 0 };
+  return renderApp(
+    <ClosingResultView
+      preview={closingPreview}
+      money={money}
+      actualCash={cash}
+      actualAba={over.aba ?? { KHR: 555000, USD: 1500 }}
+      kept={over.kept ?? defaultKeep(closingPreview.suggestedKeep, cash)}
+      onKept={() => {}}
+      note=""
+      onNote={() => {}}
+      noteError={over.noteError ?? true}
+    />,
+  );
+}
+
+describe('Closing – langkah 3 (hasil per kantong)', () => {
+  it('selisih per kantong tanpa kurs: Cash Riel kurang, lainnya cocok; rincian hitungan; catatan wajib', async () => {
+    view({});
+    const khr = screen.getByTestId('pocket-cash-KHR');
+    expect(khr).toHaveTextContent('Cash Riel');
+    expect(khr).toHaveTextContent('Kurang 5.000 ៛');
+    expect(khr).toHaveTextContent('Seharusnya1.038.000 ៛');
+    expect(screen.getByTestId('pocket-cash-USD')).toHaveTextContent('Cocok');
+    expect(screen.getByTestId('pocket-aba-KHR')).toHaveTextContent('Cocok');
+    expect(screen.getByTestId('pocket-aba-USD')).toHaveTextContent('Cocok');
+    await userEvent.click(within(khr).getByRole('button', { name: 'Cara menghitung' }));
+    expect(within(khr).getByTestId('pocket-explain')).toHaveTextContent(
+      'Modal 250.000 + diterima 860.000 − kembalian 2.000 − pengeluaran 70.000',
     );
-    const cash = screen.getByTestId('cash-result');
-    expect(cash).toHaveTextContent('Kurang 5.000 ៛');
-    expect(cash).toHaveTextContent('Seharusnya1.120.000 ៛');
-    expect(screen.getByTestId('cash-counted')).toHaveTextContent('1.115.000 ៛');
-    expect(cash).toHaveTextContent('Modal 332.000 + jual cash 858.000 − keluar cash 70.000');
-    expect(screen.getByTestId('aba-result')).toHaveTextContent('Cocok');
     expect(screen.getByLabelText('Catatan selisih (wajib)')).toBeInTheDocument();
-    expect(screen.getByText('Ada selisih, wajib isi catatan')).toBeInTheDocument();
-    // setoran driver
-    expect(screen.getByText('4 antaran · bawa 96.000 ៛')).toBeInTheDocument();
-    expect(screen.getByText('Sudah setor')).toBeInTheDocument();
+    // setoran driver harus beres dulu
+    expect(screen.getByText('Uang driver harus disetor dulu sebelum closing.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Tandai setor' })).toBeInTheDocument();
-    // ringkasan
-    expect(screen.getByText('858.000 · 640.000')).toBeInTheDocument();
-    expect(screen.getByText('210.000 · 95.000')).toBeInTheDocument();
   });
 
-  it('cash lebih & ABA kurang', () => {
-    renderApp(
-      <ClosingResultView
-        preview={closingPreview}
-        money={money}
-        actualCash={{ KHR: 1130000, USD: 0, IDR: 0 }}
-        abaMain={550000}
-        note="x"
-        onNote={() => {}}
-        noteError={false}
-      />,
-    );
-    expect(screen.getByTestId('cash-result')).toHaveTextContent('Lebih 10.000 ៛');
-    expect(screen.getByTestId('aba-result')).toHaveTextContent('Kurang 5.000 ៛');
+  it('ABA $ kurang terlihat sendiri walau ABA Riel cocok', () => {
+    view({ cash: { KHR: 1038000, USD: 2000, IDR: 0 }, aba: { KHR: 555000, USD: 1000 }, noteError: false });
+    expect(screen.getByTestId('pocket-aba-USD')).toHaveTextContent('Kurang $5.00');
+    expect(screen.getByTestId('pocket-aba-KHR')).toHaveTextContent('Cocok');
+  });
+
+  it('ditinggal di laci = modal tetap, sisanya disetor ke owner', () => {
+    view({ cash: { KHR: 1038000, USD: 2000, IDR: 0 } });
+    expect(screen.getByTestId('deposit-KHR')).toHaveTextContent('938.000 ៛');
+    expect(screen.getByTestId('deposit-USD')).toHaveTextContent('$0.00');
   });
 });

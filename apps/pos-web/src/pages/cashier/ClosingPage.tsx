@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { formatMoney, type ClosingPreview, type ClosingResult, type Currency } from '@pos/shared';
+import { CURRENCIES, formatMoney, type ClosingPreview, type ClosingResult, type Currency } from '@pos/shared';
 import { Button, Card, EmptyState, Icon, IconButton, cn, useToast } from '../../components/ui';
 import {
   CurrencyTabs,
@@ -23,7 +23,14 @@ import {
 } from '../../components/common';
 import { api, deviceErrorText, errorMessage, qk } from '../../lib/api';
 import { useAuthActions } from '../../lib/auth';
-import { closingCalc, diffKind } from '../../lib/closing';
+import {
+  closingCalc,
+  defaultKeep,
+  diffKind,
+  pocketResults,
+  visiblePockets,
+  type PocketResult,
+} from '../../lib/closing';
 import { useMoney, usePublicSettings, type MoneyCtx } from '../../lib/data';
 import { buildClosingReport } from '../../lib/printer';
 import { paperCols, printDoc } from '../../lib/print';
@@ -48,12 +55,69 @@ export function DiffLabel({ diff, currency }: { diff: number; currency: Currency
   );
 }
 
+/** Nama kantong: "Cash Riel", "ABA $". */
+export function pocketLabel(t: (k: string) => string, method: 'cash' | 'aba', currency: Currency) {
+  return `${method === 'cash' ? t('common.cash') : 'ABA'} ${t(`tutup.cur.${currency}`)}`;
+}
+
+/** Satu kantong: seharusnya, dihitung, selisih + rincian hitungan. */
+function PocketCard({ r }: { r: PocketResult }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const c = r.currency;
+  const plain = (v: number) => formatMoney(v, c, { noSymbol: true });
+  return (
+    <section
+      className={cn(
+        'flex flex-col gap-1.5 rounded-md border-2 bg-surface-container-lowest px-3.5 py-3',
+        r.diff ? 'border-error' : 'border-primary',
+      )}
+      data-testid={`pocket-${r.method}-${c}`}
+    >
+      <div className="flex items-baseline justify-between gap-2">
+        <b className="text-title-large">{pocketLabel(t, r.method, c)}</b>
+        <DiffLabel diff={r.diff} currency={c} />
+      </div>
+      <div className="flex justify-between text-body-medium">
+        <span className="text-on-surface-variant">{t('tutup.expected')}</span>
+        <b className="tabular-nums">{formatMoney(r.expected, c)}</b>
+      </div>
+      <div className="flex justify-between text-body-medium">
+        <span className="text-on-surface-variant">{t('tutup.counted')}</span>
+        <b className="tabular-nums">{formatMoney(r.actual, c)}</b>
+      </div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="self-start text-label-medium text-primary underline"
+        aria-expanded={open}
+      >
+        {t('tutup.howCalculated')}
+      </button>
+      {open ? (
+        <span className="text-label-medium text-on-surface-variant" data-testid="pocket-explain">
+          {r.method === 'cash'
+            ? t('tutup.explainCash', {
+                opening: plain(r.opening),
+                sales: plain(r.sales),
+                change: plain(r.change),
+                expenses: plain(r.expenses),
+              })
+            : t('tutup.explainAba', { sales: plain(r.sales), expenses: plain(r.expenses) })}
+        </span>
+      ) : null}
+    </section>
+  );
+}
+
 /** Langkah 3: hasil (dipisah agar bisa dites dengan data tiruan). */
 export function ClosingResultView({
   preview,
   money,
   actualCash,
-  abaMain,
+  actualAba,
+  kept,
+  onKept,
   note,
   onNote,
   noteError,
@@ -61,7 +125,9 @@ export function ClosingResultView({
   preview: ClosingPreview;
   money: MoneyCtx;
   actualCash: Record<Currency, number>;
-  abaMain: number;
+  actualAba: Partial<Record<Currency, number | null>>;
+  kept: Record<Currency, number>;
+  onKept: (c: Currency, v: number) => void;
   note: string;
   onNote: (v: string) => void;
   noteError: boolean;
@@ -70,16 +136,19 @@ export function ClosingResultView({
   const qc = useQueryClient();
   const toast = useToast();
   const cur = preview.currency;
-  const calc = closingCalc(preview, actualCash, abaMain, cur, money.rates);
+  const results = visiblePockets(pocketResults(preview, actualCash, actualAba), money.enabled);
+  const needsNote = results.some((r) => r.diff !== 0);
   const settle = useMutation({
     mutationFn: (id: number) => api.call('driverSettlementSettle', { params: { id } }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: qk.closingPreview }),
     onError: (e) => toast.error(errorMessage(e, t)),
   });
+  const unsettled = preview.drivers.filter((d) => !d.settledAt && d.cashCollected > 0);
   const ch = (k: string) => preview.byChannel.find((c) => c.channel === k)?.net ?? 0;
   const me = (k: string) => preview.byMethod.find((m) => m.method === k)?.totalMain ?? 0;
   const fmt = (v: number) => formatMoney(v, cur);
   const plain = (v: number) => formatMoney(v, cur, { noSymbol: true });
+  const cashCurrencies = results.filter((r) => r.method === 'cash').map((r) => r.currency);
   return (
     <>
       {preview.unpaidOrderCount || preview.activeOrderCount ? (
@@ -92,77 +161,17 @@ export function ClosingResultView({
           ) : null}
         </Card>
       ) : null}
-      <section
-        className={cn(
-          'flex flex-col gap-1.5 rounded-md border-2 bg-surface-container-lowest px-3.5 py-3',
-          calc.cashDiff ? 'border-error' : 'border-primary',
-        )}
-        data-testid="cash-result"
-      >
-        <div className="flex items-baseline justify-between">
-          <b className="text-title-large">{t('common.cash')}</b>
-          <DiffLabel diff={calc.cashDiff} currency={cur} />
-        </div>
-        <div className="flex justify-between text-body-medium">
-          <span className="text-on-surface-variant">{t('tutup.expected')}</span>
-          <b className="tabular-nums">{fmt(calc.cashExpectedMain)}</b>
-        </div>
-        <div className="flex justify-between text-body-medium">
-          <span className="text-on-surface-variant">{t('tutup.counted')}</span>
-          <b className="tabular-nums" data-testid="cash-counted">
-            {fmt(calc.cashActualMain)}
-          </b>
-        </div>
-        <span className="text-label-medium text-on-surface-variant">
-          {t('tutup.explain', {
-            opening: plain(calc.openingMain),
-            sales: plain(calc.cashSalesMain),
-            expenses: plain(calc.cashExpensesMain),
-          })}
-        </span>
-      </section>
-      <section
-        className={cn(
-          'flex flex-col gap-1.5 rounded-md border-2 bg-surface-container-lowest px-3.5 py-3',
-          calc.abaDiff ? 'border-error' : 'border-primary',
-        )}
-        data-testid="aba-result"
-      >
-        <div className="flex items-baseline justify-between">
-          <b className="text-title-large">ABA</b>
-          <DiffLabel diff={calc.abaDiff} currency={cur} />
-        </div>
-        {calc.abaDiff ? (
-          <>
-            <div className="flex justify-between text-body-medium">
-              <span className="text-on-surface-variant">{t('tutup.expected')}</span>
-              <b className="tabular-nums">{fmt(calc.abaExpectedMain)}</b>
-            </div>
-            <div className="flex justify-between text-body-medium">
-              <span className="text-on-surface-variant">{t('tutup.counted')}</span>
-              <b className="tabular-nums">{fmt(calc.abaActualMain)}</b>
-            </div>
-          </>
-        ) : (
-          <div className="flex justify-between text-body-medium">
-            <span className="text-on-surface-variant">{t('tutup.expectedCounted')}</span>
-            <b className="tabular-nums">{fmt(calc.abaExpectedMain)}</b>
-          </div>
-        )}
-      </section>
-      <section className="flex flex-col gap-1.5 rounded-md bg-surface-container-lowest px-3.5 py-3">
-        <TextField
-          label={calc.needsNote ? t('tutup.noteRequired') : t('tutup.noteOptional')}
-          value={note}
-          maxLength={500}
-          onChange={(e) => onNote(e.target.value)}
-          error={noteError ? t('closing.noteRequired') : null}
-          inputClassName="border-[1.5px] border-outline"
-        />
-      </section>
       {preview.drivers.length ? (
-        <section className="flex flex-col gap-2 rounded-md bg-surface-container-lowest px-3.5 py-3">
+        <section
+          className={cn(
+            'flex flex-col gap-2 rounded-md bg-surface-container-lowest px-3.5 py-3',
+            unsettled.length > 0 && 'border-2 border-warning',
+          )}
+        >
           <b className="text-body-large">{t('closing.driverSettlement')}</b>
+          {unsettled.length ? (
+            <span className="text-label-medium text-warning">{t('tutup.settleFirst')}</span>
+          ) : null}
           {preview.drivers.map((d) => (
             <div key={d.id} className="flex items-center gap-2">
               <div className="flex grow flex-col">
@@ -189,6 +198,48 @@ export function ClosingResultView({
           ))}
         </section>
       ) : null}
+      <div className="grid gap-3 medium:grid-cols-2" data-testid="pockets">
+        {results.map((r) => (
+          <PocketCard key={`${r.method}-${r.currency}`} r={r} />
+        ))}
+      </div>
+      <section className="flex flex-col gap-1.5 rounded-md bg-surface-container-lowest px-3.5 py-3">
+        <TextField
+          label={needsNote ? t('tutup.noteRequired') : t('tutup.noteOptional')}
+          value={note}
+          maxLength={500}
+          onChange={(e) => onNote(e.target.value)}
+          error={noteError ? t('closing.noteRequired') : null}
+          inputClassName="border-[1.5px] border-outline"
+        />
+      </section>
+      <section
+        className="flex flex-col gap-2.5 rounded-md bg-surface-container-lowest px-3.5 py-3"
+        data-testid="keep-deposit"
+      >
+        <b className="text-body-large">{t('tutup.keepTitle')}</b>
+        <span className="text-label-medium text-on-surface-variant">{t('tutup.keepHint')}</span>
+        {cashCurrencies.map((c) => {
+          const counted = actualCash[c] ?? 0;
+          const over = kept[c] > counted;
+          return (
+            <div key={c} className="flex flex-col gap-1">
+              <MoneyInput
+                label={t('tutup.keepIn', { currency: t(`tutup.cur.${c}`) })}
+                currency={c}
+                value={kept[c]}
+                onChange={(v) => onKept(c, v ?? 0)}
+              />
+              <div className="flex justify-between text-body-medium">
+                <span className="text-on-surface-variant">{t('tutup.deposit')}</span>
+                <b className={cn('tabular-nums', over && 'text-error')} data-testid={`deposit-${c}`}>
+                  {over ? t('tutup.keepOver') : formatMoney(counted - kept[c], c)}
+                </b>
+              </div>
+            </div>
+          );
+        })}
+      </section>
       <section className="flex flex-col gap-1.5 rounded-md bg-surface-container-lowest px-3.5 py-3 text-body-medium">
         <b className="text-body-large">{t('tutup.summary')}</b>
         <div className="flex justify-between">
@@ -237,11 +288,17 @@ export default function ClosingPage() {
   const [mode, setMode] = useState<CountMode>('denom');
   const [counts, setCounts] = useState<Counts>({});
   const [manual, setManual] = useState<Partial<Record<Currency, number | null>>>({});
-  const [aba, setAba] = useState<number | null>(null);
+  const [aba, setAba] = useState<Partial<Record<Currency, number | null>>>({});
+  const [keptEdit, setKeptEdit] = useState<Partial<Record<Currency, number>>>({});
   const [note, setNote] = useState('');
   const [noteError, setNoteError] = useState(false);
   const [result, setResult] = useState<ClosingResult | null>(null);
   const totals = totalsByCurrency(mode, counts, manual);
+  const kept = {
+    ...defaultKeep(preview.data?.suggestedKeep ?? {}, totals),
+    ...keptEdit,
+  } as Record<Currency, number>;
+  const abaByCurrency = { KHR: aba.KHR ?? 0, USD: aba.USD ?? 0, IDR: aba.IDR ?? 0 };
 
   const close = useMutation({
     mutationFn: () =>
@@ -250,9 +307,10 @@ export default function ClosingPage() {
           shiftId: preview.data!.shift.id,
           actual: {
             cashByCurrency: totals,
-            abaMain: aba ?? 0,
+            abaByCurrency,
             ...(mode === 'denom' ? { denominations: counts } : {}),
           },
+          kept: { KHR: kept.KHR, USD: kept.USD, IDR: kept.IDR },
           ...(note.trim() ? { note: note.trim() } : {}),
         },
       }),
@@ -335,6 +393,12 @@ export default function ClosingPage() {
       </Screen>
     );
   const p = preview.data;
+  const abaCurrencies = p.pockets
+    .filter((x) => x.method === 'aba' && (money.enabled.includes(x.currency) || x.expected !== 0))
+    .map((x) => x.currency);
+  const results = pocketResults(p, totals, aba);
+  const unsettledDrivers = p.drivers.some((d) => !d.settledAt && d.cashCollected > 0);
+  const keepOver = CURRENCIES.some((c) => kept[c] > (totals[c] ?? 0));
 
   if (result) {
     return (
@@ -346,19 +410,38 @@ export default function ClosingPage() {
             <p className="mt-1 text-body-medium">{t('closing.locked')}</p>
           </Card>
           <section className="flex flex-col gap-1 rounded-md bg-surface-container-lowest p-3.5 text-body-medium">
-            <div className="flex justify-between">
-              <span>{t('tutup.cashDiff')}</span>
-              <b className="tabular-nums">
-                {formatMoney(result.closing.diff.cashMain, p.currency, { signed: true })}
-              </b>
-            </div>
-            <div className="flex justify-between">
-              <span>{t('tutup.abaDiff')}</span>
-              <b className="tabular-nums">
-                {formatMoney(result.closing.diff.abaMain, p.currency, { signed: true })}
-              </b>
-            </div>
+            <b className="text-body-large">{t('tutup.diffPerPocket')}</b>
+            {(result.closing.diff.pockets ?? []).map((r) => (
+              <div key={`${r.method}-${r.currency}`} className="flex justify-between">
+                <span>{pocketLabel(t, r.method, r.currency)}</span>
+                <b className={cn('tabular-nums', r.diff ? 'text-error' : 'text-primary')}>
+                  {r.diff ? formatMoney(r.diff, r.currency, { signed: true }) : t('tutup.match')}
+                </b>
+              </div>
+            ))}
           </section>
+          {result.closing.actual.deposit ? (
+            <section
+              className="flex flex-col gap-1 rounded-md bg-surface-container-lowest p-3.5 text-body-medium"
+              data-testid="deposit-summary"
+            >
+              <b className="text-body-large">{t('tutup.depositTitle')}</b>
+              {CURRENCIES.filter(
+                (c) =>
+                  (result.closing.actual.deposit?.[c] ?? 0) > 0 || (result.closing.actual.kept?.[c] ?? 0) > 0,
+              ).map((c) => (
+                <div key={c} className="flex justify-between">
+                  <span>{t(`tutup.cur.${c}`)}</span>
+                  <span className="tabular-nums">
+                    {t('tutup.depositLine', {
+                      deposit: formatMoney(result.closing.actual.deposit?.[c] ?? 0, c),
+                      kept: formatMoney(result.closing.actual.kept?.[c] ?? 0, c),
+                    })}
+                  </span>
+                </div>
+              ))}
+            </section>
+          ) : null}
         </main>
         <ScreenFooter>
           <div className="flex gap-2">
@@ -422,16 +505,19 @@ export default function ClosingPage() {
           </>
         ) : null}
         {step === 2 ? (
-          <section className="flex flex-col gap-2 rounded-md bg-surface-container-lowest p-3.5">
-            <MoneyInput
-              big
-              autoFocus
-              label={t('closing.abaBalance')}
-              currency={p.currency}
-              value={aba}
-              onChange={setAba}
-            />
-            <span className="text-label-medium text-on-surface-variant">{t('tutup.abaHint')}</span>
+          <section className="flex flex-col gap-3 rounded-md bg-surface-container-lowest p-3.5">
+            <span className="text-body-medium text-on-surface-variant">{t('tutup.abaHintPer')}</span>
+            {abaCurrencies.map((c, i) => (
+              <MoneyInput
+                key={c}
+                big
+                autoFocus={i === 0}
+                label={t('tutup.abaIn', { currency: t(`tutup.cur.${c}`) })}
+                currency={c}
+                value={aba[c] ?? null}
+                onChange={(v) => setAba((a) => ({ ...a, [c]: v }))}
+              />
+            ))}
           </section>
         ) : null}
         {step === 3 ? (
@@ -439,7 +525,9 @@ export default function ClosingPage() {
             preview={p}
             money={money}
             actualCash={totals}
-            abaMain={aba ?? 0}
+            actualAba={aba}
+            kept={kept}
+            onKept={(c, v) => setKeptEdit((k) => ({ ...k, [c]: v }))}
             note={note}
             onNote={(v) => {
               setNote(v);
@@ -478,9 +566,9 @@ export default function ClosingPage() {
               size="xl"
               className="grow text-title-medium"
               loading={close.isPending}
+              disabled={unsettledDrivers || keepOver}
               onClick={() => {
-                const calc = closingCalc(p, totals, aba ?? 0, p.currency, money.rates);
-                if (calc.needsNote && !note.trim()) {
+                if (results.some((r) => r.diff !== 0) && !note.trim()) {
                   setNoteError(true);
                   toast.error(t('closing.noteRequired'));
                   return;

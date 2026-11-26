@@ -149,7 +149,7 @@ describe('closing math', () => {
     });
     expect(ok.statusCode, ok.body).toBe(200);
     const r = ClosingResult.parse(ok.json());
-    expect(r.closing.diff).toEqual({ cashMain: -6900, abaMain: 0 });
+    expect(r.closing.diff).toMatchObject({ cashMain: -6900, abaMain: 0 });
     expect(r.preview.shift.closedAt).not.toBeNull();
 
     const cur = await call(app, 'shiftCurrent', { cookie: kasir });
@@ -184,5 +184,94 @@ describe('closing math', () => {
       body: { shiftId: s2.id, actual: { cashByCurrency: { KHR: 50000, USD: 0, IDR: 0 }, abaMain: 0 } },
     });
     expect(ok.statusCode, ok.body).toBe(200);
+  });
+
+  it('kantong per mata uang (cash/ABA × KHR/USD) tanpa kurs, setor ke owner & modal berikutnya wajib cocok', async () => {
+    await resetSettings(app, { shift: { float: { KHR: 100_000, USD: 2000, IDR: 0 } } });
+    const s3 = await openShift(app, kasir, { KHR: 100_000, USD: 2000 });
+    // Bayar $5 (20.500) cash untuk 6.000 → kembali 14.500 Riel (kembalian selalu Riel)
+    const a = await createSimpleOrder(app, kasir, ids, {
+      items: [{ itemId: ids.item('Kopi Susu'), qty: 1 }],
+    });
+    await call(app, 'paymentCreate', {
+      cookie: kasir,
+      body: { orderId: a.id, lines: [{ method: 'cash', currency: 'USD', amount: 500 }] },
+    });
+    // ABA $ dan ABA Riel
+    const b = await createSimpleOrder(app, kasir, ids, {
+      items: [{ itemId: ids.item('Kopi Susu'), qty: 41 }],
+    });
+    await call(app, 'paymentCreate', {
+      cookie: kasir,
+      body: { orderId: b.id, lines: [{ method: 'aba', currency: 'USD', amount: 6000 }] },
+    });
+    const c = await createSimpleOrder(app, kasir, ids, {
+      items: [{ itemId: ids.item('Kopi Susu'), qty: 1 }],
+    });
+    await call(app, 'paymentCreate', {
+      cookie: kasir,
+      body: { orderId: c.id, lines: [{ method: 'aba', currency: 'KHR', amount: 6000 }] },
+    });
+    const p = ClosingPreview.parse((await call(app, 'closingPreview', { cookie: kasir })).json());
+    const pk = (m: string, cur: string) => p.pockets.find((x) => x.method === m && x.currency === cur)!;
+    expect(pk('cash', 'KHR')).toMatchObject({ opening: 100000, sales: 0, change: 14500, expected: 85500 });
+    expect(pk('cash', 'USD')).toMatchObject({ opening: 2000, sales: 500, change: 0, expected: 2500 });
+    expect(pk('aba', 'USD')).toMatchObject({ sales: 6000, expected: 6000 });
+    expect(pk('aba', 'KHR')).toMatchObject({ sales: 6000, expected: 6000 });
+    expect(p.suggestedKeep).toMatchObject({ KHR: 100000, USD: 2000 });
+
+    // Selisih di satu kantong saja (ABA $ kurang $1) → wajib catatan, walau total dikonversi bisa "tertutup"
+    const actual = {
+      cashByCurrency: { KHR: 85500, USD: 2500, IDR: 0 },
+      abaByCurrency: { KHR: 6000, USD: 5900, IDR: 0 },
+    };
+    const noNote = await call(app, 'closingCreate', { cookie: kasir, body: { shiftId: s3.id, actual } });
+    expect(noNote.json().error.code).toBe('CLOSING_NOTE_REQUIRED');
+    const tooMuch = await call(app, 'closingCreate', {
+      cookie: kasir,
+      body: { shiftId: s3.id, actual, kept: { KHR: 90000, USD: 0, IDR: 0 }, note: 'x' },
+    });
+    expect(tooMuch.statusCode).toBe(422);
+    const ok = await call(app, 'closingCreate', {
+      cookie: kasir,
+      body: { shiftId: s3.id, actual, note: 'transfer $1 belum masuk' },
+    });
+    expect(ok.statusCode, ok.body).toBe(200);
+    const r = ClosingResult.parse(ok.json());
+    expect(r.closing.diff.pockets).toContainEqual({
+      method: 'aba',
+      currency: 'USD',
+      expected: 6000,
+      actual: 5900,
+      diff: -100,
+    });
+    expect(r.closing.diff.pockets!.filter((x) => x.diff !== 0)).toHaveLength(1);
+    // Default: tinggalkan modal tetap (dibatasi uang fisik), sisanya disetor
+    expect(r.closing.actual.kept).toEqual({ KHR: 85500, USD: 2000, IDR: 0 });
+    expect(r.closing.actual.deposit).toEqual({ KHR: 0, USD: 500, IDR: 0 });
+
+    // Shift berikutnya: usulan modal = sisa laci; beda → wajib catatan
+    const sug = await call(app, 'shiftOpeningSuggestion', { cookie: kasir });
+    expect(sug.json().expected).toEqual({ KHR: 85500, USD: 2000, IDR: 0 });
+    const diffOpen = await call(app, 'shiftOpen', {
+      cookie: kasir,
+      body: { name: 'Pagi', openingCash: { KHR: 80000, USD: 2000, IDR: 0 } },
+    });
+    expect(diffOpen.json().error.code).toBe('OPENING_NOTE_REQUIRED');
+    const okOpen = await call(app, 'shiftOpen', {
+      cookie: kasir,
+      body: {
+        name: 'Pagi',
+        openingCash: { KHR: 80000, USD: 2000, IDR: 0 },
+        note: 'ambil 5.500 untuk es batu',
+      },
+    });
+    expect(okOpen.statusCode, okOpen.body).toBe(200);
+    expect(okOpen.json().shift).toMatchObject({
+      openingExpected: { KHR: 85500, USD: 2000, IDR: 0 },
+      openingNote: 'ambil 5.500 untuk es batu',
+    });
+    await closeAllShifts(app);
+    await resetSettings(app, { commissions: { grab: 30, foodpanda: 30 } });
   });
 });

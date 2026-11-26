@@ -24,6 +24,14 @@ const L = {
     abaDiff: 'Selisih ABA',
     note: 'Catatan',
     drivers: 'Setoran driver',
+    pockets: 'PER KANTONG (tanpa kurs)',
+    should: 'Seharusnya',
+    counted: 'Fisik',
+    diff: 'Selisih',
+    match: 'COCOK',
+    handover: 'SETOR KE OWNER',
+    deposit: 'Disetor',
+    kept: 'Tinggal di laci',
   },
   en: {
     title: 'CLOSING REPORT - SHIFT',
@@ -42,6 +50,14 @@ const L = {
     abaDiff: 'ABA difference',
     note: 'Note',
     drivers: 'Driver settlement',
+    pockets: 'PER POCKET (no FX)',
+    should: 'Expected',
+    counted: 'Counted',
+    diff: 'Difference',
+    match: 'MATCH',
+    handover: 'HANDOVER TO OWNER',
+    deposit: 'To owner',
+    kept: 'Left in drawer',
   },
 } as const;
 
@@ -75,7 +91,35 @@ export function buildClosingReport(
   pre(twoCol(l.expAba, m(p.expenses.abaMain, c), cols));
   pre(twoCol(l.expCashShould, m(p.expected.cashMain, c), cols));
   pre(twoCol(l.expAbaShould, m(p.expected.abaMain, c), cols));
-  if (closing) {
+  if (closing?.diff.pockets?.length) {
+    pre([rule(cols)]);
+    out.push({ text: l.pockets, bold: true });
+    for (const pk of closing.diff.pockets) {
+      out.push({ text: `${pk.method.toUpperCase()} ${pk.currency}`, bold: true });
+      pre(twoCol(`  ${l.should}`, m(pk.expected, pk.currency), cols));
+      pre(twoCol(`  ${l.counted}`, m(pk.actual, pk.currency), cols));
+      pre(
+        twoCol(
+          `  ${l.diff}`,
+          pk.diff ? toAscii(formatMoney(pk.diff, pk.currency, { signed: true })) : l.match,
+          cols,
+        ),
+        pk.diff !== 0,
+      );
+    }
+    if (closing.actual.deposit) {
+      pre([rule(cols)]);
+      out.push({ text: l.handover, bold: true });
+      for (const cur of ['KHR', 'USD', 'IDR'] as const) {
+        const dep = closing.actual.deposit[cur] ?? 0;
+        const kept = closing.actual.kept?.[cur] ?? 0;
+        if (!dep && !kept) continue;
+        pre(twoCol(`${l.deposit} ${cur}`, m(dep, cur), cols), true);
+        pre(twoCol(`${l.kept} ${cur}`, m(kept, cur), cols));
+      }
+    }
+    if (closing.note) out.push({ text: `${l.note}: ${toAscii(closing.note)}` });
+  } else if (closing) {
     pre(twoCol(l.cashCounted, m(closing.actual.cashMain, c), cols));
     pre(twoCol(l.abaSeen, m(closing.actual.abaMain, c), cols));
     pre(twoCol(l.cashDiff, toAscii(formatMoney(closing.diff.cashMain, c, { signed: true })), cols), true);

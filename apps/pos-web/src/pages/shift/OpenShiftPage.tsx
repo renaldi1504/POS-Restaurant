@@ -1,10 +1,10 @@
 /** Buka shift – modal awal — acuan: docs/mockups/BukaShift.dc.html. */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate } from 'react-router';
-import { formatMoney, type Currency, type OpenShiftRequest } from '@pos/shared';
-import { Button, Chip, useToast } from '../../components/ui';
+import { CURRENCIES, formatMoney, type Currency, type OpenShiftRequest } from '@pos/shared';
+import { Button, Chip, cn, useToast } from '../../components/ui';
 import {
   CurrencyTabs,
   DenominationList,
@@ -13,6 +13,7 @@ import {
   Screen,
   ScreenFooter,
   Tabs,
+  TextField,
   totalInMain,
   totalsByCurrency,
   type CountMode,
@@ -44,6 +45,16 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
   const [manual, setManual] = useState<Partial<Record<Currency, number | null>>>({});
   const totals = totalsByCurrency(mode, counts, manual);
   const totalMain = totalInMain(totals, money.main, money.rates);
+  const [note, setNote] = useState('');
+  const [noteError, setNoteError] = useState(false);
+  // Sisa laci dari closing terakhir → modal harus sama (kalau beda, wajib catatan).
+  const suggestion = useQuery({
+    queryKey: ['shift', 'opening-suggestion'],
+    queryFn: () => api.call('shiftOpeningSuggestion'),
+  });
+  const expected = suggestion.data?.expected ?? null;
+  const leftInDrawer = !!expected && CURRENCIES.some((c) => expected[c] > 0);
+  const mismatch = leftInDrawer ? CURRENCIES.filter((c) => (totals[c] ?? 0) !== expected[c]) : [];
 
   const open = useMutation({
     mutationFn: () => {
@@ -51,6 +62,7 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
         name: shiftName,
         openingCash: { KHR: totals.KHR, USD: totals.USD, IDR: totals.IDR },
         ...(mode === 'denom' ? { denominations: counts } : {}),
+        ...(note.trim() ? { note: note.trim() } : {}),
       };
       return api.call('shiftOpen', { body });
     },
@@ -61,6 +73,7 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
     },
     onError: (e) => {
       if (isApiError(e) && e.code === 'SHIFT_ALREADY_OPEN') void qc.invalidateQueries({ queryKey: qk.shift });
+      if (isApiError(e) && e.code === 'OPENING_NOTE_REQUIRED') setNoteError(true);
       toast.error(errorMessage(e, t));
     },
   });
@@ -110,6 +123,29 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
             { value: 'total', label: t('shift.totalOnly') },
           ]}
         />
+        {leftInDrawer ? (
+          <section
+            className={cn(
+              'flex flex-col gap-1 rounded-md border-2 px-3.5 py-2.5 text-body-medium',
+              mismatch.length
+                ? 'border-warning bg-warning-container/40'
+                : 'border-primary bg-primary-container/30',
+            )}
+            data-testid="opening-expected"
+          >
+            <b>{t('shiftx.expectedTitle', { name: suggestion.data?.fromShift?.name ?? '' })}</b>
+            {CURRENCIES.filter((c) => expected[c] > 0 || (totals[c] ?? 0) > 0).map((c) => (
+              <div key={c} className="flex justify-between gap-2">
+                <span>{formatMoney(expected[c], c)}</span>
+                <span className={cn('tabular-nums', mismatch.includes(c) ? 'text-error' : 'text-primary')}>
+                  {mismatch.includes(c)
+                    ? t('shiftx.countedNow', { amount: formatMoney(totals[c] ?? 0, c) })
+                    : t('tutup.match')}
+                </span>
+              </div>
+            ))}
+          </section>
+        ) : null}
         <CurrencyTabs currencies={currencies} value={cur} onChange={setCur} totals={totals} />
         {mode === 'denom' ? (
           <DenominationList
@@ -140,7 +176,31 @@ export function OpenShiftForm({ embedded, onOpened }: { embedded?: boolean; onOp
             {rateNote ? ` (${t('admin.rate').toLowerCase()} ${rateNote})` : ''}
           </span>
         ) : null}
-        <Button size="xl" block loading={open.isPending} onClick={() => open.mutate()}>
+        {mismatch.length ? (
+          <TextField
+            label={t('shiftx.diffNote')}
+            value={note}
+            maxLength={500}
+            onChange={(e) => {
+              setNote(e.target.value);
+              setNoteError(false);
+            }}
+            error={noteError ? t('shiftx.diffNoteRequired') : null}
+          />
+        ) : null}
+        <Button
+          size="xl"
+          block
+          loading={open.isPending}
+          onClick={() => {
+            if (mismatch.length && !note.trim()) {
+              setNoteError(true);
+              toast.error(t('shiftx.diffNoteRequired'));
+              return;
+            }
+            open.mutate();
+          }}
+        >
           {t('shift.startShift')}
         </Button>
       </ScreenFooter>

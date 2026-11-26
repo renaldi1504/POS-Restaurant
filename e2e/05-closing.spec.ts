@@ -62,18 +62,26 @@ test('closing: cash seharusnya = modal + jual cash − keluar cash; selisih waji
   await page.getByRole('textbox', { name: 'Total saja · Riel' }).fill('100000');
   await expect(page.getByRole('contentinfo')).toContainText('100.000 ៛');
   await page.getByRole('button', { name: 'Lanjut' }).click();
-  await page.getByRole('textbox', { name: 'Saldo ABA di aplikasi' }).fill('10000');
+  // ABA per rekening (tanpa kurs): Riel & $.
+  await page.getByRole('textbox', { name: 'ABA Riel — total masuk shift ini' }).fill('10000');
+  await expect(page.getByRole('textbox', { name: 'ABA $ — total masuk shift ini' })).toBeVisible();
   await page.getByRole('button', { name: 'Lanjut' }).click();
 
   const result = page.getByRole('main');
-  const cashBox = page.getByTestId('cash-result');
+  const cashBox = page.getByTestId('pocket-cash-KHR');
   await expect(cashBox).toContainText(/Kurang\s*3\.000 ៛/);
   await expect(cashBox).toContainText(/Seharusnya\s*103\.000 ៛/);
   await expect(cashBox).toContainText(/Dihitung\s*100\.000 ៛/);
-  await expect(cashBox).toContainText(/Modal 100\.000 \+ jual cash 6\.000 − keluar cash 3\.000/);
-  const abaBox = page.getByTestId('aba-result');
+  await cashBox.getByRole('button', { name: 'Cara menghitung' }).click();
+  await expect(cashBox).toContainText(
+    /Modal 100\.000 \+ diterima 10\.000 − kembalian 4\.000 − pengeluaran 3\.000/,
+  );
+  await expect(page.getByTestId('pocket-cash-USD')).toContainText('Cocok');
+  const abaBox = page.getByTestId('pocket-aba-KHR');
   await expect(abaBox).toContainText('Cocok');
   await expect(abaBox).toContainText('10.000 ៛');
+  // Modal tetap 0 → semua uang fisik disetor ke owner.
+  await expect(page.getByTestId('deposit-KHR')).toContainText('100.000 ៛');
   await expect(result).toContainText(/Total penjualan\s*16\.000 ៛/);
 
   // Selisih tanpa catatan → ditolak.
@@ -85,6 +93,7 @@ test('closing: cash seharusnya = modal + jual cash − keluar cash; selisih waji
   await page.getByRole('textbox', { name: 'Catatan selisih (wajib)' }).fill('Uang kembalian salah hitung');
   await submit.click();
   await expect(page.getByTestId('closing-done')).toBeVisible();
+  await expect(page.getByTestId('deposit-summary')).toContainText('setor 100.000 ៛');
 
   // Shift sudah tertutup.
   const kasir = await apiAs('Kasir Pagi');

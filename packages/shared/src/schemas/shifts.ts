@@ -21,6 +21,9 @@ export const ShiftDto = z.object({
   openedAt: IsoDateTime,
   closedAt: IsoDateTime.nullable(),
   openingCash: MoneyByCurrency,
+  /** Modal yang seharusnya (sisa laci closing sebelumnya) & catatan bila berbeda. */
+  openingExpected: MoneyByCurrency.nullable().optional(),
+  openingNote: z.string().nullable().optional(),
 });
 export type ShiftDto = z.infer<typeof ShiftDto>;
 
@@ -30,8 +33,17 @@ export const OpenShiftRequest = z.object({
   openingCash: MoneyByCurrency,
   /** Rincian per pecahan (opsional, untuk catatan). */
   denominations: DenominationCounts.optional(),
+  /** Wajib bila modal berbeda dengan sisa laci closing terakhir (OPENING_NOTE_REQUIRED). */
+  note: z.string().trim().max(500).optional(),
 });
 export type OpenShiftRequest = z.input<typeof OpenShiftRequest>;
+
+/** `GET /shifts/opening-suggestion` — modal yang seharusnya ada di laci (sisa closing terakhir). */
+export const OpeningSuggestionResponse = z.object({
+  expected: MoneyByCurrency.nullable(),
+  fromShift: z.object({ id: Id, name: z.string(), closedAt: IsoDateTime.nullable() }).nullable(),
+});
+export type OpeningSuggestionResponse = z.infer<typeof OpeningSuggestionResponse>;
 
 export const ShiftResponse = z.object({ shift: ShiftDto });
 export type ShiftResponse = z.infer<typeof ShiftResponse>;
@@ -133,15 +145,49 @@ export const ClosingExpected = z.object({
 });
 export type ClosingExpected = z.infer<typeof ClosingExpected>;
 
+/**
+ * "Kantong" uang closing, per metode × mata uang, TANPA konversi kurs:
+ * cash: modal + diterima − kembalian − pengeluaran cash; aba: diterima − pengeluaran ABA.
+ */
+export const ClosingPocket = z.object({
+  method: z.enum(['cash', 'aba']),
+  currency: Currency,
+  opening: MoneyAmount,
+  sales: MoneyAmount,
+  change: MoneyAmount,
+  expenses: MoneyAmount,
+  expected: MoneyAmount,
+});
+export type ClosingPocket = z.infer<typeof ClosingPocket>;
+
+export const ClosingPocketResult = z.object({
+  method: z.enum(['cash', 'aba']),
+  currency: Currency,
+  expected: MoneyAmount,
+  actual: MoneyAmount,
+  diff: MoneyAmount,
+});
+export type ClosingPocketResult = z.infer<typeof ClosingPocketResult>;
+
 export const ClosingActual = z.object({
   cashMain: MoneyAmount,
   abaMain: MoneyAmount,
   cashByCurrency: SignedMoneyByCurrency,
   denominations: DenominationCounts.optional(),
+  /** Total masuk ABA per rekening (mata uang). */
+  abaByCurrency: MoneyByCurrency.optional(),
+  /** Ditinggal di laci untuk shift berikutnya & disetor ke owner. */
+  kept: MoneyByCurrency.optional(),
+  deposit: MoneyByCurrency.optional(),
 });
 export type ClosingActual = z.infer<typeof ClosingActual>;
 
-export const ClosingDiff = z.object({ cashMain: MoneyAmount, abaMain: MoneyAmount });
+export const ClosingDiff = z.object({
+  cashMain: MoneyAmount,
+  abaMain: MoneyAmount,
+  /** Selisih per kantong (cash/ABA × mata uang). */
+  pockets: z.array(ClosingPocketResult).optional(),
+});
 export type ClosingDiff = z.infer<typeof ClosingDiff>;
 
 /** `GET /closing/preview?shiftId=` (default: shift berjalan). */
@@ -164,6 +210,10 @@ export const ClosingPreview = z.object({
     count: z.number().int().nonnegative(),
   }),
   expected: ClosingExpected,
+  /** Seharusnya per kantong (cash/ABA × mata uang), tanpa konversi. */
+  pockets: z.array(ClosingPocket).default([]),
+  /** Usulan uang ditinggal di laci (modal tetap di Pengaturan). */
+  suggestedKeep: MoneyByCurrency.default({ KHR: 0, USD: 0, IDR: 0 }),
   drivers: z.array(DriverSettlementDto),
   /** Order yang belum lunas / masih aktif (peringatan sebelum closing). */
   unpaidOrderCount: z.number().int().nonnegative(),
@@ -177,9 +227,13 @@ export const CreateClosingRequest = z.object({
   actual: z.object({
     cashByCurrency: MoneyByCurrency,
     denominations: DenominationCounts.optional(),
-    /** Saldo ABA yang dilihat di aplikasi (mata uang utama). */
-    abaMain: MoneyAmount,
+    /** Lama: total ABA dalam mata uang utama. Dipakai bila `abaByCurrency` tidak dikirim. */
+    abaMain: MoneyAmount.optional(),
+    /** Total uang masuk ABA shift ini per rekening (KHR / USD), dari riwayat aplikasi ABA. */
+    abaByCurrency: MoneyByCurrency.optional(),
   }),
+  /** Uang cash yang ditinggal di laci untuk shift berikutnya (≤ uang fisik); sisanya disetor. */
+  kept: MoneyByCurrency.optional(),
   note: z.string().trim().max(500).optional(),
 });
 export type CreateClosingRequest = z.input<typeof CreateClosingRequest>;
