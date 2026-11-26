@@ -7,6 +7,7 @@ import {
   type Currency,
   type PaymentLineInput,
   type Settings,
+  type OrderStatus,
 } from '@pos/shared';
 import type { DbOrTx } from '../../db/client';
 import { orders, payments, tableSessions } from '../../db/schema';
@@ -259,7 +260,7 @@ export async function verifyPayment(
       ? { verifiedBy: staff.id, verifiedAt: at, shiftId: p.shiftId ?? shift?.id ?? null }
       : { voidedAt: at, verifiedBy: staff.id };
     const [updated] = await tx.update(payments).set(set).where(eq(payments.id, paymentId)).returning();
-    let prevStatus = null as null | string;
+    let prevStatus: OrderStatus | undefined;
     if (p.orderId) {
       const row = await lockOrder(tx, p.orderId);
       prevStatus = row.status;
@@ -286,7 +287,7 @@ export async function verifyPayment(
     return { updated: updated!, prevStatus };
   });
   const order = res.updated.orderId
-    ? await afterOrderChange(app, res.updated.orderId, { notify: true })
+    ? await afterOrderChange(app, res.updated.orderId, { prevStatus: res.prevStatus })
     : null;
   const names = await userNameMap(app.db, [res.updated.createdBy, res.updated.verifiedBy]);
   return { payment: toPaymentDto(res.updated, names), order };

@@ -495,6 +495,15 @@ export const endpoints = {
     response: D.DriverOrderResponse,
     description: 'Sudah sampai → delivered (+ cash ditagih)',
   }),
+  driverDeliveryPhoto: def({
+    method: 'POST',
+    path: '/api/driver/orders/:id/delivery-photo',
+    ...staff('driver.deliver'),
+    params: UuidParam,
+    multipart: true,
+    response: D.DriverOrderResponse,
+    description: 'Foto bukti sampai (opsional, sebelum "Sudah sampai") — dikirim ke pelanggan Telegram',
+  }),
   driverRelease: def({
     method: 'POST',
     path: '/api/driver/orders/:id/release',

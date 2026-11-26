@@ -28,7 +28,7 @@ import { getSettings } from '../../lib/settings';
 import { requireCustomer, requireCustomerAddress, saveCustomerAddress } from '../customers/staffService';
 import { emitTableUpdated, getOrOpenSession } from '../tables/service';
 import { getOrderDto, paymentCounts, type OrderRow } from './dto';
-import { emitOrderEvent, emitReadyForPickup, notifyTelegram } from './events';
+import { emitOrderEvent, emitReadyForPickup, notifyTelegram, notifyTelegramEdited } from './events';
 import { computeDiscount, priceItems, type ItemInput, type PricedLine } from './pricing';
 
 // ---------- Penomoran ----------
@@ -542,7 +542,9 @@ export async function updateOrder(
       after: { total, type, discount, items: body.items?.length },
     });
   });
-  return afterOrderChange(app, orderId, { notify: false });
+  const dto = await afterOrderChange(app, orderId, { notify: false });
+  await notifyTelegramEdited(app, dto);
+  return dto;
 }
 
 /** Tandai order lunas & selesaikan yang sudah disajikan/sampai (dalam transaksi). */

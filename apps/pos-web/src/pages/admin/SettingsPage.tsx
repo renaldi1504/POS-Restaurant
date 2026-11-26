@@ -418,6 +418,15 @@ export default function SettingsPage() {
             value={d.ai.notes}
             onChange={(e) => set('ai', { notes: e.target.value })}
           />
+          <TextField
+            label={t('setx.tgGroupUrl')}
+            hint={t('setx.tgGroupUrlHint')}
+            inputMode="url"
+            placeholder="https://t.me/…"
+            maxLength={300}
+            value={d.telegram.groupUrl}
+            onChange={(e) => set('telegram', { groupUrl: e.target.value })}
+          />
           <div className="flex items-center justify-between">
             <span>{t('admin.gemini')}</span>
             <Badge tone={integ.gemini ? 'primary' : 'warn'}>

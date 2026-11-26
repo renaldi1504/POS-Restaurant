@@ -313,6 +313,8 @@ export const orders = pgTable(
     paymentMethod: paymentMethodEnum('payment_method'),
     rejectReason: text('reject_reason'),
     cancelReason: text('cancel_reason'),
+    /** Foto bukti sampai dari driver (private) — dikirim ke pelanggan Telegram. */
+    deliveryPhotoUrl: text('delivery_photo_url'),
     createdBy: integer('created_by').references(() => users.id),
     createdAt: createdAt(),
     updatedAt: tsz('updated_at').notNull().defaultNow(),

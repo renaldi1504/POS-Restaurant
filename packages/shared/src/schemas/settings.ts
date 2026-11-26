@@ -56,6 +56,11 @@ export const AiSettings = z.object({
   notes: z.string().max(2000),
 });
 export const QrSettings = z.object({ requireAccept: z.boolean() });
+/** Notifikasi Telegram pelanggan. */
+export const TelegramSettings = z.object({
+  /** Link grup/channel Telegram (mis. https://t.me/tuktuklovers) — tombol "Gabung grup" di pesan order selesai. */
+  groupUrl: z.string().max(300),
+});
 export const CommissionSettings = z.object({
   grab: z.number().min(0).max(100),
   foodpanda: z.number().min(0).max(100),
@@ -94,6 +99,7 @@ export const Settings = z.object({
   ui: UiSettings,
   shift: ShiftSettings,
   payment: PaymentSettings,
+  telegram: TelegramSettings,
 });
 export type Settings = z.infer<typeof Settings>;
 export type SettingsKey = keyof Settings;
@@ -120,6 +126,7 @@ export const DEFAULT_SETTINGS: Settings = {
   ui: { textSize: 'normal' },
   shift: { autoAvailableOnOpen: false, names: ['Pagi', 'Malam'] },
   payment: { aba: { accountName: '', accountNumber: '', qrImageUrl: null } },
+  telegram: { groupUrl: '' },
 };
 
 /** `PATCH /admin/settings` — setiap bagian opsional & parsial. */
@@ -135,6 +142,7 @@ export const SettingsPatch = z.object({
   ui: UiSettings.partial().optional(),
   shift: ShiftSettings.partial().optional(),
   payment: z.object({ aba: AbaAccount.partial() }).partial().optional(),
+  telegram: TelegramSettings.partial().optional(),
 });
 export type SettingsPatch = z.infer<typeof SettingsPatch>;
 

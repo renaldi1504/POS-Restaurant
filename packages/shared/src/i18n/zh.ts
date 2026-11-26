@@ -276,6 +276,9 @@ export const zh: Dict = {
     orderNote: '订单备注',
   },
   driver: {
+    deliveryPhoto: '送达照片（可选）',
+    retakePhoto: '重拍',
+    deliveryPhotoHint: '照片会随“已送达”状态通过 Telegram 发送给顾客。',
     title: '骑手',
     tabAvailable: '待配送',
     tabMine: '我的配送',

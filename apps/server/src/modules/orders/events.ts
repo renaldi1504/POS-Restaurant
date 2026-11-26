@@ -42,3 +42,17 @@ export async function notifyTelegram(app: FastifyInstance, o: OrderDto): Promise
     app.log.warn({ err }, 'Gagal antre notifikasi Telegram');
   }
 }
+
+/** Order diedit kasir → kirim rincian terbaru ke pelanggan Telegram. */
+export async function notifyTelegramEdited(app: FastifyInstance, o: OrderDto): Promise<void> {
+  if (!o.customer?.telegramId) return;
+  try {
+    await app.jobs.enqueue(
+      JOB_NAMES.telegramNotify,
+      { orderId: o.id, status: o.status, kind: 'edited' },
+      { retryLimit: 3 },
+    );
+  } catch (err) {
+    app.log.warn({ err }, 'Gagal antre notifikasi edit Telegram');
+  }
+}

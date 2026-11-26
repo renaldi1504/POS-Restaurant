@@ -166,6 +166,9 @@ export const id = {
     orderNote: 'Catatan order',
   },
   driver: {
+    deliveryPhoto: 'Foto bukti sampai (opsional)',
+    retakePhoto: 'Ulangi',
+    deliveryPhotoHint: 'Foto dikirim ke pelanggan di Telegram bersama status "Sampai".',
     title: 'Driver',
     tabAvailable: 'Siap diantar',
     tabMine: 'Antaran saya',

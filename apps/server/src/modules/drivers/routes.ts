@@ -1,11 +1,12 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { hasPermission } from '@pos/shared';
-import { orders, roles, users } from '../../db/schema';
+import { orderMessages, orders, roles, users } from '../../db/schema';
 import { writeAudit } from '../../lib/audit';
 import { now } from '../../lib/clock';
 import { conflict, forbidden, notFound, unprocessable, validationError } from '../../lib/errors';
 import { defineRoute } from '../../lib/route';
+import { readImageUpload } from '../../lib/upload';
 import type { StaffContext } from '../../lib/session';
 import { getSettings } from '../../lib/settings';
 import { getOrderDto } from '../orders/dto';
@@ -97,6 +98,24 @@ export default async function driversRoutes(app: FastifyInstance) {
     } else if (dto.paymentStatus === 'paid') {
       await transitionOrder(app, params.id, 'done', staff.id, { reason: 'lunas' });
     }
+    return { order: await asDriverOrder(params.id) };
+  });
+
+  defineRoute(app, 'driverDeliveryPhoto', async ({ params, req, staff }) => {
+    const [row] = await app.db.select().from(orders).where(eq(orders.id, params.id));
+    if (!row) throw notFound('Order tidak ditemukan');
+    assertMine(staff)(row);
+    const file = await readImageUpload(req);
+    const saved = await app.storage.save({ ...file, visibility: 'private', folder: 'delivery' });
+    await app.db.update(orders).set({ deliveryPhotoUrl: saved.url }).where(eq(orders.id, params.id));
+    // Ikut tercatat di chat order (riwayat driver/kasir).
+    await app.db.insert(orderMessages).values({
+      orderId: params.id,
+      direction: 'out',
+      kind: 'photo',
+      photoUrl: saved.url,
+      staffId: staff.id,
+    });
     return { order: await asDriverOrder(params.id) };
   });
 

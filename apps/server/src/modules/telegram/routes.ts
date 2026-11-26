@@ -1,5 +1,4 @@
 import type { FastifyInstance } from 'fastify';
-import type { OrderStatus } from '@pos/shared';
 import { unauthorized } from '../../lib/errors';
 import { JOB_NAMES } from '../../lib/jobs';
 import { defineRoute } from '../../lib/route';
@@ -21,7 +20,7 @@ export default async function telegramRoutes(app: FastifyInstance) {
   });
 
   if (app.jobs.enabled) {
-    await app.jobs.work<{ orderId: string; status: OrderStatus }>(JOB_NAMES.telegramNotify, (d) =>
+    await app.jobs.work<Parameters<typeof handleNotifyJob>[1]>(JOB_NAMES.telegramNotify, (d) =>
       handleNotifyJob(app, d),
     );
     await app.jobs.work<Parameters<typeof handleAdminJob>[1]>(JOB_NAMES.telegramAdmin, (d) =>

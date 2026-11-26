@@ -258,6 +258,9 @@ export const en: Dict = {
     orderNote: 'Order note',
   },
   driver: {
+    deliveryPhoto: 'Delivery proof photo (optional)',
+    retakePhoto: 'Retake',
+    deliveryPhotoHint: 'The photo is sent to the customer on Telegram with the "Arrived" status.',
     title: 'Driver',
     tabAvailable: 'Ready to deliver',
     tabMine: 'My deliveries',

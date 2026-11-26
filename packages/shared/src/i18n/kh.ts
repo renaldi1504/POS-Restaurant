@@ -276,6 +276,9 @@ export const kh: Dict = {
     orderNote: 'កំណត់ចំណាំការកុម្ម៉ង់',
   },
   driver: {
+    deliveryPhoto: 'រូបថតបញ្ជាក់ការដឹកដល់ (ស្រេចចិត្ត)',
+    retakePhoto: 'ថតម្តងទៀត',
+    deliveryPhotoHint: 'រូបថតនឹងផ្ញើទៅអតិថិជនតាម Telegram ជាមួយស្ថានភាព "បានដល់"។',
     title: 'អ្នកដឹក',
     tabAvailable: 'រួចរាល់សម្រាប់ដឹក',
     tabMine: 'ការដឹករបស់ខ្ញុំ',

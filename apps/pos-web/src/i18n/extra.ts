@@ -374,6 +374,9 @@ export const extraId = {
     mapsUrlHint:
       'Bot mengirim alamat, patokan, link ini & pin lokasi saat pelanggan tanya lokasi / makan di tempat. Kosong = dibuat dari koordinat.',
     aiNotes: 'Info tambahan untuk bot',
+    tgGroupUrl: 'Link grup Telegram',
+    tgGroupUrlHint:
+      'Muncul sebagai tombol "Gabung grup" di pesan terima kasih saat order selesai. Kosongkan bila tidak ada.',
     aiNotesHint:
       'Mis. parkir motor di depan, ada AC & wifi, bisa reservasi via telepon. Bot memakai info ini untuk menjawab.',
     open: 'Buka',
@@ -1016,6 +1019,9 @@ export const extraEn: ExtraDict = {
     mapsUrlHint:
       'The bot sends the address, landmark, this link & a location pin when customers ask where you are / about dine-in. Empty = built from coordinates.',
     aiNotes: 'Extra info for the bot',
+    tgGroupUrl: 'Telegram group link',
+    tgGroupUrlHint:
+      'Shown as a "Join group" button in the thank-you message when an order is completed. Leave empty if none.',
     aiNotesHint:
       'E.g. motorbike parking in front, air-con & wifi, reservations by phone. The bot uses this to answer.',
     open: 'Open',

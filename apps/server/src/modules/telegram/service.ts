@@ -140,7 +140,16 @@ export function orderStatusMessage(args: {
 
 const ORDER_TEXT: Record<
   Lang,
-  { received: string; payment: string; address: string; note: string; wait: string }
+  {
+    received: string;
+    payment: string;
+    address: string;
+    note: string;
+    wait: string;
+    edited: string;
+    thanks: string;
+    joinGroup: string;
+  }
 > = {
   id: {
     received: 'Pesanan diterima sistem',
@@ -148,6 +157,9 @@ const ORDER_TEXT: Record<
     address: 'Alamat',
     note: 'Catatan',
     wait: 'Kami kabari lagi saat pesanan dikonfirmasi 🙏',
+    edited: 'Pesanan Anda diperbarui. Rincian terbaru:',
+    thanks: 'Pesanan selesai. Terima kasih sudah memesan, semoga makanannya enak! 😊',
+    joinGroup: '👥 Gabung grup Telegram kami',
   },
   en: {
     received: 'Order received',
@@ -155,6 +167,9 @@ const ORDER_TEXT: Record<
     address: 'Address',
     note: 'Note',
     wait: "We'll update you when the order is confirmed 🙏",
+    edited: 'Your order was updated. Latest details:',
+    thanks: 'Order completed. Thank you for ordering, we hope you enjoy your meal! 😊',
+    joinGroup: '👥 Join our Telegram group',
   },
   kh: {
     received: 'បានទទួលការកុម្ម៉ង់',
@@ -162,6 +177,9 @@ const ORDER_TEXT: Record<
     address: 'អាសយដ្ឋាន',
     note: 'កំណត់ចំណាំ',
     wait: 'យើងនឹងជូនដំណឹងពេលការកុម្ម៉ង់ត្រូវបានបញ្ជាក់ 🙏',
+    edited: 'ការកុម្ម៉ង់របស់អ្នកត្រូវបានកែប្រែ។ ព័ត៌មានថ្មី៖',
+    thanks: 'ការកុម្ម៉ង់បានបញ្ចប់។ អរគុណដែលបានកុម្ម៉ង់ សូមរីករាយជាមួយអាហារ! 😊',
+    joinGroup: '👥 ចូលរួមក្រុម Telegram របស់យើង',
   },
   zh: {
     received: '订单已收到',
@@ -169,18 +187,27 @@ const ORDER_TEXT: Record<
     address: '地址',
     note: '备注',
     wait: '订单确认后我们会再通知您 🙏',
+    edited: '您的订单已更新，最新明细：',
+    thanks: '订单已完成。感谢您的订购，祝您用餐愉快！😊',
+    joinGroup: '👥 加入我们的 Telegram 群',
   },
 };
 
 /** Rincian order lengkap (item, opsi, harga per baris, subtotal, diskon, ongkir, total) dalam bahasa pelanggan. */
-export function orderDetailMessage(args: { lang: Lang; restaurant: string; order: OrderDto }): string {
+export function orderDetailMessage(args: {
+  lang: Lang;
+  restaurant: string;
+  order: OrderDto;
+  /** Order diedit kasir → judul "Pesanan diperbarui". */
+  edited?: boolean;
+}): string {
   const { lang, order: o } = args;
   const d = dictionaries[lang] ?? dictionaries.id;
   const T = ORDER_TEXT[lang];
   const m = (v: number) => formatMoney(v, o.currency);
   const lines: string[] = [
-    `🧾 ${args.restaurant} · ${o.displayNo}`,
-    `${T.received} — ${d.status[o.status]}`,
+    `${args.edited ? '✏️' : '🧾'} ${args.restaurant} · ${o.displayNo}`,
+    args.edited ? T.edited : `${T.received} — ${d.status[o.status]}`,
     '',
   ];
   for (const it of o.items) {
@@ -227,7 +254,12 @@ export interface TelegramService {
   enabled: boolean;
   handleUpdate(update: unknown): Promise<void>;
   /** `businessConnectionId`: kirim lewat akun Telegram Business (chat pribadi pemilik). */
-  sendMessage(chatId: string | number, text: string, businessConnectionId?: string | null): Promise<void>;
+  sendMessage(
+    chatId: string | number,
+    text: string,
+    businessConnectionId?: string | null,
+    button?: { text: string; url: string } | null,
+  ): Promise<void>;
   sendPhotoToAdmin(file: InputFile, caption: string): Promise<void>;
   /** Kirim foto ke pelanggan (chat driver). */
   sendPhoto(
@@ -250,6 +282,11 @@ export function getTelegram(app: FastifyInstance): TelegramService {
     services.set(app, s);
   }
   return s;
+}
+
+/** Hanya untuk tes: pasang TelegramService palsu. */
+export function setTelegramForTest(app: FastifyInstance, svc: TelegramService) {
+  services.set(app, svc);
 }
 
 /** URL Mini App; `lang` membuat menu langsung tampil dalam bahasa chat pelanggan. */
@@ -587,16 +624,17 @@ function createTelegram(app: FastifyInstance): TelegramService {
       await init();
       await bot.handleUpdate(update as never);
     },
-    async sendMessage(chatId, text, businessConnectionId) {
+    async sendMessage(chatId, text, businessConnectionId, button) {
+      const extra = button ? { reply_markup: new InlineKeyboard().url(button.text, button.url) } : {};
       if (businessConnectionId) {
         try {
-          await bot.api.sendMessage(chatId, text, { business_connection_id: businessConnectionId });
+          await bot.api.sendMessage(chatId, text, { ...extra, business_connection_id: businessConnectionId });
           return;
         } catch (err) {
           app.log.warn({ err: (err as Error).message }, 'kirim via Telegram Business gagal, coba langsung');
         }
       }
-      await bot.api.sendMessage(chatId, text);
+      await bot.api.sendMessage(chatId, text, extra);
     },
     async sendPhoto(chatId, file, caption, businessConnectionId) {
       const opts = { caption: caption.slice(0, 1000) };
@@ -628,11 +666,18 @@ function createTelegram(app: FastifyInstance): TelegramService {
 }
 
 // ---------- Job worker ----------
-export async function handleNotifyJob(app: FastifyInstance, data: { orderId: string; status: OrderStatus }) {
+/** Status yang TIDAK dikirim ke pelanggan (alur notifikasi: diterima → siap → diantar → sampai → selesai). */
+const SILENT_STATUSES: readonly OrderStatus[] = ['cooking', 'served'];
+
+export async function handleNotifyJob(
+  app: FastifyInstance,
+  data: { orderId: string; status: OrderStatus; kind?: 'edited' },
+) {
   const tg = getTelegram(app);
   if (!tg.enabled) return;
   const o = await getOrderDto(app.db, data.orderId);
   if (!o.customer?.telegramId) return;
+  const chatId = o.customer.telegramId;
   const [c] = await app.db
     .select({ lang: customers.lang, biz: customers.tgBusinessConnectionId })
     .from(customers)
@@ -640,27 +685,53 @@ export async function handleNotifyJob(app: FastifyInstance, data: { orderId: str
   const biz = c?.biz ?? null;
   const lang = (LANGS as readonly string[]).includes(c?.lang ?? '') ? (c!.lang as Lang) : 'id';
   const settings = await getSettings(app.db);
+  const restaurant = settings.profile.name;
+  // Order diedit kasir → rincian terbaru.
+  if (data.kind === 'edited') {
+    await tg.sendMessage(chatId, orderDetailMessage({ lang, restaurant, order: o, edited: true }), biz);
+    return;
+  }
+  // 1. Pesanan masuk (atau dibuat kasir langsung diterima) → rincian lengkap.
   if (data.status === 'pending_accept' || (data.status === 'accepted' && o.createdByStaff)) {
+    await tg.sendMessage(chatId, orderDetailMessage({ lang, restaurant, order: o }), biz);
+    return;
+  }
+  if (SILENT_STATUSES.includes(data.status)) return;
+  const statusText = orderStatusMessage({
+    lang,
+    restaurant,
+    displayNo: o.displayNo,
+    status: data.status,
+    total: formatMoney(o.total, o.currency),
+    reason: data.status === 'rejected' ? o.rejectReason : data.status === 'cancelled' ? o.cancelReason : null,
+  });
+  // 5. Sampai → kirim foto bukti dari driver bila ada.
+  if (data.status === 'delivered') {
+    const [row] = await app.db
+      .select({ photo: orders.deliveryPhotoUrl })
+      .from(orders)
+      .where(eq(orders.id, o.id));
+    const key = row?.photo ? privateKeyFromUrl(row.photo) : null;
+    const file = key ? await app.storage.readPrivate(key) : null;
+    if (file) {
+      const chunks: Buffer[] = [];
+      for await (const ch of file.stream) chunks.push(Buffer.from(ch as Uint8Array));
+      await tg.sendPhoto(chatId, Buffer.concat(chunks), statusText, biz);
+      return;
+    }
+  }
+  // 6. Selesai → terima kasih + tombol gabung grup Telegram (Pengaturan).
+  if (data.status === 'done') {
+    const url = settings.telegram.groupUrl.trim();
     await tg.sendMessage(
-      o.customer.telegramId,
-      orderDetailMessage({ lang, restaurant: settings.profile.name, order: o }),
+      chatId,
+      `${statusText}\n\n${ORDER_TEXT[lang].thanks}`,
       biz,
+      /^https?:\/\//.test(url) ? { text: ORDER_TEXT[lang].joinGroup, url } : null,
     );
     return;
   }
-  await tg.sendMessage(
-    o.customer.telegramId,
-    orderStatusMessage({
-      lang,
-      restaurant: settings.profile.name,
-      displayNo: o.displayNo,
-      status: data.status,
-      total: formatMoney(o.total, o.currency),
-      reason:
-        data.status === 'rejected' ? o.rejectReason : data.status === 'cancelled' ? o.cancelReason : null,
-    }),
-    biz,
-  );
+  await tg.sendMessage(chatId, statusText, biz);
 }
 
 export async function handleAdminJob(

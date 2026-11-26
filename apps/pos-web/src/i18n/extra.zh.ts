@@ -368,6 +368,8 @@ export const extraZh: ExtraDict = {
     mapsUrl: 'Google 地图链接（可选）',
     mapsUrlHint: '顾客询问位置/堂食时，机器人会发送地址、地标、此链接和位置图钉。留空则根据坐标生成。',
     aiNotes: '给机器人的补充信息',
+    tgGroupUrl: 'Telegram 群链接',
+    tgGroupUrlHint: '订单完成时，感谢消息中会显示“加入群”按钮。没有可留空。',
     aiNotesHint: '例如：门口可停摩托车，有空调和 wifi，可电话预订。机器人会用这些信息回答。',
     open: '开门',
     close: '打烊',

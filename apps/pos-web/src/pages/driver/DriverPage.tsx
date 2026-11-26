@@ -1,6 +1,6 @@
 /** Aplikasi driver — acuan: docs/mockups/Driver.dc.html. */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   LANGS,
@@ -82,14 +82,26 @@ export default function DriverPage() {
     onSuccess: refresh,
     onError: onErr,
   });
+  const [proof, setProof] = useState<File | null>(null);
+  const proofUrl = useMemo(() => (proof ? URL.createObjectURL(proof) : null), [proof]);
+  useEffect(() => () => void (proofUrl && URL.revokeObjectURL(proofUrl)), [proofUrl]);
+  const proofInput = useRef<HTMLInputElement>(null);
   const delivered = useMutation({
-    mutationFn: (o: DriverOrderDto) =>
-      api.call('driverDelivered', {
+    mutationFn: async (o: DriverOrderDto) => {
+      // Foto bukti sampai (opsional) dikirim dulu → ikut ke pelanggan Telegram bersama status "Sampai".
+      if (proof) {
+        const fd = new FormData();
+        fd.append('file', proof);
+        await api.call('driverDeliveryPhoto', { params: { id: o.id }, body: fd });
+      }
+      return api.call('driverDelivered', {
         params: { id: o.id },
         body: o.cashToCollect > 0 ? { collected: { currency: o.currency, amount: o.cashToCollect } } : {},
-      }),
+      });
+    },
     onSuccess: () => {
       setConfirm(null);
+      setProof(null);
       toast.success(t('driver.delivered'));
       refresh();
     },
@@ -368,7 +380,10 @@ export default function DriverPage() {
       </footer>
       <Sheet
         open={!!confirm}
-        onClose={() => setConfirm(null)}
+        onClose={() => {
+          setConfirm(null);
+          setProof(null);
+        }}
         title={t('driver.confirmDelivered')}
         variant="center"
         closeLabel={t('common.close')}
@@ -400,6 +415,50 @@ export default function DriverPage() {
                 {t('driver.alreadyPaid')}
               </div>
             )}
+            <input
+              ref={proofInput}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              data-testid="delivery-photo-input"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) setProof(f);
+                e.target.value = '';
+              }}
+            />
+            {proofUrl ? (
+              <div className="relative">
+                <img
+                  src={proofUrl}
+                  alt={t('driver.deliveryPhoto')}
+                  className="max-h-56 w-full rounded-md object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => proofInput.current?.click()}
+                  className="state-layer absolute bottom-2 right-2 flex h-10 items-center gap-1.5 rounded-full bg-surface-container-lowest/95 px-3 text-label-large text-primary shadow-e1"
+                >
+                  <Icon name="photo_camera" size={18} />
+                  {t('driver.retakePhoto')}
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => proofInput.current?.click()}
+                className="state-layer flex h-12 items-center justify-center gap-2 rounded-full border border-outline text-label-large text-primary"
+              >
+                <Icon name="photo_camera" size={20} />
+                {t('driver.deliveryPhoto')}
+              </button>
+            )}
+            {confirm.customer?.telegramId ? (
+              <span className="text-label-medium text-on-surface-variant">
+                {t('driver.deliveryPhotoHint')}
+              </span>
+            ) : null}
           </div>
         ) : null}
       </Sheet>
