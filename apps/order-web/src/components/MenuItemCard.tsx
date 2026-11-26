@@ -7,6 +7,8 @@ export interface ItemActions {
   qty: number;
   onAdd: () => void;
   onDec: () => void;
+  /** Ketuk kartu (bukan tombol) → buka halaman detail menu. */
+  onOpen?: () => void;
 }
 
 /**
@@ -48,12 +50,15 @@ export function DishTile({
   className,
   size = 'md',
   soldOut,
+  fit = 'cover',
 }: {
   item: PublicMenuItem;
   name: string;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   soldOut?: boolean;
+  /** contain = foto utuh tanpa terpotong (latar foto yang diburamkan mengisi sisa ruang). */
+  fit?: 'cover' | 'contain';
 }) {
   return (
     <div
@@ -65,7 +70,22 @@ export function DishTile({
       )}
       aria-hidden
     >
-      {item.photoUrl ? (
+      {item.photoUrl && fit === 'contain' ? (
+        <>
+          <img
+            src={item.photoUrl}
+            alt=""
+            decoding="async"
+            className="absolute inset-0 -z-10 size-full scale-110 object-cover opacity-60 blur-xl"
+          />
+          <img
+            src={item.photoUrl}
+            alt=""
+            decoding="async"
+            className={cn('size-full object-contain', soldOut && 'opacity-60')}
+          />
+        </>
+      ) : item.photoUrl ? (
         <img
           src={item.photoUrl}
           alt=""
@@ -89,6 +109,34 @@ export function DishTile({
         </>
       )}
     </div>
+  );
+}
+
+/** Area kartu yang bisa diketuk untuk membuka detail; tanpa `onOpen` (mis. habis) → div biasa. */
+function Tappable({
+  onOpen,
+  label,
+  testId,
+  className,
+  children,
+}: {
+  onOpen?: () => void;
+  label: string;
+  testId?: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  if (!onOpen) return <div className={className}>{children}</div>;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={label}
+      data-testid={testId}
+      className={cn(className, 'active:bg-on-surface/5')}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -117,8 +165,9 @@ export function MenuItemCard({
   qty,
   onAdd,
   onDec,
+  onOpen,
 }: { item: PublicMenuItem; currency: Currency } & ItemActions) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const name = tl(item.name, i18n.language);
   const desc = tl(item.description, i18n.language);
   const soldOut = !item.available;
@@ -132,7 +181,12 @@ export function MenuItemCard({
       aria-label={name}
       data-testid={`item-${item.id}`}
     >
-      <div className="flex items-start gap-3">
+      <Tappable
+        onOpen={soldOut ? undefined : onOpen}
+        label={t('web.openItem', { name })}
+        testId={`open-${item.id}`}
+        className="-m-1 flex items-start gap-3 rounded-xl p-1 text-left"
+      >
         <div className="flex min-w-0 grow flex-col gap-1 pt-1">
           <h3 className={cn('text-title-medium font-semibold', soldOut && 'text-on-surface-variant')}>
             {name}
@@ -141,7 +195,7 @@ export function MenuItemCard({
           {item.bestSeller ? <BestTag className="mt-0.5 self-start" /> : null}
         </div>
         <DishTile item={item} name={name} soldOut={soldOut} className="size-[92px] rounded-lg" />
-      </div>
+      </Tappable>
       <div className="flex min-h-12 items-center justify-between gap-2">
         <b
           className={cn(
@@ -242,8 +296,9 @@ export function BestCard({
   qty,
   onAdd,
   onDec,
+  onOpen,
 }: { item: PublicMenuItem; currency: Currency } & ItemActions) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const name = tl(item.name, i18n.language);
   const soldOut = !item.available;
   return (
@@ -254,20 +309,28 @@ export function BestCard({
       )}
       aria-label={name}
     >
-      <div className="relative">
-        <DishTile item={item} name={name} soldOut={soldOut} size="lg" className="aspect-[4/3] w-full" />
-        <BestTag className="absolute left-2 top-2 shadow-e1" />
-      </div>
-      <div className="flex grow flex-col gap-1 p-3 pt-2.5">
-        <h3
-          className={cn(
-            'line-clamp-2 min-h-12 text-title-medium font-semibold',
-            soldOut && 'text-on-surface-variant',
-          )}
-        >
-          {name}
-        </h3>
-        <b className="text-title-medium font-bold tabular-nums">{money(item.price, currency)}</b>
+      <Tappable
+        onOpen={soldOut ? undefined : onOpen}
+        label={t('web.openItem', { name })}
+        className="flex flex-col text-left"
+      >
+        <div className="relative w-full">
+          <DishTile item={item} name={name} soldOut={soldOut} size="lg" className="aspect-[4/3] w-full" />
+          <BestTag className="absolute left-2 top-2 shadow-e1" />
+        </div>
+        <div className="flex w-full flex-col gap-1 px-3 pt-2.5">
+          <h3
+            className={cn(
+              'line-clamp-2 min-h-12 text-title-medium font-semibold',
+              soldOut && 'text-on-surface-variant',
+            )}
+          >
+            {name}
+          </h3>
+          <b className="text-title-medium font-bold tabular-nums">{money(item.price, currency)}</b>
+        </div>
+      </Tappable>
+      <div className="flex grow flex-col gap-1 px-3 pb-3">
         <div className="grow" />
         <div className="mt-1.5">
           <ItemControl name={name} soldOut={soldOut} qty={qty} onAdd={onAdd} onDec={onDec} variant="block" />

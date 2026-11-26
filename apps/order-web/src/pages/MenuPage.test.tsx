@@ -114,6 +114,16 @@ describe('MenuPage (mode biasa)', () => {
     expect(screen.queryByTestId('cart-bar')).toBeNull();
   });
 
+  it('ketuk kartu (bukan tombol +) membuka halaman detail; tambah dari detail', async () => {
+    const user = userEvent.setup();
+    await openMenu();
+    await user.click(screen.getByRole('button', { name: 'Lihat detail Kerupuk' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Kerupuk' });
+    await user.click(within(dialog).getByRole('button', { name: /^Tambah ·/ }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByTestId('cart-bar')).toHaveTextContent('1 item');
+  });
+
   it('realtime menu.availability menandai menu habis', async () => {
     await openMenu();
     expect(

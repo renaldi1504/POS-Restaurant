@@ -97,6 +97,8 @@ function MenuScreen({ routeMode }: { routeMode: CustomerMode }) {
     qty: qtyOf(it.id),
     onAdd: () => onAdd(it),
     onDec: () => cart.decItem(it.id),
+    // Ketuk kartu → halaman detail (foto besar, deskripsi, pilihan, catatan, jumlah).
+    onOpen: () => it.available && setSheetId(it.id),
   });
 
   // Bagian menu (untuk lompat & sorot kategori saat menggulir): Terlaris lalu kategori yang berisi menu.

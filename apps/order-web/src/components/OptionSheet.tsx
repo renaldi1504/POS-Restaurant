@@ -112,7 +112,8 @@ export function OptionSheet({
       >
         <main className="flex min-h-0 grow flex-col overflow-y-auto">
           <div className="relative shrink-0">
-            <DishTile item={item} name={name} size="lg" className="h-[200px] w-full" />
+            {/* Foto utuh 4:3 (tidak terpotong / tertutup panel). */}
+            <DishTile item={item} name={name} size="lg" fit="contain" className="aspect-[4/3] w-full" />
             <button
               ref={backRef}
               type="button"
@@ -124,7 +125,7 @@ export function OptionSheet({
             </button>
           </div>
 
-          <div className="relative -mt-5 flex flex-col gap-1 rounded-t-xl bg-surface-container-low px-5 pb-2 pt-5">
+          <div className="relative flex flex-col gap-1 bg-surface-container-low px-5 pb-2 pt-4">
             <h2 id={titleId} className="font-display text-headline-small">
               {name}
             </h2>
